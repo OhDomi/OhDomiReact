@@ -1,121 +1,127 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import type { FormEvent } from 'react'
 import './App.css'
 
+type Role = 'admin' | 'user'
+
+type Session = {
+  username: string
+  role: Role
+}
+
+const ADMIN_ID = 'admin'
+const ADMIN_PASSWORD = '1234'
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [session, setSession] = useState<Session | null>(null)
+  const [error, setError] = useState('')
+
+  function handleLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    const trimmedUsername = username.trim()
+
+    if (!trimmedUsername || !password) {
+      setError('Please enter both ID and password.')
+      return
+    }
+
+    if (trimmedUsername === ADMIN_ID) {
+      if (password !== ADMIN_PASSWORD) {
+        setError('Invalid admin password.')
+        return
+      }
+
+      setSession({ username: trimmedUsername, role: 'admin' })
+      setError('')
+      return
+    }
+
+    setSession({ username: trimmedUsername, role: 'user' })
+    setError('')
+  }
+
+  function handleLogout() {
+    setSession(null)
+    setPassword('')
+    setError('')
+  }
+
+  if (session?.role === 'admin') {
+    // Admin dashboard
+    return (
+      <main className="app-shell">
+        <section className="dashboard-panel">
+          <p className="eyebrow">관리자 로그인</p>
+          <h1>관리자 대시보드</h1>
+          <p className="dashboard-copy">
+            안녕하세요, {session.username}님! 관리자 로그인 중입니다.
+          </p>
+          <button className="secondary-button" type="button" onClick={handleLogout}>
+            로그아웃
+          </button>
+        </section>
+      </main>
+    )
+  }
+
+  if (session?.role === 'user') {
+    // User dashboard
+    return (
+      <main className="app-shell">
+        <section className="dashboard-panel">
+          <p className="eyebrow">가맹점주 로그인</p>
+          <h1>대시보드</h1>
+          <p className="dashboard-copy">
+            안녕하세요, {session.username} 사장님! 현재 가맹점주 로그인 중입니다.
+          </p>
+          <button className="secondary-button" type="button" onClick={handleLogout}>
+            로그아웃
+          </button>
+        </section>
+      </main>
+    )
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <main className="app-shell">
+      <section className="login-panel" aria-labelledby="login-heading">
+        <div className="login-header">
+          <p className="eyebrow">로그인</p>
+          <h1 id="login-heading">오! 도미</h1>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+
+        <form className="login-form" onSubmit={handleLogin}>
+          <label htmlFor="username">ID</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            value={username}
+            autoComplete="username"
+            onChange={(event) => setUsername(event.target.value)}
+          />
+
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            value={password}
+            autoComplete="current-password"
+            onChange={(event) => setPassword(event.target.value)}
+          />
+
+          {error ? <p className="form-error">{error}</p> : null}
+
+          <button className="primary-button" type="submit">
+            Login
+          </button>
+        </form>
       </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </main>
   )
 }
 
