@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import './App.css'
+import StoreSalesOrder from './pages/StoreSalesOrder/StoreSalesOrder'
 
 type Role = 'admin' | 'user'
 
@@ -68,21 +69,7 @@ function App() {
   }
 
   if (session?.role === 'user') {
-    // User dashboard
-    return (
-      <main className="app-shell">
-        <section className="dashboard-panel">
-          <p className="eyebrow">가맹점주 로그인</p>
-          <h1>대시보드</h1>
-          <p className="dashboard-copy">
-            안녕하세요, {session.username} 사장님! 현재 가맹점주 로그인 중입니다.
-          </p>
-          <button className="secondary-button" type="button" onClick={handleLogout}>
-            로그아웃
-          </button>
-        </section>
-      </main>
-    )
+    return <StoreSalesOrder />
   }
 
   return (
