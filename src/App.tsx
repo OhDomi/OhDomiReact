@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import './App.css'
+import StoreSalesOrder from './pages/StoreSalesOrder/StoreSalesOrder'
 
 type Role = 'admin' | 'user'
-type UserPage = 'dashboard' | 'inspection' | 'staff'
+type UserPage = 'dashboard' | 'inspection' | 'staff' | 'salesOrder'
 
 type Session = {
   username: string
@@ -242,6 +243,29 @@ function App() {
     )
   }
 
+  if (session?.role === 'user' && userPage === 'salesOrder') {
+    return (
+      <main className="app-shell app-shell-wide">
+        <section className="sales-order-page">
+          <div className="page-top sales-order-top">
+            <div>
+              <p className="eyebrow">가맹점주 대시보드</p>
+              <h1>매출/발주 관리</h1>
+            </div>
+            <button
+              className="secondary-button top-button"
+              type="button"
+              onClick={() => setUserPage('dashboard')}
+            >
+              대시보드로 돌아가기
+            </button>
+          </div>
+          <StoreSalesOrder />
+        </section>
+      </main>
+    )
+  }
+
   if (session?.role === 'user') {
     return (
       <main className="app-shell">
@@ -268,6 +292,14 @@ function App() {
             >
               <span>인력 관리</span>
               <small>인력 수요 예측, 급여/노무 체크리스트, 출근자 확인</small>
+            </button>
+            <button
+              className="menu-button"
+              type="button"
+              onClick={() => setUserPage('salesOrder')}
+            >
+              <span>매출/발주 관리</span>
+              <small>매출 현황, 발주 예측, 발주 요청 화면 확인</small>
             </button>
           </div>
 

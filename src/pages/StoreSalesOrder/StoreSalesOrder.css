@@ -1,0 +1,333 @@
+.store-sales-page {
+  background: var(--surface);
+}
+
+.store-sales-header {
+  margin-bottom: 24px;
+}
+
+.store-sales-header h2 {
+  margin: 0;
+  color: var(--text-h);
+  font-size: 30px;
+  line-height: 1.15;
+}
+
+.store-sales-description {
+  margin-top: 10px;
+  color: var(--text);
+}
+
+.store-sales-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  align-items: start;
+}
+
+.store-sales-main {
+  min-width: 0;
+}
+
+.sales-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.sales-summary-card,
+.sales-panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.sales-summary-card {
+  padding: 22px;
+}
+
+.sales-summary-card span {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sales-summary-card strong {
+  display: block;
+  color: var(--text-h);
+  font-size: 26px;
+}
+
+.sales-summary-card p {
+  margin-top: 8px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sales-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+}
+
+.sales-panel {
+  padding: 24px;
+}
+
+.sales-panel h2 {
+  margin: 0 0 18px;
+  color: var(--text-h);
+  font-size: 22px;
+}
+
+.sales-panel table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sales-panel th,
+.sales-panel td {
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.sales-panel th {
+  color: var(--text-h);
+  font-size: 14px;
+}
+
+.order-recommendation-list {
+  display: grid;
+  gap: 14px;
+}
+
+.order-recommendation-card {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--input-bg);
+}
+
+.order-recommendation-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.order-recommendation-top strong {
+  color: var(--text-h);
+  font-size: 18px;
+}
+
+.risk-badge {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.risk-high {
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.risk-medium {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.risk-low {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.14);
+}
+
+.order-recommendation-card dl {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.order-recommendation-card dt {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.order-recommendation-card dd {
+  margin: 4px 0 0;
+  color: var(--text-h);
+  font-weight: 800;
+}
+
+.order-recommendation-card p {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.store-sales-side-nav {
+  position: sticky;
+  top: 24px;
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.store-sales-side-nav h2 {
+  margin: 0 0 8px;
+  color: var(--text-h);
+  font-size: 18px;
+}
+
+.nav-card {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--input-bg);
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-card strong {
+  color: var(--text-h);
+  font-size: 15px;
+}
+
+.nav-card span {
+  font-size: 13px;
+}
+
+.nav-card:hover,
+.nav-card.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.full-panel {
+  min-height: 520px;
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.tab-group {
+  display: flex;
+  gap: 8px;
+}
+
+.tab {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  background: var(--input-bg);
+  cursor: pointer;
+}
+
+.tab.active {
+  color: #ffffff;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.order-form-list {
+  display: grid;
+  gap: 12px;
+}
+
+.order-form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--input-bg);
+}
+
+.order-form-row strong {
+  color: var(--text-h);
+}
+
+.order-form-row p {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.order-form-row input {
+  width: 140px;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-h);
+  background: var(--surface);
+}
+
+.order-submit-button {
+  margin-top: 18px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 6px;
+  color: #ffffff;
+  background: var(--accent);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  .store-sales-layout,
+  .sales-summary-grid,
+  .sales-content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .store-sales-side-nav {
+    position: static;
+  }
+}
+
+@media (max-width: 560px) {
+  .panel-title-row,
+  .order-form-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tab-group {
+    flex-wrap: wrap;
+  }
+
+  .order-recommendation-card dl {
+    grid-template-columns: 1fr;
+  }
+
+  .order-form-row input {
+    width: 100%;
+  }
+}

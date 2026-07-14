@@ -30,7 +30,8 @@
 }
 
 .inspection-page,
-.staff-page {
+.staff-page,
+.sales-order-page {
   width: min(100%, 920px);
   padding: 32px;
   border: 1px solid var(--border);
@@ -172,6 +173,10 @@
 .top-button {
   flex: 0 0 auto;
   margin-top: 0;
+}
+
+.sales-order-top {
+  margin-bottom: 24px;
 }
 
 .inspection-list {
@@ -396,7 +401,8 @@
   .login-panel,
   .dashboard-panel,
   .inspection-page,
-  .staff-page {
+  .staff-page,
+  .sales-order-page {
     padding: 24px;
   }
 
