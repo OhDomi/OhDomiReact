@@ -1,72 +1,7 @@
-:root {
-  --text: #536070;
-  --text-h: #111827;
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --border: #d7dee8;
-  --input-bg: #ffffff;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-soft: rgba(37, 99, 235, 0.1);
-  --accent-soft-hover: rgba(37, 99, 235, 0.16);
-  --focus: rgba(37, 99, 235, 0.18);
-  --shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap');
 
-  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
-  letter-spacing: 0;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #c7d2df;
-    --text-h: #f8fafc;
-    --bg: #111827;
-    --surface: #172033;
-    --border: #2d3a4f;
-    --input-bg: #111827;
-    --accent: #60a5fa;
-    --accent-hover: #3b82f6;
-    --accent-soft: rgba(96, 165, 250, 0.14);
-    --accent-soft-hover: rgba(96, 165, 250, 0.22);
-    --focus: rgba(96, 165, 250, 0.22);
-    --shadow: 0 20px 45px rgba(0, 0, 0, 0.28);
-  }
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  min-width: 320px;
-  margin: 0;
-}
-
-button,
-input {
-  font: inherit;
-}
-
-h1 {
-  margin: 0;
-  color: var(--text-h);
-  font-size: 40px;
-  line-height: 1.1;
-  letter-spacing: 0;
-}
-
-p {
-  margin: 0;
-}
-
-@media (max-width: 520px) {
-  h1 {
-    font-size: 32px;
-  }
-}
+:root { font-family: 'Manrope','Noto Sans KR',sans-serif; color:#17223b; background:#f4f6f9; font-synthesis:none; text-rendering:optimizeLegibility; }
+* { box-sizing:border-box; }
+body { min-width:320px; margin:0; }
+button,input { font:inherit; }
+button { color:inherit; }
