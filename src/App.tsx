@@ -3,6 +3,7 @@ import type { FormEvent, ReactNode } from 'react'
 import './App.css'
 import StoreSalesOrder from './pages/StoreSalesOrder/StoreSalesOrder'
 import BoardPage from './pages/board/BoardPage'
+import StoreManagement from './pages/StoreManagement/StoreManagement'
 
 type Role = 'owner' | 'admin'
 type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders' | 'board'
@@ -96,9 +97,9 @@ function Login({ onLogin }: { onLogin: (role: Role) => void }) {
 function Sidebar({ role, page, setPage, logout }: { role: Role; page: Page; setPage: (p: Page) => void; logout: () => void }) {
   const ownerNav: {id: Page; label: string; icon: string}[] = [
     { id: 'overview', label: '대시보드', icon: 'overview' },
+    { id: 'stores', label: '매장 관리', icon: 'stores' },
     { id: 'hygiene', label: '위생·품질 점검', icon: 'hygiene' },
     { id: 'sales', label: '매출 현황', icon: 'sales' },
-    { id: 'forecast', label: '수요·발주 예측', icon: 'forecast' },
     { id: 'orders', label: '발주 관리', icon: 'orders' },
     { id: 'board', label: '공지/문의게시판', icon: 'bell' },
   ]
@@ -133,7 +134,7 @@ function OwnerOverview({ go }: { go: (p: Page) => void }) {
     <section className="metrics-grid"><Metric label="오늘 예상 매출" value="₩1,580,000" change="↑ 7.4% 어제보다" icon="sales"/><Metric label="예상 주문" value="198건" change="↑ 12건 어제보다" icon="orders" tone="purple"/><Metric label="위생 점수" value="92점" change="양호 · 최근 점검 09:40" icon="hygiene" tone="green"/><Metric label="발주 필요 품목" value="2개" change="오늘 확인 필요" icon="bell" tone="orange"/></section>
     <section className="dashboard-grid">
       <article className="panel chart-panel"><div className="panel-head"><div><span className="panel-label">SALES OVERVIEW</span><h2>이번 주 매출</h2></div><button className="select-button">최근 7일⌄</button></div><SalesChart/><div className="chart-summary"><span>주간 누적 매출</span><strong>₩10,420,000</strong><em>+8.4%</em></div></article>
-      <article className="panel order-preview"><div className="panel-head"><div><span className="panel-label">SMART ORDER</span><h2>AI 발주 추천</h2></div><button className="link-button" onClick={() => go('forecast')}>전체 보기 <Icon name="arrow" size={16}/></button></div>
+      <article className="panel order-preview"><div className="panel-head"><div><span className="panel-label">SMART ORDER</span><h2>AI 발주 추천</h2></div><button className="link-button" onClick={() => go('orders')}>전체 보기 <Icon name="arrow" size={16}/></button></div>
         <div className="stock-item critical"><div className="stock-icon">🐟</div><div><strong>연어</strong><span>현재 22L · 예상 28L</span></div><b>+16L</b></div>
         <div className="stock-item"><div className="stock-icon">🥚</div><div><strong>날치알</strong><span>현재 45개 · 예상 35개</span></div><b>+10개</b></div>
         <div className="stock-item safe"><div className="stock-icon">🍜</div><div><strong>메밀면</strong><span>현재 8.5kg · 예상 6.2kg</span></div><b>충분</b></div>
@@ -181,10 +182,13 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
     board: { kicker: 'COMMUNICATION', title: '공지/문의게시판', copy: '본사 공지사항과 가맹점 문의를 확인하세요.' },
     overview: { kicker: '', title: '', copy: '' },
   })[page], [page, role])
-  if (role === 'owner' && (page === 'forecast' || page === 'orders')) {
+  if (role === 'owner' && page === 'orders') {
     return <StoreSalesOrder />
   }
 
+  if (role === 'owner' && page === 'stores') {
+    return <StoreManagement />
+  }
   if (page === 'board') {
     return (
       <>

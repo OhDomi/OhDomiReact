@@ -1,0 +1,144 @@
+.store-management-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 18px;
+}
+
+.store-info-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 20px 0 0;
+}
+
+.store-info-list div {
+  padding: 14px;
+  border-radius: 10px;
+  background: #f8f9fb;
+}
+
+.store-info-list div.wide {
+  grid-column: 1 / -1;
+}
+
+.store-info-list dt {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.store-info-list dd {
+  margin: 5px 0 0;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.store-checklist {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.store-check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--navy);
+  background: #f8f9fb;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.store-check-item input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--purple);
+}
+
+.wide-panel {
+  grid-column: 1 / -1;
+}
+
+.facility-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.facility-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 145px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f8f9fb;
+}
+
+.facility-card strong {
+  color: var(--navy);
+  font-size: 14px;
+}
+
+.facility-card p {
+  margin: 8px 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.facility-card small {
+  color: #9aa3b3;
+  font-size: 9px;
+}
+
+.facility-status {
+  align-self: flex-start;
+  padding: 5px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.facility-status.safe {
+  color: var(--green);
+  background: #eaf8f3;
+}
+
+.facility-status.warning {
+  color: #d68120;
+  background: #fff4e6;
+}
+
+.facility-status.danger {
+  color: #dc4c5a;
+  background: #fff0f1;
+}
+
+@media (max-width: 1050px) {
+  .store-management-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wide-panel {
+    grid-column: auto;
+  }
+
+  .facility-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .store-info-list,
+  .facility-grid {
+    grid-template-columns: 1fr;
+  }
+}
