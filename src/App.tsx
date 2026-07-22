@@ -8,6 +8,7 @@ import HygieneCheck from './pages/HygieneCheck/HygieneCheck'
 import StoreSalesStatus from './pages/StoreSalesStatus/StoreSalesStatus'
 import AdminStoreManagement from './pages/AdminStoreManagement/AdminStoreManagement'
 import AdminHygieneCheck from './pages/AdminHygieneCheck/AdminHygieneCheck'
+import AdminSalesAnalysis from './pages/AdminSalesAnalysis/AdminSalesAnalysis'
 
 type Role = 'owner' | 'admin'
 type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders' | 'board'
@@ -652,8 +653,6 @@ function StoreDetail({ store, close }: { store: typeof stores[number]; close: ()
 }
 
 function ModulePage({ page, role }: { page: Page; role: Role }) {
-  const [selectedStore, setSelectedStore] = useState<typeof stores[number] | null>(null)
-
   const content = useMemo(() => ({
     stores: {
       kicker: 'FRANCHISE NETWORK',
@@ -714,6 +713,10 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
 
   if (role === 'owner' && page === 'sales') {
     return <StoreSalesStatus />
+  }
+
+  if (role === 'admin' && page === 'sales') {
+    return <AdminSalesAnalysis />
   }
 
   if (role === 'owner' && page === 'orders') {
