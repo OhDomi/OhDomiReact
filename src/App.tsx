@@ -9,6 +9,7 @@ import StoreSalesStatus from './pages/StoreSalesStatus/StoreSalesStatus'
 import AdminStoreManagement from './pages/AdminStoreManagement/AdminStoreManagement'
 import AdminHygieneCheck from './pages/AdminHygieneCheck/AdminHygieneCheck'
 import AdminSalesAnalysis from './pages/AdminSalesAnalysis/AdminSalesAnalysis'
+import AdminRiskPrediction from './pages/AdminRiskPrediction/AdminRiskPrediction'
 
 type Role = 'owner' | 'admin'
 type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders' | 'board'
@@ -674,9 +675,9 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
         : '일별·주별 매출 흐름과 주문 추이를 확인하세요.',
     },
     forecast: {
-      kicker: 'AI DEMAND FORECAST',
+      kicker: 'AI RISK PREDICTION',
       title: role === 'admin' ? '리스크 예측' : '수요·발주 예측',
-      copy: '판매 데이터와 현재 재고를 기반으로 다음 수요를 예측합니다.',
+      copy: '매출, 위생, 발주 데이터를 기반으로 운영 리스크를 예측합니다.',
     },
     orders: {
       kicker: 'ORDER MANAGEMENT',
@@ -719,6 +720,10 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
     return <AdminSalesAnalysis />
   }
 
+  if (role === 'admin' && page === 'forecast') {
+    return <AdminRiskPrediction />
+  }
+
   if (role === 'owner' && page === 'orders') {
     return <StoreSalesOrder />
   }
@@ -738,43 +743,6 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
           userName={role === 'admin' ? '본사 운영팀' : '강남점 김점주'}
           isAdmin={role === 'admin'}
         />
-      </>
-    )
-  }
-
-  if (page === 'sales') {
-    return (
-      <>
-        <header className="page-heading">
-          <div>
-            <span className="kicker">{content.kicker}</span>
-            <h1>{content.title}</h1>
-            <p>{content.copy}</p>
-          </div>
-          <button className="select-button" type="button">2026년 7월⌄</button>
-        </header>
-
-        <section className="metrics-grid three">
-          <Metric label="누적 매출" value={role === 'admin' ? '₩3.82B' : '₩38,520,000'} change="↑ 8.4% 전월 대비" icon="sales" />
-          <Metric label="총 주문" value={role === 'admin' ? '486,230건' : '4,762건'} change="↑ 6.8% 전월 대비" icon="orders" tone="purple" />
-          <Metric label="평균 객단가" value="₩8,090" change="↑ 1.2% 전월 대비" icon="forecast" tone="green" />
-        </section>
-
-        <article className="panel full-module">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">REVENUE TREND</span>
-              <h2>매출 추이</h2>
-            </div>
-            <div className="tab-set">
-              <button type="button">일간</button>
-              <button className="active" type="button">주간</button>
-              <button type="button">월간</button>
-            </div>
-          </div>
-
-          <SalesChart />
-        </article>
       </>
     )
   }
