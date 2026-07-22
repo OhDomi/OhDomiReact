@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import './App.css'
+import StoreSalesOrder from './pages/StoreSalesOrder/StoreSalesOrder'
+import BoardPage from './pages/board/BoardPage'
 
 type Role = 'owner' | 'admin'
-type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders'
+type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders' | 'board'
 
 const icons: Record<string, ReactNode> = {
   overview: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
@@ -93,12 +95,20 @@ function Login({ onLogin }: { onLogin: (role: Role) => void }) {
 
 function Sidebar({ role, page, setPage, logout }: { role: Role; page: Page; setPage: (p: Page) => void; logout: () => void }) {
   const ownerNav: {id: Page; label: string; icon: string}[] = [
-    { id: 'overview', label: '대시보드', icon: 'overview' }, { id: 'hygiene', label: '위생·품질 점검', icon: 'hygiene' },
-    { id: 'sales', label: '매출 현황', icon: 'sales' }, { id: 'forecast', label: '수요·발주 예측', icon: 'forecast' }, { id: 'orders', label: '발주 관리', icon: 'orders' },
+    { id: 'overview', label: '대시보드', icon: 'overview' },
+    { id: 'hygiene', label: '위생·품질 점검', icon: 'hygiene' },
+    { id: 'sales', label: '매출 현황', icon: 'sales' },
+    { id: 'forecast', label: '수요·발주 예측', icon: 'forecast' },
+    { id: 'orders', label: '발주 관리', icon: 'orders' },
+    { id: 'board', label: '공지/문의게시판', icon: 'bell' },
   ]
   const adminNav: {id: Page; label: string; icon: string}[] = [
-    { id: 'overview', label: '통합 대시보드', icon: 'overview' }, { id: 'stores', label: '가맹점 관리', icon: 'stores' },
-    { id: 'hygiene', label: '위생 점검', icon: 'hygiene' }, { id: 'sales', label: '매출 분석', icon: 'sales' }, { id: 'forecast', label: '리스크 예측', icon: 'forecast' },
+    { id: 'overview', label: '통합 대시보드', icon: 'overview' },
+    { id: 'stores', label: '가맹점 관리', icon: 'stores' },
+    { id: 'hygiene', label: '위생 점검', icon: 'hygiene' },
+    { id: 'sales', label: '매출 분석', icon: 'sales' },
+    { id: 'forecast', label: '리스크 예측', icon: 'forecast' },
+    { id: 'board', label: '공지/문의게시판', icon: 'bell' },
   ]
   return <aside className="sidebar">
     <div className="brand"><span className="brand-mark">O</span><span>oh!domi</span></div>
@@ -168,8 +178,32 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
     sales: { kicker: 'SALES ANALYTICS', title: '매출 현황', copy: role === 'admin' ? '전체 가맹점의 매출 흐름과 성과를 비교하세요.' : '일별·주별 매출 흐름과 주문 추이를 확인하세요.' },
     forecast: { kicker: 'AI DEMAND FORECAST', title: role === 'admin' ? '리스크 예측' : '수요·발주 예측', copy: '판매 데이터와 현재 재고를 기반으로 다음 수요를 예측합니다.' },
     orders: { kicker: 'ORDER MANAGEMENT', title: '발주 관리', copy: 'AI 추천 수량을 검토하고 필요한 식자재를 발주하세요.' },
+    board: { kicker: 'COMMUNICATION', title: '공지/문의게시판', copy: '본사 공지사항과 가맹점 문의를 확인하세요.' },
     overview: { kicker: '', title: '', copy: '' },
   })[page], [page, role])
+  if (role === 'owner' && (page === 'forecast' || page === 'orders')) {
+    return <StoreSalesOrder />
+  }
+
+  if (page === 'board') {
+    return (
+      <>
+        <header className="page-heading">
+          <div>
+            <span className="kicker">{content.kicker}</span>
+            <h1>{content.title}</h1>
+            <p>{content.copy}</p>
+          </div>
+        </header>
+
+        <BoardPage
+          userName={role === 'admin' ? '본사 운영팀' : '강남점 김점주'}
+          isAdmin={role === 'admin'}
+        />
+      </>
+    )
+  }
+
   if (page === 'stores') return <><header className="page-heading"><div><span className="kicker">{content.kicker}</span><h1>{content.title}</h1><p>{content.copy}</p></div><button className="primary-action">+ 가맹점 등록</button></header><section className="panel full-module"><div className="module-toolbar"><div className="search-box"><Icon name="search" size={18}/><input placeholder="가맹점명 또는 점주 검색"/></div><button className="select-button">전체 리스크⌄</button></div><StoreTable onSelect={setSelectedStore} selected={selectedStore?.name}/></section>{selectedStore && <StoreDetail store={selectedStore} close={() => setSelectedStore(null)}/>}</>
   if (page === 'hygiene' && role === 'admin') return <><header className="page-heading"><div><span className="kicker">{content.kicker}</span><h1>{content.title}</h1><p>{content.copy}</p></div><button className="select-button">최근 7일⌄</button></header><section className="metrics-grid three"><Metric label="오늘 점검 완료" value="118개" change="전체 126개 매장" icon="hygiene" tone="green"/><Metric label="검토 필요" value="8개" change="긴급 2 · 주의 6" icon="bell" tone="orange"/><Metric label="평균 위생 점수" value="89.4점" change="↑ 1.8점 지난주 대비" icon="forecast" tone="purple"/></section><section className="panel full-module"><div className="panel-head"><div><span className="panel-label">STORE INSPECTIONS</span><h2>가맹점별 최근 점검</h2></div><div className="search-box"><Icon name="search" size={17}/><input placeholder="가맹점 검색"/></div></div><div className="inspection-grid">{stores.map((store, index) => <article className="inspection-store-card" key={store.name}><div className={`inspection-photo photo-${index + 1}`}><span><Icon name="camera" size={20}/>{index === 0 ? '조리대 점검 사진' : '매장 점검 사진'}</span></div><div className="inspection-card-body"><div><span className="store-avatar">{store.name[0]}</span><div><strong>{store.name}</strong><small>{store.lastCheck}</small></div><b className={store.score < 80 ? 'score-low' : ''}>{store.score}점</b></div><p>{index === 0 ? '조리대 청결 상태 재확인이 필요합니다.' : 'AI 분석 결과 기준 범위 내 정상입니다.'}</p><button className="outline-button" onClick={() => setSelectedStore(store)}>가맹점 상세정보</button></div></article>)}</div></section>{selectedStore && <StoreDetail store={selectedStore} close={() => setSelectedStore(null)}/>}</>
   if (page === 'hygiene') return <><header className="page-heading"><div><span className="kicker">{content.kicker}</span><h1>{content.title}</h1><p>{content.copy}</p></div></header><section className="module-columns"><article className="panel upload-panel"><div className="upload-zone"><div className="upload-icon"><Icon name="camera" size={28}/></div><h2>점검 사진 업로드</h2><p>조리대, 냉장고, 홀 사진을 선명하게 촬영해 주세요.</p><button className="primary-action">사진 선택하기</button><small>JPG, PNG · 최대 10MB</small></div></article><article className="panel inspection-result"><span className="panel-label">LATEST ANALYSIS</span><h2>최근 AI 분석 결과</h2><div className="large-score"><strong>92</strong><span>점</span></div><div className="analysis-list"><p><Icon name="check" size={18}/><span><b>조리대 청결</b>오염 요소가 발견되지 않았습니다.</span></p><p><Icon name="check" size={18}/><span><b>식자재 보관</b>분리 보관 상태가 양호합니다.</span></p><p className="warn"><Icon name="bell" size={18}/><span><b>바닥 상태</b>출입구 주변 정리가 필요합니다.</span></p></div></article></section></>
