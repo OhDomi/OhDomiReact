@@ -7,6 +7,7 @@ import StoreManagement from './pages/StoreManagement/StoreManagement'
 import HygieneCheck from './pages/HygieneCheck/HygieneCheck'
 import StoreSalesStatus from './pages/StoreSalesStatus/StoreSalesStatus'
 import AdminStoreManagement from './pages/AdminStoreManagement/AdminStoreManagement'
+import AdminHygieneCheck from './pages/AdminHygieneCheck/AdminHygieneCheck'
 
 type Role = 'owner' | 'admin'
 type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders' | 'board'
@@ -707,6 +708,10 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
     return <HygieneCheck />
   }
 
+  if (role === 'admin' && page === 'hygiene') {
+    return <AdminHygieneCheck />
+  }
+
   if (role === 'owner' && page === 'sales') {
     return <StoreSalesStatus />
   }
@@ -730,72 +735,6 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
           userName={role === 'admin' ? '본사 운영팀' : '강남점 김점주'}
           isAdmin={role === 'admin'}
         />
-      </>
-    )
-  }
-
-  if (page === 'hygiene' && role === 'admin') {
-    return (
-      <>
-        <header className="page-heading">
-          <div>
-            <span className="kicker">{content.kicker}</span>
-            <h1>{content.title}</h1>
-            <p>{content.copy}</p>
-          </div>
-          <button className="select-button" type="button">최근 7일⌄</button>
-        </header>
-
-        <section className="metrics-grid three">
-          <Metric label="오늘 점검 완료" value="118개" change="전체 126개 매장" icon="hygiene" tone="green" />
-          <Metric label="검토 필요" value="8개" change="긴급 2 · 주의 6" icon="bell" tone="orange" />
-          <Metric label="평균 위생 점수" value="89.4점" change="↑ 1.8점 지난주 대비" icon="forecast" tone="purple" />
-        </section>
-
-        <section className="panel full-module">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">STORE INSPECTIONS</span>
-              <h2>가맹점별 최근 점검</h2>
-            </div>
-            <div className="search-box">
-              <Icon name="search" size={17} />
-              <input placeholder="가맹점 검색" />
-            </div>
-          </div>
-
-          <div className="inspection-grid">
-            {stores.map((store, index) => (
-              <article className="inspection-store-card" key={store.name}>
-                <div className={`inspection-photo photo-${index + 1}`}>
-                  <span>
-                    <Icon name="camera" size={20} />
-                    {index === 0 ? '조리대 점검 사진' : '매장 점검 사진'}
-                  </span>
-                </div>
-
-                <div className="inspection-card-body">
-                  <div>
-                    <span className="store-avatar">{store.name[0]}</span>
-                    <div>
-                      <strong>{store.name}</strong>
-                      <small>{store.lastCheck}</small>
-                    </div>
-                    <b className={store.score < 80 ? 'score-low' : ''}>{store.score}점</b>
-                  </div>
-
-                  <p>{index === 0 ? '조리대 청결 상태 재확인이 필요합니다.' : 'AI 분석 결과 기준 범위 내 정상입니다.'}</p>
-
-                  <button className="outline-button" type="button" onClick={() => setSelectedStore(store)}>
-                    가맹점 상세정보
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {selectedStore && <StoreDetail store={selectedStore} close={() => setSelectedStore(null)} />}
       </>
     )
   }

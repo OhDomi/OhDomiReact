@@ -1,0 +1,125 @@
+export const adminHygieneSummary = {
+  totalStores: 126,
+  checkedStores: 118,
+  pendingStores: 8,
+  dangerStores: 2,
+  averageScore: 89.4,
+}
+
+export const hygieneStoreList = [
+  {
+    name: '강남역점',
+    owner: '김도윤',
+    region: '서울 강남구',
+    score: 72,
+    status: '긴급',
+    lastCheckedAt: '오늘 09:40',
+    issue: '조리대 청결 상태 재확인 필요',
+    imageCount: 4,
+    category: '조리대',
+    reviewer: 'AI 자동 분석',
+  },
+  {
+    name: '성수점',
+    owner: '이서준',
+    region: '서울 성동구',
+    score: 94,
+    status: '양호',
+    lastCheckedAt: '오늘 08:55',
+    issue: '특이사항 없음',
+    imageCount: 5,
+    category: '전체 점검',
+    reviewer: 'AI 자동 분석',
+  },
+  {
+    name: '잠실점',
+    owner: '박지우',
+    region: '서울 송파구',
+    score: 86,
+    status: '주의',
+    lastCheckedAt: '어제 18:20',
+    issue: '출입구 주변 정리 필요',
+    imageCount: 3,
+    category: '홀/출입구',
+    reviewer: '운영관리팀',
+  },
+  {
+    name: '여의도점',
+    owner: '최하늘',
+    region: '서울 영등포구',
+    score: 91,
+    status: '양호',
+    lastCheckedAt: '오늘 10:15',
+    issue: '특이사항 없음',
+    imageCount: 4,
+    category: '전체 점검',
+    reviewer: 'AI 자동 분석',
+  },
+  {
+    name: '부산서면점',
+    owner: '정민호',
+    region: '부산 부산진구',
+    score: 69,
+    status: '긴급',
+    lastCheckedAt: '어제 16:10',
+    issue: '냉장 보관 상태 및 바닥 청결 재점검 필요',
+    imageCount: 6,
+    category: '냉장고/바닥',
+    reviewer: 'AI 자동 분석',
+  },
+]
+
+export const reviewQueue = [
+  {
+    store: '강남역점',
+    title: '조리대 점검 사진',
+    uploadedAt: '오늘 09:40',
+    result: '오염 가능성 감지',
+    status: '검토 필요',
+  },
+  {
+    store: '부산서면점',
+    title: '냉장고 내부 사진',
+    uploadedAt: '어제 16:10',
+    result: '식자재 분리 보관 미흡',
+    status: '긴급 검토',
+  },
+  {
+    store: '잠실점',
+    title: '홀 출입구 사진',
+    uploadedAt: '어제 18:20',
+    result: '적재물로 인한 동선 방해 가능성',
+    status: '검토 필요',
+  },
+]
+
+export const hygieneActions = [
+  {
+    store: '강남역점',
+    action: '재점검 요청',
+    description: '조리대 청결 상태에 대한 추가 사진 업로드를 요청해야 합니다.',
+    priority: '긴급',
+  },
+  {
+    store: '부산서면점',
+    action: '본사 점검 필요',
+    description: '위생 점수 하락 폭이 커서 현장 점검 일정을 잡는 것이 좋습니다.',
+    priority: '긴급',
+  },
+  {
+    store: '잠실점',
+    action: '개선 안내 발송',
+    description: '출입구 주변 정리 기준에 대한 안내 메시지 발송이 필요합니다.',
+    priority: '주의',
+  },
+]
+
+export const hygieneTrend = [
+  { label: '월', score: 86 },
+  { label: '화', score: 88 },
+  { label: '수', score: 87 },
+  { label: '목', score: 89 },
+  { label: '금', score: 91 },
+  { label: '토', score: 88 },
+  { label: '일', score: 89 },
+]
