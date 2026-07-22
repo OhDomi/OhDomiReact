@@ -5,6 +5,7 @@ import StoreSalesOrder from './pages/StoreSalesOrder/StoreSalesOrder'
 import BoardPage from './pages/board/BoardPage'
 import StoreManagement from './pages/StoreManagement/StoreManagement'
 import HygieneCheck from './pages/HygieneCheck/HygieneCheck'
+import StoreSalesStatus from './pages/StoreSalesStatus/StoreSalesStatus'
 
 type Role = 'owner' | 'admin'
 type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders' | 'board'
@@ -699,6 +700,10 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
 
   if (role === 'owner' && page === 'hygiene') {
     return <HygieneCheck />
+  }
+
+  if (role === 'owner' && page === 'sales') {
+    return <StoreSalesStatus />
   }
 
   if (role === 'owner' && page === 'orders') {
