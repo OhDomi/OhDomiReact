@@ -6,6 +6,7 @@ import BoardPage from './pages/board/BoardPage'
 import StoreManagement from './pages/StoreManagement/StoreManagement'
 import HygieneCheck from './pages/HygieneCheck/HygieneCheck'
 import StoreSalesStatus from './pages/StoreSalesStatus/StoreSalesStatus'
+import AdminStoreManagement from './pages/AdminStoreManagement/AdminStoreManagement'
 
 type Role = 'owner' | 'admin'
 type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders' | 'board'
@@ -698,6 +699,10 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
     return <StoreManagement />
   }
 
+  if (role === 'admin' && page === 'stores') {
+    return <AdminStoreManagement />
+  }
+
   if (role === 'owner' && page === 'hygiene') {
     return <HygieneCheck />
   }
@@ -725,35 +730,6 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
           userName={role === 'admin' ? '본사 운영팀' : '강남점 김점주'}
           isAdmin={role === 'admin'}
         />
-      </>
-    )
-  }
-
-  if (page === 'stores') {
-    return (
-      <>
-        <header className="page-heading">
-          <div>
-            <span className="kicker">{content.kicker}</span>
-            <h1>{content.title}</h1>
-            <p>{content.copy}</p>
-          </div>
-          <button className="primary-action" type="button">+ 가맹점 등록</button>
-        </header>
-
-        <section className="panel full-module">
-          <div className="module-toolbar">
-            <div className="search-box">
-              <Icon name="search" size={18} />
-              <input placeholder="가맹점명 또는 점주 검색" />
-            </div>
-            <button className="select-button" type="button">전체 리스크⌄</button>
-          </div>
-
-          <StoreTable onSelect={setSelectedStore} selected={selectedStore?.name} />
-        </section>
-
-        {selectedStore && <StoreDetail store={selectedStore} close={() => setSelectedStore(null)} />}
       </>
     )
   }
