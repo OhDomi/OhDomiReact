@@ -1,0 +1,20 @@
+.register-card {
+  padding-block: 24px;
+}
+
+.registration-role {
+  margin: 25px 0 22px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: #5c47ca;
+  background: #f3f1ff;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .register-card {
+    padding-block: 0;
+  }
+}

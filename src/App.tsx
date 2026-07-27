@@ -10,6 +10,9 @@ import AdminStoreManagement from './pages/AdminStoreManagement/AdminStoreManagem
 import AdminHygieneCheck from './pages/AdminHygieneCheck/AdminHygieneCheck'
 import AdminSalesAnalysis from './pages/AdminSalesAnalysis/AdminSalesAnalysis'
 import AdminRiskPrediction from './pages/AdminRiskPrediction/AdminRiskPrediction'
+import RegisterPage from './pages/Auth/RegisterPage'
+import { loginAccount } from './api/authApi'
+import type { LoginResponse } from './api/authApi'
 
 type Role = 'owner' | 'admin'
 type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders' | 'board'
@@ -60,19 +63,51 @@ const stores = [
   { name: '여의도점', owner: '최하늘', sales: '₩4,250,000', score: 91, risk: '안전', phone: '010-9061-3724', address: '서울 영등포구 국제금융로 8길 16', opened: '2023. 08. 25', contract: '2026. 08. 24', orders: '518건', lastCheck: '오늘 10:15' },
 ]
 
-function Login({ onLogin }: { onLogin: (role: Role) => void }) {
+function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
   const [role, setRole] = useState<Role>('owner')
+  const [loginId, setLoginId] = useState('demo')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [showRegister, setShowRegister] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function submit(e: FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const form = new FormData(e.currentTarget)
 
-    if (!form.get('email') || !form.get('password')) {
+    if (!form.get('loginId') || !form.get('password')) {
       return setError('아이디와 비밀번호를 입력해 주세요.')
     }
 
-    onLogin(role)
+    setError('')
+    setIsSubmitting(true)
+    try {
+      const account = await loginAccount({
+        loginId: String(form.get('loginId')),
+        password: String(form.get('password')),
+        role: role === 'admin' ? 'ADMIN' : 'OWNER',
+      })
+      onLogin(account)
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : '로그인에 실패했습니다.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (showRegister) {
+    return (
+      <RegisterPage
+        onBack={() => setShowRegister(false)}
+        onRegistered={(registeredLoginId) => {
+          setLoginId(registeredLoginId)
+          setRole('owner')
+          setError('')
+          setSuccess('회원가입이 완료되었습니다. 새 계정으로 로그인해 주세요.')
+          setShowRegister(false)
+        }}
+      />
+    )
   }
 
   return (
@@ -138,12 +173,28 @@ function Login({ onLogin }: { onLogin: (role: Role) => void }) {
           <form onSubmit={submit} className="auth-form">
             <label>
               아이디
-              <input name="email" placeholder="아이디를 입력하세요" defaultValue="demo" />
+              <input
+                name="loginId"
+                placeholder="영문, 숫자 4자 이상"
+                value={loginId}
+                onChange={(event) => setLoginId(event.target.value)}
+                minLength={4}
+                maxLength={100}
+                pattern="[A-Za-z0-9._-]+"
+                required
+              />
             </label>
 
             <label>
               비밀번호
-              <input name="password" type="password" placeholder="비밀번호를 입력하세요" defaultValue="1234" />
+              <input
+                name="password"
+                type="password"
+                placeholder="비밀번호를 입력하세요"
+                defaultValue="1234"
+                maxLength={72}
+                required
+              />
             </label>
 
             <div className="form-options">
@@ -154,14 +205,19 @@ function Login({ onLogin }: { onLogin: (role: Role) => void }) {
             </div>
 
             {error && <p className="form-error">{error}</p>}
+            {success && <p className="form-success">{success}</p>}
 
-            <button className="login-button" type="submit">
-              로그인 <Icon name="arrow" size={18} />
+            <button className="login-button" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? '로그인 확인 중...' : '로그인'}
+              {!isSubmitting && <Icon name="arrow" size={18} />}
             </button>
           </form>
 
           <p className="signup-copy">
-            처음 방문하셨나요? <button type="button" className="text-button">회원가입</button>
+            처음 방문하셨나요?{' '}
+            <button type="button" className="text-button" onClick={() => setShowRegister(true)}>
+              회원가입
+            </button>
           </p>
 
           <div className="demo-note">데모: 유형을 선택한 뒤 바로 로그인해 보세요.</div>
@@ -757,14 +813,17 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
 }
 
 function App() {
-  const [role, setRole] = useState<Role | null>(null)
+  const [account, setAccount] = useState<LoginResponse | null>(null)
   const [page, setPage] = useState<Page>('overview')
+  const role: Role | null = account
+    ? account.role === 'ADMIN' ? 'admin' : 'owner'
+    : null
 
   if (!role) {
     return (
       <Login
-        onLogin={(nextRole) => {
-          setRole(nextRole)
+        onLogin={(loggedInAccount) => {
+          setAccount(loggedInAccount)
           setPage('overview')
         }}
       />
@@ -777,7 +836,7 @@ function App() {
         role={role}
         page={page}
         setPage={setPage}
-        logout={() => setRole(null)}
+        logout={() => setAccount(null)}
       />
 
       <div className="app-main">
@@ -796,10 +855,10 @@ function App() {
             </button>
 
             <div className="profile">
-              <span>{role === 'admin' ? '관' : '김'}</span>
+              <span>{account?.name.slice(0, 1) ?? '?'}</span>
               <div>
-                <strong>{role === 'admin' ? '본사 관리자' : '김도윤'}</strong>
-                <small>{role === 'admin' ? '운영관리팀' : '강남역점 점주'}</small>
+                <strong>{account?.name}</strong>
+                <small>{role === 'admin' ? '본사 관리자' : `가맹점주 · 매장 #${account?.storeId ?? '-'}`}</small>
               </div>
               <b>⌄</b>
             </div>
