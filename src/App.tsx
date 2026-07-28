@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import type { FormEvent, ReactNode, MouseEvent as ReactMouseEvent } from 'react'
 import './App.css'
 import StoreSalesOrder from './pages/StoreSalesOrder/StoreSalesOrder'
 import BoardPage from './pages/board/BoardPage'
@@ -842,6 +842,94 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
 function App() {
   const [role, setRole] = useState<Role | null>(null)
   const [page, setPage] = useState<Page>('overview')
+  const [notificationOpen, setNotificationOpen] = useState(false)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+
+  function showToast(message: string) {
+    setToastMessage(message)
+
+    window.setTimeout(() => {
+      setToastMessage('')
+    }, 2200)
+  }
+
+  function handleLogout() {
+    setRole(null)
+    setPage('overview')
+    setNotificationOpen(false)
+    setProfileMenuOpen(false)
+  }
+
+  function openPreparingMessage(label: string) {
+    showToast(`${label} 기능은 추후 백엔드 연동 예정입니다.`)
+    setNotificationOpen(false)
+    setProfileMenuOpen(false)
+  }
+
+  function handlePreparingButtonClick(event: ReactMouseEvent<HTMLDivElement>) {
+    const clickedButton = (event.target as HTMLElement).closest('button') as HTMLButtonElement | null
+
+    if (!clickedButton || clickedButton.disabled) {
+      return
+    }
+
+    const buttonText = clickedButton.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+
+    const preparingButtonLabels = [
+      '+ 가맹점 등록',
+      '가맹점 등록',
+      '리포트 보기',
+      '운영 리포트 보기',
+      '점주에게 연락',
+      '점주 연락',
+
+      '최근 7일',
+      '전체 상태',
+      '전체 지역',
+      '기간 선택',
+      '필터',
+      '검색',
+
+      '점주에게 안내',
+      '재점검 요청',
+      '사진 검토하기',
+      '사진 선택',
+      '점검 시작',
+      '조치 등록',
+      '개선 안내 발송',
+
+      '발주서 작성',
+      '발주 요청 보내기',
+      '발주 내역',
+      '발주 확정',
+      '재고 확인',
+
+      '처리',
+      '분석',
+      '실행',
+      '확인',
+      '답변 등록',
+      '공지 수정',
+      '문의 수정',
+      '글쓰기',
+      '등록',
+      '저장',
+      '수정',
+      '삭제',
+      '다운로드',
+    ]
+
+    const matchedLabel = preparingButtonLabels.find((label) => buttonText.includes(label))
+
+    if (!matchedLabel) {
+      return
+    }
+
+    showToast(`${matchedLabel.replace('+ ', '')} 기능은 추후 백엔드 연동 예정입니다.`)
+    setNotificationOpen(false)
+    setProfileMenuOpen(false)
+  }
 
   if (!role) {
     return (
@@ -849,18 +937,24 @@ function App() {
         onLogin={(nextRole) => {
           setRole(nextRole)
           setPage('overview')
+          setNotificationOpen(false)
+          setProfileMenuOpen(false)
         }}
       />
     )
   }
 
   return (
-    <div className="app-layout">
+    <div className="app-layout" onClickCapture={handlePreparingButtonClick}>
       <Sidebar
         role={role}
         page={page}
-        setPage={setPage}
-        logout={() => setRole(null)}
+        setPage={(nextPage) => {
+          setPage(nextPage)
+          setNotificationOpen(false)
+          setProfileMenuOpen(false)
+        }}
+        logout={handleLogout}
       />
 
       <div className="app-main">
@@ -873,18 +967,121 @@ function App() {
           </div>
 
           <div className="top-actions">
-            <button className="icon-button" type="button">
-              <Icon name="bell" />
-              <i></i>
-            </button>
+            <div className="topbar-popover-wrap">
+              <button
+                className={`icon-button ${notificationOpen ? 'active' : ''}`}
+                type="button"
+                aria-label="알림"
+                onClick={() => {
+                  setNotificationOpen((prev) => !prev)
+                  setProfileMenuOpen(false)
+                }}
+              >
+                <Icon name="bell" />
+                <i></i>
+              </button>
 
-            <div className="profile">
-              <span>{role === 'admin' ? '관' : '김'}</span>
-              <div>
-                <strong>{role === 'admin' ? '본사 관리자' : '김도윤'}</strong>
-                <small>{role === 'admin' ? '운영관리팀' : '강남역점 점주'}</small>
-              </div>
-              <b>⌄</b>
+              {notificationOpen && (
+                <div className="notification-popover">
+                  <div className="popover-head">
+                    <div>
+                      <span className="panel-label">NOTIFICATIONS</span>
+                      <h3>알림</h3>
+                    </div>
+
+                    <button
+                      className="text-button"
+                      type="button"
+                      onClick={() => openPreparingMessage('알림 모두 읽음')}
+                    >
+                      모두 읽음
+                    </button>
+                  </div>
+
+                  <div className="notification-list">
+                    {alerts.map((alert) => (
+                      <button
+                        className="notification-item"
+                        type="button"
+                        key={alert.title}
+                        onClick={() => openPreparingMessage(alert.title)}
+                      >
+                        <span className={`alert-dot ${alert.tone}`}></span>
+
+                        <div>
+                          <strong>{alert.title}</strong>
+                          <p>{alert.detail}</p>
+                          <small>{alert.time}</small>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    className="popover-wide-button"
+                    type="button"
+                    onClick={() => {
+                      setPage(role === 'admin' ? 'forecast' : 'hygiene')
+                      setNotificationOpen(false)
+                    }}
+                  >
+                    관련 화면으로 이동
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="topbar-popover-wrap">
+              <button
+                className={`profile profile-button ${profileMenuOpen ? 'active' : ''}`}
+                type="button"
+                onClick={() => {
+                  setProfileMenuOpen((prev) => !prev)
+                  setNotificationOpen(false)
+                }}
+              >
+                <span>{role === 'admin' ? '관' : '김'}</span>
+                <div>
+                  <strong>{role === 'admin' ? '본사 관리자' : '김도윤'}</strong>
+                  <small>{role === 'admin' ? '운영관리팀' : '강남역점 점주'}</small>
+                </div>
+                <b>⌄</b>
+              </button>
+
+              {profileMenuOpen && (
+                <div className="profile-popover">
+                  <div className="profile-popover-head">
+                    <span>{role === 'admin' ? '관' : '김'}</span>
+
+                    <div>
+                      <strong>{role === 'admin' ? '본사 관리자' : '김도윤 점주'}</strong>
+                      <small>{role === 'admin' ? '운영관리팀' : '강남역점'}</small>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => openPreparingMessage('개인정보 수정')}
+                  >
+                    개인정보 수정
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => openPreparingMessage('계정 설정')}
+                  >
+                    계정 설정
+                  </button>
+
+                  <button
+                    className="logout-menu-button"
+                    type="button"
+                    onClick={handleLogout}
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -897,6 +1094,13 @@ function App() {
             : <ModulePage page={page} role={role} />}
         </main>
       </div>
+
+      {toastMessage && (
+        <div className="app-toast">
+          <strong>안내</strong>
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   )
 }
