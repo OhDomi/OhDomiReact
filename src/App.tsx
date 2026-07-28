@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import type { FormEvent, ReactNode, MouseEvent as ReactMouseEvent } from 'react'
 import './App.css'
 import StoreSalesOrder from './pages/StoreSalesOrder/StoreSalesOrder'
 import BoardPage from './pages/board/BoardPage'
@@ -536,7 +536,7 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
             <span><i className="danger"></i>위험 <b>{risks.riskSummary.highRiskStores}</b></span>
           </div>
 
-          <button className="outline-button" type="button" onClick={() => go('stores')}>
+          <button className="outline-button" type="button" onClick={() => go('forecast')}>
             상세 리스크 보기
           </button>
         </article>
@@ -554,6 +554,89 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
           </div>
 
           <StoreTable stores={storeData.adminStores} compact />
+        </article>
+
+        <article className="panel admin-task-panel">
+          <div className="panel-head">
+            <div>
+              <span className="panel-label">TODAY TASKS</span>
+              <h2>오늘 처리해야 할 업무</h2>
+            </div>
+
+            <button className="select-button" type="button">
+              우선순위
+            </button>
+          </div>
+
+          <div className="admin-task-list">
+            <div className="admin-task-card danger">
+              <span>긴급</span>
+              <div>
+                <strong>부산서면점 현장 점검 일정 배정</strong>
+                <p>매출 감소와 위생 점수 하락이 동시에 발생했습니다.</p>
+              </div>
+              <button className="detail-button" type="button" onClick={() => go('forecast')}>
+                확인
+              </button>
+            </div>
+
+            <div className="admin-task-card warning">
+              <span>주의</span>
+              <div>
+                <strong>강남역점 위생 재점검 요청</strong>
+                <p>조리대 청결 상태 재확인이 필요합니다.</p>
+              </div>
+              <button className="detail-button" type="button" onClick={() => go('hygiene')}>
+                확인
+              </button>
+            </div>
+
+            <div className="admin-task-card info">
+              <span>안내</span>
+              <div>
+                <strong>7월 신메뉴 공지 확인 현황 점검</strong>
+                <p>일부 가맹점의 공지 확인 여부를 체크하세요.</p>
+              </div>
+              <button className="detail-button" type="button" onClick={() => go('board')}>
+                확인
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article className="panel ai-action-panel">
+          <div className="panel-head">
+            <div>
+              <span className="panel-label">AI ACTION GUIDE</span>
+              <h2>AI 추천 조치</h2>
+            </div>
+          </div>
+
+          <div className="ai-action-list">
+            <button type="button" onClick={() => go('sales')}>
+              <span className="ai-action-icon purple">₩</span>
+              <div>
+                <strong>매출 부진 매장 분석</strong>
+                <p>부산서면점, 잠실점 매출 흐름 확인</p>
+              </div>
+            </button>
+
+            <button type="button" onClick={() => go('hygiene')}>
+              <span className="ai-action-icon green">✓</span>
+              <div>
+                <strong>위생 점검 결과 검토</strong>
+                <p>긴급 매장 2곳 재점검 요청</p>
+              </div>
+            </button>
+
+            <button type="button" onClick={() => go('forecast')}>
+              <span className="ai-action-icon orange">!</span>
+              <div>
+                <strong>운영 리스크 예측 확인</strong>
+                <p>고위험 매장 우선 조치 추천</p>
+              </div>
+            </button>
+          </div>
         </article>
       </section>
     </>
@@ -810,6 +893,89 @@ function App() {
   const role: Role | null = account
     ? account.role === 'ADMIN' ? 'admin' : 'owner'
     : null
+  const [notificationOpen, setNotificationOpen] = useState(false)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+
+  function showToast(message: string) {
+    setToastMessage(message)
+
+    window.setTimeout(() => {
+      setToastMessage('')
+    }, 2200)
+  }
+
+  function handleLogout() {
+    setAccount(null)
+    setPage('overview')
+    setNotificationOpen(false)
+    setProfileMenuOpen(false)
+  }
+
+  function openPreparingMessage(label: string) {
+    showToast(`${label} 기능은 추후 백엔드 연동 예정입니다.`)
+    setNotificationOpen(false)
+    setProfileMenuOpen(false)
+  }
+
+  function handlePreparingButtonClick(event: ReactMouseEvent<HTMLDivElement>) {
+    const clickedButton = (event.target as HTMLElement).closest('button') as HTMLButtonElement | null
+
+    if (!clickedButton || clickedButton.disabled) {
+      return
+    }
+
+    const buttonText = clickedButton.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+
+    const preparingButtonLabels = [
+      '+ 가맹점 등록',
+      '가맹점 등록',
+      '리포트 보기',
+      '운영 리포트 보기',
+      '점주에게 연락',
+      '점주 연락',
+
+      '최근 7일',
+      '전체 상태',
+      '전체 지역',
+      '기간 선택',
+      '필터',
+      '검색',
+
+      '점주에게 안내',
+      '재점검 요청',
+      '사진 검토하기',
+      '사진 선택',
+      '점검 시작',
+      '조치 등록',
+      '개선 안내 발송',
+
+      '발주서 작성',
+      '발주 요청 보내기',
+      '발주 내역',
+      '발주 확정',
+      '재고 확인',
+
+      '처리',
+      '분석',
+      '실행',
+      '확인',
+      '저장',
+      '수정',
+      '삭제',
+      '다운로드',
+    ]
+
+    const matchedLabel = preparingButtonLabels.find((label) => buttonText.includes(label))
+
+    if (!matchedLabel) {
+      return
+    }
+
+    showToast(`${matchedLabel.replace('+ ', '')} 기능은 추후 백엔드 연동 예정입니다.`)
+    setNotificationOpen(false)
+    setProfileMenuOpen(false)
+  }
 
   if (!role) {
     return (
@@ -817,18 +983,24 @@ function App() {
         onLogin={(loggedInAccount) => {
           setAccount(loggedInAccount)
           setPage('overview')
+          setNotificationOpen(false)
+          setProfileMenuOpen(false)
         }}
       />
     )
   }
 
   return (
-    <div className="app-layout">
+    <div className="app-layout" onClickCapture={handlePreparingButtonClick}>
       <Sidebar
         role={role}
         page={page}
-        setPage={setPage}
-        logout={() => setAccount(null)}
+        setPage={(nextPage) => {
+          setPage(nextPage)
+          setNotificationOpen(false)
+          setProfileMenuOpen(false)
+        }}
+        logout={handleLogout}
       />
 
       <div className="app-main">
@@ -841,18 +1013,120 @@ function App() {
           </div>
 
           <div className="top-actions">
-            <button className="icon-button" type="button">
-              <Icon name="bell" />
-              <i></i>
-            </button>
+            <div className="topbar-popover-wrap">
+              <button
+                className={`icon-button ${notificationOpen ? 'active' : ''}`}
+                type="button"
+                aria-label="알림"
+                onClick={() => {
+                  setNotificationOpen((prev) => !prev)
+                  setProfileMenuOpen(false)
+                }}
+              >
+                <Icon name="bell" />
+                <i></i>
+              </button>
 
-            <div className="profile">
-              <span>{account?.name.slice(0, 1) ?? '?'}</span>
-              <div>
-                <strong>{account?.name}</strong>
-                <small>{role === 'admin' ? '본사 관리자' : `가맹점주 · 매장 #${account?.storeId ?? '-'}`}</small>
-              </div>
-              <b>⌄</b>
+              {notificationOpen && (
+                <div className="notification-popover">
+                  <div className="popover-head">
+                    <div>
+                      <span className="panel-label">NOTIFICATIONS</span>
+                      <h3>알림</h3>
+                    </div>
+
+                    <button
+                      className="text-button"
+                      type="button"
+                      onClick={() => openPreparingMessage('알림 모두 읽음')}
+                    >
+                      모두 읽음
+                    </button>
+                  </div>
+
+                  <div className="notification-list">
+                    <button
+                      className="notification-item"
+                      type="button"
+                      onClick={() => {
+                        setPage(role === 'admin' ? 'forecast' : 'orders')
+                        setNotificationOpen(false)
+                      }}
+                    >
+                      <span className="alert-dot info"></span>
+                      <div>
+                        <strong>최신 운영 데이터를 확인하세요</strong>
+                        <p>MySQL에 저장된 {role === 'admin' ? '매장 위험 정보' : '발주 추천 정보'}로 이동합니다.</p>
+                        <small>실시간 데이터</small>
+                      </div>
+                    </button>
+                  </div>
+
+                  <button
+                    className="popover-wide-button"
+                    type="button"
+                    onClick={() => {
+                      setPage(role === 'admin' ? 'forecast' : 'hygiene')
+                      setNotificationOpen(false)
+                    }}
+                  >
+                    관련 화면으로 이동
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="topbar-popover-wrap">
+              <button
+                className={`profile profile-button ${profileMenuOpen ? 'active' : ''}`}
+                type="button"
+                onClick={() => {
+                  setProfileMenuOpen((prev) => !prev)
+                  setNotificationOpen(false)
+                }}
+              >
+                <span>{account.name.slice(0, 1)}</span>
+                <div>
+                  <strong>{account.name}</strong>
+                  <small>{role === 'admin' ? '본사 관리자' : `가맹점주 · 매장 #${account.storeId ?? '-'}`}</small>
+                </div>
+                <b>⌄</b>
+              </button>
+
+              {profileMenuOpen && (
+                <div className="profile-popover">
+                  <div className="profile-popover-head">
+                    <span>{account.name.slice(0, 1)}</span>
+
+                    <div>
+                      <strong>{account.name}</strong>
+                      <small>{role === 'admin' ? '본사 관리자' : `매장 #${account.storeId ?? '미배정'}`}</small>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => openPreparingMessage('개인정보 수정')}
+                  >
+                    개인정보 수정
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => openPreparingMessage('계정 설정')}
+                  >
+                    계정 설정
+                  </button>
+
+                  <button
+                    className="logout-menu-button"
+                    type="button"
+                    onClick={handleLogout}
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -867,6 +1141,13 @@ function App() {
             : <ModulePage page={page} role={role} account={account} />}
         </main>
       </div>
+
+      {toastMessage && (
+        <div className="app-toast">
+          <strong>안내</strong>
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   )
 }
