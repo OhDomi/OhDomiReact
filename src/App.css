@@ -66,6 +66,17 @@ button{border:0;background:none;cursor:pointer}.brand{display:flex;align-items:c
   min-width: 0;
 }
 
+.admin-ai-highlight {
+  margin-bottom: 18px;
+  border: 1px solid rgba(105, 76, 218, 0.22);
+  background: linear-gradient(135deg, #ffffff 55%, #f5f1ff);
+  box-shadow: 0 14px 34px rgba(72, 52, 145, 0.1);
+}
+
+.admin-ai-highlight .ai-action-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .ai-action-list {
   display: grid;
   gap: 12px;
@@ -132,6 +143,10 @@ button{border:0;background:none;cursor:pointer}.brand{display:flex;align-items:c
 
 @media (max-width: 760px) {
   .admin-task-card {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-ai-highlight .ai-action-list {
     grid-template-columns: 1fr;
   }
 }

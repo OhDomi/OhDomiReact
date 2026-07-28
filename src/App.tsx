@@ -493,6 +493,42 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
         <Metric label="위험 알림" value={`${risks.riskSummary.highRiskStores + risks.riskSummary.warningStores}건`} change={`긴급 ${risks.riskSummary.highRiskStores} · 주의 ${risks.riskSummary.warningStores}`} icon="bell" tone="orange" />
       </section>
 
+      <article className="panel ai-action-panel admin-ai-highlight">
+        <div className="panel-head">
+          <div>
+            <span className="panel-label">AI ACTION GUIDE</span>
+            <h2>AI 추천 조치</h2>
+          </div>
+          <span className="status-pill success">● 우선 확인</span>
+        </div>
+
+        <div className="ai-action-list">
+          <button type="button" onClick={() => go('sales')}>
+            <span className="ai-action-icon purple">₩</span>
+            <div>
+              <strong>매출 부진 매장 분석</strong>
+              <p>부산서면점, 잠실점 매출 흐름 확인</p>
+            </div>
+          </button>
+
+          <button type="button" onClick={() => go('hygiene')}>
+            <span className="ai-action-icon green">✓</span>
+            <div>
+              <strong>위생 점검 결과 검토</strong>
+              <p>긴급 매장 2곳 재점검 요청</p>
+            </div>
+          </button>
+
+          <button type="button" onClick={() => go('forecast')}>
+            <span className="ai-action-icon orange">!</span>
+            <div>
+              <strong>운영 리스크 예측 확인</strong>
+              <p>고위험 매장 우선 조치 추천</p>
+            </div>
+          </button>
+        </div>
+      </article>
+
       <section className="admin-grid">
         <article className="panel alert-center">
           <div className="panel-head">
@@ -604,40 +640,6 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
           </div>
         </article>
 
-        <article className="panel ai-action-panel">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">AI ACTION GUIDE</span>
-              <h2>AI 추천 조치</h2>
-            </div>
-          </div>
-
-          <div className="ai-action-list">
-            <button type="button" onClick={() => go('sales')}>
-              <span className="ai-action-icon purple">₩</span>
-              <div>
-                <strong>매출 부진 매장 분석</strong>
-                <p>부산서면점, 잠실점 매출 흐름 확인</p>
-              </div>
-            </button>
-
-            <button type="button" onClick={() => go('hygiene')}>
-              <span className="ai-action-icon green">✓</span>
-              <div>
-                <strong>위생 점검 결과 검토</strong>
-                <p>긴급 매장 2곳 재점검 요청</p>
-              </div>
-            </button>
-
-            <button type="button" onClick={() => go('forecast')}>
-              <span className="ai-action-icon orange">!</span>
-              <div>
-                <strong>운영 리스크 예측 확인</strong>
-                <p>고위험 매장 우선 조치 추천</p>
-              </div>
-            </button>
-          </div>
-        </article>
       </section>
     </>
   )
