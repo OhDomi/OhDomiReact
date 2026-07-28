@@ -496,7 +496,7 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
             <span><i className="danger"></i>위험 <b>7</b></span>
           </div>
 
-          <button className="outline-button" type="button" onClick={() => go('stores')}>
+          <button className="outline-button" type="button" onClick={() => go('forecast')}>
             상세 리스크 보기
           </button>
         </article>
@@ -514,6 +514,89 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
           </div>
 
           <StoreTable compact />
+        </article>
+
+        <article className="panel admin-task-panel">
+          <div className="panel-head">
+            <div>
+              <span className="panel-label">TODAY TASKS</span>
+              <h2>오늘 처리해야 할 업무</h2>
+            </div>
+
+            <button className="select-button" type="button">
+              우선순위
+            </button>
+          </div>
+
+          <div className="admin-task-list">
+            <div className="admin-task-card danger">
+              <span>긴급</span>
+              <div>
+                <strong>부산서면점 현장 점검 일정 배정</strong>
+                <p>매출 감소와 위생 점수 하락이 동시에 발생했습니다.</p>
+              </div>
+              <button className="detail-button" type="button" onClick={() => go('forecast')}>
+                확인
+              </button>
+            </div>
+
+            <div className="admin-task-card warning">
+              <span>주의</span>
+              <div>
+                <strong>강남역점 위생 재점검 요청</strong>
+                <p>조리대 청결 상태 재확인이 필요합니다.</p>
+              </div>
+              <button className="detail-button" type="button" onClick={() => go('hygiene')}>
+                확인
+              </button>
+            </div>
+
+            <div className="admin-task-card info">
+              <span>안내</span>
+              <div>
+                <strong>7월 신메뉴 공지 확인 현황 점검</strong>
+                <p>일부 가맹점의 공지 확인 여부를 체크하세요.</p>
+              </div>
+              <button className="detail-button" type="button" onClick={() => go('board')}>
+                확인
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article className="panel ai-action-panel">
+          <div className="panel-head">
+            <div>
+              <span className="panel-label">AI ACTION GUIDE</span>
+              <h2>AI 추천 조치</h2>
+            </div>
+          </div>
+
+          <div className="ai-action-list">
+            <button type="button" onClick={() => go('sales')}>
+              <span className="ai-action-icon purple">₩</span>
+              <div>
+                <strong>매출 부진 매장 분석</strong>
+                <p>부산서면점, 잠실점 매출 흐름 확인</p>
+              </div>
+            </button>
+
+            <button type="button" onClick={() => go('hygiene')}>
+              <span className="ai-action-icon green">✓</span>
+              <div>
+                <strong>위생 점검 결과 검토</strong>
+                <p>긴급 매장 2곳 재점검 요청</p>
+              </div>
+            </button>
+
+            <button type="button" onClick={() => go('forecast')}>
+              <span className="ai-action-icon orange">!</span>
+              <div>
+                <strong>운영 리스크 예측 확인</strong>
+                <p>고위험 매장 우선 조치 추천</p>
+              </div>
+            </button>
+          </div>
         </article>
       </section>
     </>
