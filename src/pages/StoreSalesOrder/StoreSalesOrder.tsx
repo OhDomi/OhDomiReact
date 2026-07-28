@@ -1,19 +1,37 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './StoreSalesOrder.css'
-import {
+import type {
   aiOrderInsights,
   orderSummary,
   recentOrders,
   recommendedOrders,
 } from './storeSalesOrderDummy'
+import { useApiData } from '../../api/useApiData'
+import ApiDataState from '../../api/ApiDataState'
 
-function StoreSalesOrder() {
-  const [orderItems, setOrderItems] = useState(recommendedOrders)
+type OrderData = {
+  aiOrderInsights: typeof aiOrderInsights
+  orderSummary: typeof orderSummary
+  recentOrders: typeof recentOrders
+  recommendedOrders: typeof recommendedOrders
+}
+type RecommendedOrder = (typeof recommendedOrders)[number]
+
+function StoreSalesOrder({ storeId }: { storeId: number }) {
+  const api = useApiData<OrderData>(`/api/ui/stores/${storeId}/orders`)
+  const [orderItems, setOrderItems] = useState<RecommendedOrder[]>([])
+
+  useEffect(() => {
+    if (api.data) setOrderItems(api.data.recommendedOrders)
+  }, [api.data])
 
   const selectedItems = useMemo(
     () => orderItems.filter((item) => item.recommendedQty !== '0kg'),
     [orderItems],
   )
+
+  if (!api.data) return <ApiDataState loading={api.loading} error={api.error} retry={api.retry} />
+  const { aiOrderInsights, orderSummary, recentOrders } = api.data
 
   function updateQuantity(id: number, value: string) {
     setOrderItems((prev) =>

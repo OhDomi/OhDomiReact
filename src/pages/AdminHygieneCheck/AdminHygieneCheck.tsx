@@ -1,15 +1,36 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './AdminHygieneCheck.css'
-import {
+import type {
   adminHygieneSummary,
   hygieneActions,
   hygieneStoreList,
   hygieneTrend,
   reviewQueue,
 } from './adminHygieneDummy'
+import { useApiData } from '../../api/useApiData'
+import ApiDataState from '../../api/ApiDataState'
+
+type AdminHygieneData = {
+  adminHygieneSummary: typeof adminHygieneSummary
+  hygieneActions: typeof hygieneActions
+  hygieneStoreList: typeof hygieneStoreList
+  hygieneTrend: typeof hygieneTrend
+  reviewQueue: typeof reviewQueue
+}
+type HygieneStore = (typeof hygieneStoreList)[number]
 
 function AdminHygieneCheck() {
-  const [selectedStore, setSelectedStore] = useState(hygieneStoreList[0])
+  const api = useApiData<AdminHygieneData>('/api/ui/admin/hygiene')
+  const [selectedStore, setSelectedStore] = useState<HygieneStore | null>(null)
+
+  useEffect(() => {
+    if (api.data?.hygieneStoreList.length) setSelectedStore(api.data.hygieneStoreList[0])
+  }, [api.data])
+
+  if (!api.data || !selectedStore) {
+    return <ApiDataState loading={api.loading || !selectedStore} error={api.error} retry={api.retry} />
+  }
+  const { adminHygieneSummary, hygieneActions, hygieneStoreList, hygieneTrend, reviewQueue } = api.data
 
   return (
     <div className="admin-hygiene-page">

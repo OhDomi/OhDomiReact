@@ -1,15 +1,36 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './AdminRiskPrediction.css'
-import {
+import type {
   aiRecommendations,
   riskFactors,
   riskStores,
   riskSummary,
   riskTrend,
 } from './adminRiskDummy'
+import { useApiData } from '../../api/useApiData'
+import ApiDataState from '../../api/ApiDataState'
+
+type RiskData = {
+  aiRecommendations: typeof aiRecommendations
+  riskFactors: typeof riskFactors
+  riskStores: typeof riskStores
+  riskSummary: typeof riskSummary
+  riskTrend: typeof riskTrend
+}
+type RiskStore = (typeof riskStores)[number]
 
 function AdminRiskPrediction() {
-  const [selectedStore, setSelectedStore] = useState(riskStores[0])
+  const api = useApiData<RiskData>('/api/ui/admin/risks')
+  const [selectedStore, setSelectedStore] = useState<RiskStore | null>(null)
+
+  useEffect(() => {
+    if (api.data?.riskStores.length) setSelectedStore(api.data.riskStores[0])
+  }, [api.data])
+
+  if (!api.data || !selectedStore) {
+    return <ApiDataState loading={api.loading || !selectedStore} error={api.error} retry={api.retry} />
+  }
+  const { aiRecommendations, riskFactors, riskStores, riskSummary, riskTrend } = api.data
 
   return (
     <div className="admin-risk-page">

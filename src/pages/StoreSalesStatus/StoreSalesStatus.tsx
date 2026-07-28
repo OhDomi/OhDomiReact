@@ -1,13 +1,27 @@
 import './StoreSalesStatus.css'
-import {
+import type {
   aiInsights,
   channelSales,
   hourlySales,
   menuRanking,
   salesSummary,
 } from './storeSalesStatusDummy'
+import { useApiData } from '../../api/useApiData'
+import ApiDataState from '../../api/ApiDataState'
 
-function StoreSalesStatus() {
+type SalesData = {
+  aiInsights: typeof aiInsights
+  channelSales: typeof channelSales
+  hourlySales: typeof hourlySales
+  menuRanking: typeof menuRanking
+  salesSummary: typeof salesSummary
+}
+
+function StoreSalesStatus({ storeId }: { storeId: number }) {
+  const api = useApiData<SalesData>(`/api/ui/stores/${storeId}/sales`)
+  if (!api.data) return <ApiDataState loading={api.loading} error={api.error} retry={api.retry} />
+  const { aiInsights, channelSales, hourlySales, menuRanking, salesSummary } = api.data
+
   return (
     <div className="store-sales-status">
       <header className="page-heading">

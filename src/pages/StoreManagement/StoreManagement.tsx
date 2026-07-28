@@ -1,12 +1,25 @@
 import './StoreManagement.css'
-import {
+import type {
   facilityStatus,
   operationChecklist,
   storeInfo,
   todayStaff,
 } from './storeManagementDummy'
+import { useApiData } from '../../api/useApiData'
+import ApiDataState from '../../api/ApiDataState'
 
-function StoreManagement() {
+type StoreManagementData = {
+  storeInfo: typeof storeInfo
+  facilityStatus: typeof facilityStatus
+  operationChecklist: typeof operationChecklist
+  todayStaff: typeof todayStaff
+}
+
+function StoreManagement({ storeId }: { storeId: number }) {
+  const api = useApiData<StoreManagementData>(`/api/ui/stores/${storeId}/management`)
+  if (!api.data) return <ApiDataState loading={api.loading} error={api.error} retry={api.retry} />
+  const { storeInfo, facilityStatus, operationChecklist, todayStaff } = api.data
+
   return (
     <div className="store-management">
       <header className="page-heading">

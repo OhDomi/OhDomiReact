@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './AdminSalesAnalysis.css'
-import {
+import type {
   adminSalesInsights,
   adminSalesSummary,
   monthlySalesTrend,
@@ -8,9 +8,31 @@ import {
   storeSalesRanking,
   weakStores,
 } from './adminSalesDummy'
+import { useApiData } from '../../api/useApiData'
+import ApiDataState from '../../api/ApiDataState'
+
+type AdminSalesData = {
+  adminSalesInsights: typeof adminSalesInsights
+  adminSalesSummary: typeof adminSalesSummary
+  monthlySalesTrend: typeof monthlySalesTrend
+  regionSales: typeof regionSales
+  storeSalesRanking: typeof storeSalesRanking
+  weakStores: typeof weakStores
+}
+type RankedStore = (typeof storeSalesRanking)[number]
 
 function AdminSalesAnalysis() {
-  const [selectedStore, setSelectedStore] = useState(storeSalesRanking[0])
+  const api = useApiData<AdminSalesData>('/api/ui/admin/sales')
+  const [selectedStore, setSelectedStore] = useState<RankedStore | null>(null)
+
+  useEffect(() => {
+    if (api.data?.storeSalesRanking.length) setSelectedStore(api.data.storeSalesRanking[0])
+  }, [api.data])
+
+  if (!api.data || !selectedStore) {
+    return <ApiDataState loading={api.loading || !selectedStore} error={api.error} retry={api.retry} />
+  }
+  const { adminSalesInsights, adminSalesSummary, monthlySalesTrend, regionSales, storeSalesRanking, weakStores } = api.data
 
   return (
     <div className="admin-sales-page">

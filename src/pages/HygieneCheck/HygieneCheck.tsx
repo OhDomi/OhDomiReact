@@ -1,12 +1,25 @@
 import './HygieneCheck.css'
-import {
+import type {
   hygieneItems,
   hygieneSummary,
   improvementTasks,
   recentInspections,
 } from './hygieneCheckDummy'
+import { useApiData } from '../../api/useApiData'
+import ApiDataState from '../../api/ApiDataState'
 
-function HygieneCheck() {
+type HygieneData = {
+  hygieneItems: typeof hygieneItems
+  hygieneSummary: typeof hygieneSummary
+  improvementTasks: typeof improvementTasks
+  recentInspections: typeof recentInspections
+}
+
+function HygieneCheck({ storeId }: { storeId: number }) {
+  const api = useApiData<HygieneData>(`/api/ui/stores/${storeId}/hygiene`)
+  if (!api.data) return <ApiDataState loading={api.loading} error={api.error} retry={api.retry} />
+  const { hygieneItems, hygieneSummary, improvementTasks, recentInspections } = api.data
+
   return (
     <div className="hygiene-page">
       <header className="page-heading">

@@ -1,14 +1,34 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './AdminStoreManagement.css'
-import {
+import type {
   actionRequiredStores,
   adminStoreSummary,
   adminStores,
   regionStats,
 } from './adminStoreDummy'
+import { useApiData } from '../../api/useApiData'
+import ApiDataState from '../../api/ApiDataState'
+
+type AdminStoreData = {
+  actionRequiredStores: typeof actionRequiredStores
+  adminStoreSummary: typeof adminStoreSummary
+  adminStores: typeof adminStores
+  regionStats: typeof regionStats
+}
+type AdminStore = (typeof adminStores)[number]
 
 function AdminStoreManagement() {
-  const [selectedStore, setSelectedStore] = useState(adminStores[0])
+  const api = useApiData<AdminStoreData>('/api/ui/admin/stores')
+  const [selectedStore, setSelectedStore] = useState<AdminStore | null>(null)
+
+  useEffect(() => {
+    if (api.data?.adminStores.length) setSelectedStore(api.data.adminStores[0])
+  }, [api.data])
+
+  if (!api.data || !selectedStore) {
+    return <ApiDataState loading={api.loading || !selectedStore} error={api.error} retry={api.retry} />
+  }
+  const { actionRequiredStores, adminStoreSummary, adminStores, regionStats } = api.data
 
   return (
     <div className="admin-store-page">

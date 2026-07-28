@@ -13,6 +13,8 @@ import AdminRiskPrediction from './pages/AdminRiskPrediction/AdminRiskPrediction
 import RegisterPage from './pages/Auth/RegisterPage'
 import { loginAccount } from './api/authApi'
 import type { LoginResponse } from './api/authApi'
+import { useApiData } from './api/useApiData'
+import ApiDataState from './api/ApiDataState'
 
 type Role = 'owner' | 'admin'
 type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders' | 'board'
@@ -40,28 +42,21 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
   )
 }
 
-const salesData = [
-  { day: '월', value: 62 },
-  { day: '화', value: 72 },
-  { day: '수', value: 55 },
-  { day: '목', value: 83 },
-  { day: '금', value: 68 },
-  { day: '토', value: 96 },
-  { day: '일', value: 78 },
-]
+type StoreRow = { name: string; owner: string; sales: string; hygieneScore: number; risk: string }
 
-const alerts = [
-  { level: '긴급', tone: 'danger', title: '강남역점 위생 점검 필요', detail: 'AI 사진 분석에서 조리대 오염 가능성이 감지되었습니다.', time: '10분 전' },
-  { level: '주의', tone: 'warning', title: '연어 재고 부족 예상', detail: '내일 예상 사용량 대비 현재 재고가 18% 부족합니다.', time: '32분 전' },
-  { level: '안내', tone: 'info', title: '주간 매출 리포트 도착', detail: '전주 대비 전체 매출이 8.4% 증가했습니다.', time: '1시간 전' },
-]
+type OwnerOverviewData = {
+  management: { storeInfo: { storeName: string } }
+  hygiene: { hygieneSummary: { score: number; status: string; lastCheckedAt: string } }
+  orders: { orderSummary: { expectedSales: string; expectedOrders: number; requiredItems: number }; recommendedOrders: Array<{ id: number; item: string; currentStock: string; expectedUsage: string; recommendedQty: string; risk: string }> }
+  sales: { salesSummary: { todaySales: string; todayOrders: number }; hourlySales: Array<{ time: string; sales: number }> }
+}
 
-const stores = [
-  { name: '강남역점', owner: '김도윤', sales: '₩4,820,000', score: 72, risk: '높음', phone: '010-4820-1593', address: '서울 강남구 테헤란로 18길 12', opened: '2023. 04. 18', contract: '2027. 04. 17', orders: '582건', lastCheck: '오늘 09:40' },
-  { name: '성수점', owner: '이서준', sales: '₩5,140,000', score: 94, risk: '안전', phone: '010-7412-8850', address: '서울 성동구 연무장길 42', opened: '2022. 11. 02', contract: '2027. 11. 01', orders: '634건', lastCheck: '오늘 08:55' },
-  { name: '잠실점', owner: '박지우', sales: '₩3,760,000', score: 86, risk: '보통', phone: '010-3387-2140', address: '서울 송파구 올림픽로 35길 10', opened: '2024. 01. 12', contract: '2027. 01. 11', orders: '461건', lastCheck: '어제 18:20' },
-  { name: '여의도점', owner: '최하늘', sales: '₩4,250,000', score: 91, risk: '안전', phone: '010-9061-3724', address: '서울 영등포구 국제금융로 8길 16', opened: '2023. 08. 25', contract: '2026. 08. 24', orders: '518건', lastCheck: '오늘 10:15' },
-]
+type AdminOverviewData = {
+  stores: { adminStoreSummary: { totalStores: number }; adminStores: StoreRow[]; actionRequiredStores: Array<{ store: string; title: string; description: string; priority: string }> }
+  hygiene: { adminHygieneSummary: { checkedStores: number; pendingStores: number } }
+  sales: { adminSalesSummary: { todayTotalSales: string } }
+  risks: { riskSummary: { highRiskStores: number; warningStores: number; stableStores: number } }
+}
 
 function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
   const [role, setRole] = useState<Role>('owner')
@@ -321,7 +316,8 @@ function Metric({
   )
 }
 
-function SalesChart() {
+function SalesChart({ data }: { data: Array<{ time: string; sales: number }> }) {
+  const max = Math.max(...data.map((item) => Number(item.sales)), 1)
   return (
     <div className="chart-wrap">
       <div className="chart-scale">
@@ -333,12 +329,12 @@ function SalesChart() {
       </div>
 
       <div className="bar-chart">
-        {salesData.map((item, index) => (
-          <div className="bar-column" key={item.day}>
-            <div className="bar-value" style={{ height: `${item.value}%` }}>
-              {index === 5 && <span>₩1.92M</span>}
+        {data.map((item, index) => (
+          <div className="bar-column" key={`${item.time}-${index}`}>
+            <div className="bar-value" style={{ height: `${Math.max(4, Number(item.sales) / max * 100)}%` }}>
+              {index === data.length - 1 && <span>{item.sales}만</span>}
             </div>
-            <small>{item.day}</small>
+            <small>{item.time}</small>
           </div>
         ))}
       </div>
@@ -346,14 +342,19 @@ function SalesChart() {
   )
 }
 
-function OwnerOverview({ go }: { go: (p: Page) => void }) {
+function OwnerOverview({ go, storeId, name }: { go: (p: Page) => void; storeId: number; name: string }) {
+  const api = useApiData<OwnerOverviewData>(`/api/ui/stores/${storeId}/overview`)
+  if (!api.data) return <ApiDataState loading={api.loading} error={api.error} retry={api.retry} />
+  const { management, hygiene, orders, sales } = api.data
+  const recommendations = orders.recommendedOrders.slice(0, 3)
+  const ownerAlerts = recommendations.map((item) => ({ title: `${item.item} 발주 ${item.risk}`, time: item.recommendedQty }))
   return (
     <>
       <header className="page-heading">
         <div>
           <span className="kicker">2026년 7월 21일 화요일</span>
-          <h1>좋은 아침이에요, 김도윤 점주님</h1>
-          <p>강남역점의 오늘 운영 현황을 한눈에 확인하세요.</p>
+          <h1>좋은 아침이에요, {name} 점주님</h1>
+          <p>{management.storeInfo.storeName}의 오늘 운영 현황을 한눈에 확인하세요.</p>
         </div>
 
         <button className="primary-action" type="button" onClick={() => go('orders')}>
@@ -362,10 +363,10 @@ function OwnerOverview({ go }: { go: (p: Page) => void }) {
       </header>
 
       <section className="metrics-grid">
-        <Metric label="오늘 예상 매출" value="₩1,580,000" change="↑ 7.4% 어제보다" icon="sales" />
-        <Metric label="예상 주문" value="198건" change="↑ 12건 어제보다" icon="orders" tone="purple" />
-        <Metric label="위생 점수" value="92점" change="양호 · 최근 점검 09:40" icon="hygiene" tone="green" />
-        <Metric label="발주 필요 품목" value="2개" change="오늘 확인 필요" icon="bell" tone="orange" />
+        <Metric label="오늘 매출" value={sales.salesSummary.todaySales} change={`${sales.salesSummary.todayOrders}건 주문`} icon="sales" />
+        <Metric label="예상 주문" value={`${orders.orderSummary.expectedOrders}건`} change="MySQL 주문 집계" icon="orders" tone="purple" />
+        <Metric label="위생 점수" value={`${hygiene.hygieneSummary.score}점`} change={`${hygiene.hygieneSummary.status} · ${hygiene.hygieneSummary.lastCheckedAt}`} icon="hygiene" tone="green" />
+        <Metric label="발주 필요 품목" value={`${orders.orderSummary.requiredItems}개`} change="오늘 확인 필요" icon="bell" tone="orange" />
       </section>
 
       <section className="dashboard-grid">
@@ -378,12 +379,12 @@ function OwnerOverview({ go }: { go: (p: Page) => void }) {
             <button className="select-button" type="button">최근 7일⌄</button>
           </div>
 
-          <SalesChart />
+          <SalesChart data={sales.hourlySales} />
 
           <div className="chart-summary">
             <span>주간 누적 매출</span>
-            <strong>₩10,420,000</strong>
-            <em>+8.4%</em>
+            <strong>{sales.salesSummary.todaySales}</strong>
+            <em>{sales.salesSummary.todayOrders}건</em>
           </div>
         </article>
 
@@ -399,32 +400,7 @@ function OwnerOverview({ go }: { go: (p: Page) => void }) {
             </button>
           </div>
 
-          <div className="stock-item critical">
-            <div className="stock-icon">🐟</div>
-            <div>
-              <strong>연어</strong>
-              <span>현재 22L · 예상 28L</span>
-            </div>
-            <b>+16L</b>
-          </div>
-
-          <div className="stock-item">
-            <div className="stock-icon">🥚</div>
-            <div>
-              <strong>날치알</strong>
-              <span>현재 45개 · 예상 35개</span>
-            </div>
-            <b>+10개</b>
-          </div>
-
-          <div className="stock-item safe">
-            <div className="stock-icon">🍜</div>
-            <div>
-              <strong>메밀면</strong>
-              <span>현재 8.5kg · 예상 6.2kg</span>
-            </div>
-            <b>충분</b>
-          </div>
+          {recommendations.map((item) => <div className={`stock-item ${item.risk === '부족' ? 'critical' : item.risk === '안전' ? 'safe' : ''}`} key={item.id}><div className="stock-icon">📦</div><div><strong>{item.item}</strong><span>현재 {item.currentStock} · 예상 {item.expectedUsage}</span></div><b>{item.recommendedQty}</b></div>)}
 
           <button className="wide-button" type="button" onClick={() => go('orders')}>
             추천 수량으로 발주하기 <Icon name="arrow" size={17} />
@@ -442,13 +418,13 @@ function OwnerOverview({ go }: { go: (p: Page) => void }) {
 
           <div className="hygiene-score">
             <div className="score-ring">
-              <strong>92</strong>
+              <strong>{hygiene.hygieneSummary.score}</strong>
               <small>/ 100</small>
             </div>
 
             <div>
-              <strong>매장 상태가 양호해요</strong>
-              <p>마지막 AI 점검: 오늘 09:40</p>
+              <strong>매장 상태: {hygiene.hygieneSummary.status}</strong>
+              <p>마지막 점검: {hygiene.hygieneSummary.lastCheckedAt}</p>
 
               <div className="mini-checks">
                 <span><Icon name="check" size={15} />조리대</span>
@@ -469,12 +445,12 @@ function OwnerOverview({ go }: { go: (p: Page) => void }) {
               <span className="panel-label">NOTIFICATIONS</span>
               <h2>오늘의 알림</h2>
             </div>
-            <span className="count-badge">3</span>
+            <span className="count-badge">{ownerAlerts.length}</span>
           </div>
 
-          {alerts.slice(0, 2).map((alert) => (
+          {ownerAlerts.slice(0, 2).map((alert) => (
             <div className="mini-alert" key={alert.title}>
-              <span className={`alert-dot ${alert.tone}`}></span>
+              <span className="alert-dot warning"></span>
               <div>
                 <strong>{alert.title}</strong>
                 <small>{alert.time}</small>
@@ -488,13 +464,21 @@ function OwnerOverview({ go }: { go: (p: Page) => void }) {
 }
 
 function AdminOverview({ go }: { go: (p: Page) => void }) {
+  const api = useApiData<AdminOverviewData>('/api/ui/admin/overview')
+  if (!api.data) return <ApiDataState loading={api.loading} error={api.error} retry={api.retry} />
+  const { stores: storeData, hygiene, sales, risks } = api.data
+  const adminAlerts = storeData.actionRequiredStores.map((item) => ({
+    level: item.priority, tone: item.priority === '긴급' ? 'danger' : 'warning',
+    title: `${item.store} ${item.title}`, detail: item.description, time: '확인 필요',
+  }))
+  const totalStores = storeData.adminStoreSummary.totalStores
   return (
     <>
       <header className="page-heading">
         <div>
           <span className="kicker">HEADQUARTERS CONTROL CENTER</span>
           <h1>통합 운영 현황</h1>
-          <p>126개 가맹점의 핵심 지표와 위험 신호를 확인하세요.</p>
+          <p>{totalStores}개 가맹점의 핵심 지표와 위험 신호를 확인하세요.</p>
         </div>
 
         <button className="primary-action" type="button" onClick={() => go('stores')}>
@@ -503,10 +487,10 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
       </header>
 
       <section className="metrics-grid">
-        <Metric label="전체 가맹점" value="126개" change="+3개 이번 달" icon="stores" />
-        <Metric label="오늘 통합 매출" value="₩186.4M" change="↑ 8.4% 지난주 대비" icon="sales" tone="purple" />
-        <Metric label="위생 점검 완료" value="118 / 126" change="8개 매장 확인 필요" icon="hygiene" tone="green" />
-        <Metric label="위험 알림" value="7건" change="긴급 2 · 주의 5" icon="bell" tone="orange" />
+        <Metric label="전체 가맹점" value={`${totalStores}개`} change="MySQL 등록 매장" icon="stores" />
+        <Metric label="오늘 통합 매출" value={sales.adminSalesSummary.todayTotalSales} change="전체 주문 집계" icon="sales" tone="purple" />
+        <Metric label="위생 점검 완료" value={`${hygiene.adminHygieneSummary.checkedStores} / ${totalStores}`} change={`${hygiene.adminHygieneSummary.pendingStores}개 매장 확인 필요`} icon="hygiene" tone="green" />
+        <Metric label="위험 알림" value={`${risks.riskSummary.highRiskStores + risks.riskSummary.warningStores}건`} change={`긴급 ${risks.riskSummary.highRiskStores} · 주의 ${risks.riskSummary.warningStores}`} icon="bell" tone="orange" />
       </section>
 
       <section className="admin-grid">
@@ -519,7 +503,7 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
             <button className="link-button" type="button">모두 읽음</button>
           </div>
 
-          {alerts.map((alert) => (
+          {adminAlerts.map((alert) => (
             <div className="alert-row" key={alert.title}>
               <span className={`alert-level ${alert.tone}`}>{alert.level}</span>
               <div>
@@ -541,15 +525,15 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
 
           <div className="donut">
             <div>
-              <strong>126</strong>
+              <strong>{totalStores}</strong>
               <span>전체 매장</span>
             </div>
           </div>
 
           <div className="legend">
-            <span><i className="safe"></i>안전 <b>102</b></span>
-            <span><i className="warning"></i>주의 <b>17</b></span>
-            <span><i className="danger"></i>위험 <b>7</b></span>
+            <span><i className="safe"></i>안전 <b>{risks.riskSummary.stableStores}</b></span>
+            <span><i className="warning"></i>주의 <b>{risks.riskSummary.warningStores}</b></span>
+            <span><i className="danger"></i>위험 <b>{risks.riskSummary.highRiskStores}</b></span>
           </div>
 
           <button className="outline-button" type="button" onClick={() => go('stores')}>
@@ -569,7 +553,7 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
             </button>
           </div>
 
-          <StoreTable compact />
+          <StoreTable stores={storeData.adminStores} compact />
         </article>
       </section>
     </>
@@ -577,12 +561,14 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
 }
 
 function StoreTable({
+  stores,
   compact = false,
   onSelect,
   selected,
 }: {
+  stores: StoreRow[]
   compact?: boolean
-  onSelect?: (store: typeof stores[number]) => void
+  onSelect?: (store: StoreRow) => void
   selected?: string
 }) {
   const shown = compact ? stores.slice(0, 3) : stores
@@ -614,7 +600,7 @@ function StoreTable({
               </td>
               <td>{store.owner}</td>
               <td>{store.sales}</td>
-              <td><b>{store.score}</b>점</td>
+              <td><b>{store.hygieneScore}</b>점</td>
               <td>
                 <span className={`risk-tag ${store.risk === '높음' ? 'high' : store.risk === '보통' ? 'medium' : 'low'}`}>
                   {store.risk}
@@ -640,7 +626,7 @@ function StoreTable({
   )
 }
 
-function ModulePage({ page, role }: { page: Page; role: Role }) {
+function ModulePage({ page, role, account }: { page: Page; role: Role; account: LoginResponse }) {
   const content = useMemo(() => ({
     stores: {
       kicker: 'FRANCHISE NETWORK',
@@ -684,7 +670,7 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
   })[page], [page, role])
 
   if (role === 'owner' && page === 'stores') {
-    return <StoreManagement />
+    return account.storeId ? <StoreManagement storeId={account.storeId} /> : <UnlinkedStore />
   }
 
   if (role === 'admin' && page === 'stores') {
@@ -692,7 +678,7 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
   }
 
   if (role === 'owner' && page === 'hygiene') {
-    return <HygieneCheck />
+    return account.storeId ? <HygieneCheck storeId={account.storeId} /> : <UnlinkedStore />
   }
 
   if (role === 'admin' && page === 'hygiene') {
@@ -700,7 +686,7 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
   }
 
   if (role === 'owner' && page === 'sales') {
-    return <StoreSalesStatus />
+    return account.storeId ? <StoreSalesStatus storeId={account.storeId} /> : <UnlinkedStore />
   }
 
   if (role === 'admin' && page === 'sales') {
@@ -712,7 +698,7 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
   }
 
   if (role === 'owner' && page === 'orders') {
-    return <StoreSalesOrder />
+    return account.storeId ? <StoreSalesOrder storeId={account.storeId} /> : <UnlinkedStore />
   }
 
   if (page === 'board') {
@@ -727,7 +713,9 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
         </header>
 
         <BoardPage
-          userName={role === 'admin' ? '본사 운영팀' : '강남점 김점주'}
+          userId={account.userId}
+          storeId={account.storeId}
+          userName={account.name}
           isAdmin={role === 'admin'}
         />
       </>
@@ -812,6 +800,10 @@ function ModulePage({ page, role }: { page: Page; role: Role }) {
   )
 }
 
+function UnlinkedStore() {
+  return <section className="panel full-module"><h2>연결된 매장이 없습니다</h2><p>이 계정에 매장이 배정되면 MySQL의 운영 데이터를 확인할 수 있습니다.</p></section>
+}
+
 function App() {
   const [account, setAccount] = useState<LoginResponse | null>(null)
   const [page, setPage] = useState<Page>('overview')
@@ -869,8 +861,10 @@ function App() {
           {page === 'overview'
             ? role === 'admin'
               ? <AdminOverview go={setPage} />
-              : <OwnerOverview go={setPage} />
-            : <ModulePage page={page} role={role} />}
+              : account.storeId
+                ? <OwnerOverview go={setPage} storeId={account.storeId} name={account.name} />
+                : <UnlinkedStore />
+            : <ModulePage page={page} role={role} account={account} />}
         </main>
       </div>
     </div>
