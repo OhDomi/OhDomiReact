@@ -1,3 +1,4 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "")
 export type BoardType = 'NOTICE' | 'INQUIRY'
 
 export type BoardPost = {
@@ -31,7 +32,7 @@ export type CreateBoardPost = {
 type ApiRequest = { method?: string; headers?: Record<string, string>; body?: string }
 
 async function api<T>(path: string, init?: ApiRequest): Promise<T> {
-  const response = await fetch(path, init)
+  const response = await fetch(`${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`, init)
   if (!response.ok) {
     const body = await response.json().catch(() => ({})) as { message?: string }
     throw new Error(body.message ?? '게시판 요청에 실패했습니다.')

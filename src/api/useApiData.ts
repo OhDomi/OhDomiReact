@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "")
 
 type ApiDataState<T> = {
   data: T | null
@@ -20,7 +21,7 @@ export function useApiData<T>(path: string): ApiDataState<T> {
     setLoading(true)
     setError('')
 
-    fetch(path, { signal: controller.signal })
+    fetch(`${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`, { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) {
           const body = (await response.json().catch(() => ({}))) as { message?: string }
