@@ -30,7 +30,7 @@ function AdminHygieneCheck() {
   if (!api.data || !selectedStore) {
     return <ApiDataState loading={api.loading || !selectedStore} error={api.error} retry={api.retry} />
   }
-  const { adminHygieneSummary, hygieneActions, hygieneStoreList, hygieneTrend, reviewQueue } = api.data
+  const { hygieneActions, hygieneStoreList, hygieneTrend, reviewQueue } = api.data
 
   return (
     <div className="admin-hygiene-page">
@@ -46,43 +46,33 @@ function AdminHygieneCheck() {
         </button>
       </header>
 
-      <section className="admin-hygiene-summary">
-        <article className="metric-card">
-          <div className="admin-hygiene-icon green">✓</div>
+      <article className="panel admin-hygiene-wide" style={{ marginBottom: '18px' }}>
+        <div className="panel-head">
           <div>
-            <span>점검 완료</span>
-            <strong>{adminHygieneSummary.checkedStores}개</strong>
-            <small>전체 {adminHygieneSummary.totalStores}개 매장</small>
+            <span className="panel-label">ACTION REQUIRED</span>
+            <h2>본사 조치 필요 항목</h2>
           </div>
-        </article>
+        </div>
 
-        <article className="metric-card">
-          <div className="admin-hygiene-icon orange">!</div>
-          <div>
-            <span>점검 대기</span>
-            <strong>{adminHygieneSummary.pendingStores}개</strong>
-            <small>오늘 중 확인 필요</small>
-          </div>
-        </article>
+        <div className="hygiene-action-list">
+          {hygieneActions.map((item) => (
+            <div className="hygiene-action-card" key={item.action + item.store}>
+              <span className={`action-priority ${item.priority === '긴급' ? 'danger' : 'warning'}`}>
+                {item.priority}
+              </span>
 
-        <article className="metric-card">
-          <div className="admin-hygiene-icon danger">!</div>
-          <div>
-            <span>긴급 매장</span>
-            <strong>{adminHygieneSummary.dangerStores}개</strong>
-            <small>본사 조치 필요</small>
-          </div>
-        </article>
+              <div>
+                <strong>{item.store} · {item.action}</strong>
+                <p>{item.description}</p>
+              </div>
 
-        <article className="metric-card">
-          <div className="admin-hygiene-icon purple">AI</div>
-          <div>
-            <span>평균 위생 점수</span>
-            <strong>{adminHygieneSummary.averageScore}점</strong>
-            <small>지난주보다 +1.8점</small>
-          </div>
-        </article>
-      </section>
+              <button className="detail-button" type="button">
+                처리
+              </button>
+            </div>
+          ))}
+        </div>
+      </article>
 
       <section className="admin-hygiene-layout">
         <article className="panel admin-hygiene-table-panel">
@@ -237,34 +227,6 @@ function AdminHygieneCheck() {
         <article className="panel admin-hygiene-wide">
           <div className="panel-head">
             <div>
-              <span className="panel-label">ACTION REQUIRED</span>
-              <h2>본사 조치 필요 항목</h2>
-            </div>
-          </div>
-
-          <div className="hygiene-action-list">
-            {hygieneActions.map((item) => (
-              <div className="hygiene-action-card" key={item.action + item.store}>
-                <span className={`action-priority ${item.priority === '긴급' ? 'danger' : 'warning'}`}>
-                  {item.priority}
-                </span>
-
-                <div>
-                  <strong>{item.store} · {item.action}</strong>
-                  <p>{item.description}</p>
-                </div>
-
-                <button className="detail-button" type="button">
-                  처리
-                </button>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="panel admin-hygiene-wide">
-          <div className="panel-head">
-            <div>
               <span className="panel-label">SCORE TREND</span>
               <h2>전체 위생 점수 추이</h2>
             </div>
@@ -276,7 +238,7 @@ function AdminHygieneCheck() {
                 <div className="trend-bar-wrap">
                   <div
                     className="trend-bar"
-                    style={{ height: `${item.score}%` }}
+                    style={{ height: `${Math.min(item.score, 100)}%` }}
                   >
                     <span>{item.score}</span>
                   </div>

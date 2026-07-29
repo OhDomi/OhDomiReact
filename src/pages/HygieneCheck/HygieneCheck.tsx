@@ -34,34 +34,37 @@ function HygieneCheck({ storeId }: { storeId: number }) {
         </button>
       </header>
 
-      <section className="hygiene-summary-grid">
-        <article className="metric-card">
-          <div className="hygiene-metric-icon green">✓</div>
+      <article className="panel wide-panel" style={{ marginBottom: '18px' }}>
+        <div className="panel-head">
           <div>
-            <span>오늘 위생 점수</span>
-            <strong>{hygieneSummary.score}점</strong>
-            <small>{hygieneSummary.status} · 최근 점검 {hygieneSummary.lastCheckedAt}</small>
+            <span className="panel-label">IMPROVEMENT TASKS</span>
+            <h2>개선 필요 항목</h2>
           </div>
-        </article>
 
-        <article className="metric-card">
-          <div className="hygiene-metric-icon purple">📷</div>
-          <div>
-            <span>업로드 사진</span>
-            <strong>{hygieneSummary.uploadedImages}장</strong>
-            <small>조리대, 냉장고, 홀 사진 분석 완료</small>
-          </div>
-        </article>
+          <button className="outline-button compact-button" type="button">
+            재점검 요청
+          </button>
+        </div>
 
-        <article className="metric-card">
-          <div className="hygiene-metric-icon orange">!</div>
-          <div>
-            <span>개선 필요 항목</span>
-            <strong>{hygieneSummary.issueCount}개</strong>
-            <small>바닥 및 홀 정리 상태 확인 필요</small>
-          </div>
-        </article>
-      </section>
+        <div className="improvement-list">
+          {improvementTasks.map((task) => (
+            <div className="improvement-card" key={task.title}>
+              <span className={`task-priority ${task.priority === '주의' ? 'warning' : 'info'}`}>
+                {task.priority}
+              </span>
+
+              <div>
+                <strong>{task.title}</strong>
+                <p>{task.description}</p>
+              </div>
+
+              <button className="detail-button" type="button">
+                확인
+              </button>
+            </div>
+          ))}
+        </div>
+      </article>
 
       <section className="hygiene-layout">
         <article className="panel upload-panel advanced-upload">
@@ -146,45 +149,13 @@ function HygieneCheck({ storeId }: { storeId: number }) {
                 </div>
 
                 <div className="hygiene-progress">
-                  <div style={{ width: `${item.score}%` }}></div>
+                  <div style={{ width: `${Math.min(item.score, 100)}%` }}></div>
                 </div>
 
                 <div className="hygiene-item-bottom">
                   <span>{item.score}점</span>
                   <p>{item.memo}</p>
                 </div>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="panel wide-panel">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">IMPROVEMENT TASKS</span>
-              <h2>개선 필요 항목</h2>
-            </div>
-
-            <button className="outline-button compact-button" type="button">
-              재점검 요청
-            </button>
-          </div>
-
-          <div className="improvement-list">
-            {improvementTasks.map((task) => (
-              <div className="improvement-card" key={task.title}>
-                <span className={`task-priority ${task.priority === '주의' ? 'warning' : 'info'}`}>
-                  {task.priority}
-                </span>
-
-                <div>
-                  <strong>{task.title}</strong>
-                  <p>{task.description}</p>
-                </div>
-
-                <button className="detail-button" type="button">
-                  확인
-                </button>
               </div>
             ))}
           </div>

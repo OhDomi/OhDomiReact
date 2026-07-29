@@ -30,7 +30,7 @@ function AdminRiskPrediction() {
   if (!api.data || !selectedStore) {
     return <ApiDataState loading={api.loading || !selectedStore} error={api.error} retry={api.retry} />
   }
-  const { aiRecommendations, riskFactors, riskStores, riskSummary, riskTrend } = api.data
+  const { aiRecommendations, riskFactors, riskStores, riskTrend } = api.data
 
   return (
     <div className="admin-risk-page">
@@ -46,45 +46,61 @@ function AdminRiskPrediction() {
         </button>
       </header>
 
-      <section className="admin-risk-summary">
-        <article className="metric-card">
-          <div className="admin-risk-icon">🏪</div>
-          <div>
-            <span>전체 가맹점</span>
-            <strong>{riskSummary.totalStores}개</strong>
-            <small>AI 분석 대상</small>
-          </div>
-        </article>
-
-        <article className="metric-card">
-          <div className="admin-risk-icon danger">!</div>
-          <div>
-            <span>고위험 매장</span>
-            <strong>{riskSummary.highRiskStores}개</strong>
-            <small>본사 조치 필요</small>
-          </div>
-        </article>
-
-        <article className="metric-card">
-          <div className="admin-risk-icon orange">!</div>
-          <div>
-            <span>주의 매장</span>
-            <strong>{riskSummary.warningStores}개</strong>
-            <small>추적 관찰 필요</small>
-          </div>
-        </article>
-
-        <article className="metric-card">
-          <div className="admin-risk-icon green">✓</div>
-          <div>
-            <span>안정 매장</span>
-            <strong>{riskSummary.stableStores}개</strong>
-            <small>평균 리스크 {riskSummary.averageRiskScore}점</small>
-          </div>
-        </article>
-      </section>
-
       <section className="admin-risk-layout">
+        <article className="panel ai-risk-panel">
+          <div className="panel-head">
+            <div>
+              <span className="panel-label">AI ACTION RECOMMENDATION</span>
+              <h2>AI 조치 추천</h2>
+            </div>
+          </div>
+
+          <div className="ai-risk-list">
+            {aiRecommendations.map((item) => (
+              <div className="ai-risk-card" key={item.title}>
+                <span className={`ai-risk-priority ${item.priority === '긴급' ? 'danger' : 'warning'}`}>
+                  {item.priority}
+                </span>
+
+                <div>
+                  <strong>{item.title}</strong>
+                  <p>{item.description}</p>
+                </div>
+
+                <button className="detail-button" type="button">
+                  실행
+                </button>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel risk-factors-panel">
+          <div className="panel-head">
+            <div>
+              <span className="panel-label">RISK FACTORS</span>
+              <h2>리스크 요인 분석</h2>
+            </div>
+          </div>
+
+          <div className="risk-factor-grid">
+            {riskFactors.map((item) => (
+              <div className="risk-factor-card" key={item.factor}>
+                <div className="risk-factor-top">
+                  <strong>{item.factor}</strong>
+                  <b>{item.weight}%</b>
+                </div>
+
+                <div className="risk-factor-progress">
+                  <div style={{ width: `${Math.min(item.weight, 100)}%` }}></div>
+                </div>
+
+                <p>{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+
         <article className="panel admin-risk-table-panel">
           <div className="panel-head">
             <div>
@@ -205,32 +221,6 @@ function AdminRiskPrediction() {
           </div>
         </aside>
 
-        <article className="panel admin-risk-wide">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">RISK FACTORS</span>
-              <h2>리스크 요인 분석</h2>
-            </div>
-          </div>
-
-          <div className="risk-factor-grid">
-            {riskFactors.map((item) => (
-              <div className="risk-factor-card" key={item.factor}>
-                <div className="risk-factor-top">
-                  <strong>{item.factor}</strong>
-                  <b>{item.weight}%</b>
-                </div>
-
-                <div className="risk-factor-progress">
-                  <div style={{ width: `${item.weight}%` }}></div>
-                </div>
-
-                <p>{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-
         <article className="panel risk-trend-panel">
           <div className="panel-head">
             <div>
@@ -261,34 +251,6 @@ function AdminRiskPrediction() {
           <div className="risk-trend-legend">
             <span><i className="danger"></i>고위험</span>
             <span><i className="warning"></i>주의</span>
-          </div>
-        </article>
-
-        <article className="panel ai-risk-panel">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">AI ACTION RECOMMENDATION</span>
-              <h2>AI 조치 추천</h2>
-            </div>
-          </div>
-
-          <div className="ai-risk-list">
-            {aiRecommendations.map((item) => (
-              <div className="ai-risk-card" key={item.title}>
-                <span className={`ai-risk-priority ${item.priority === '긴급' ? 'danger' : 'warning'}`}>
-                  {item.priority}
-                </span>
-
-                <div>
-                  <strong>{item.title}</strong>
-                  <p>{item.description}</p>
-                </div>
-
-                <button className="detail-button" type="button">
-                  실행
-                </button>
-              </div>
-            ))}
           </div>
         </article>
       </section>

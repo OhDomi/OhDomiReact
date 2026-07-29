@@ -253,8 +253,9 @@
 
 .sales-insight-list {
   display: grid;
-  gap: 12px;
-  margin-top: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+  margin-top: 20px;
 }
 
 .sales-insight-card {
@@ -322,4 +323,72 @@
     overflow-x: auto;
     grid-template-columns: repeat(12, 38px);
   }
+}
+
+.target-ring {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+  border: 14px solid var(--purple-soft);
+  border-top-color: var(--purple);
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.target-ring strong {
+  color: var(--navy);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.target-ring span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.order-reflect-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--panel-soft, #f6f7fb);
+  margin-top: 20px;
+}
+
+.order-reflect-box > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.order-reflect-box > div:last-child > strong {
+  font-size: 12px;
+  color: var(--muted, #8a90a6);
+  font-weight: 600;
+}
+
+.order-reflect-box > div:last-child > b {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy, #1f2440);
+}
+
+.order-reflect-box > div:last-child > p {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted, #8a90a6);
+  line-height: 1.5;
+}
+
+.order-sheet-panel .full-width {
+  width: 100%;
+  padding: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 12px;
+  margin-top: 14px;
 }

@@ -1,48 +1,29 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import './StoreSalesOrder.css'
-import type {
+import {
   aiOrderInsights,
   orderSummary,
   recentOrders,
   recommendedOrders,
 } from './storeSalesOrderDummy'
-import { useApiData } from '../../api/useApiData'
-import ApiDataState from '../../api/ApiDataState'
 
-type OrderData = {
-  aiOrderInsights: typeof aiOrderInsights
-  orderSummary: typeof orderSummary
-  recentOrders: typeof recentOrders
-  recommendedOrders: typeof recommendedOrders
+const reasonTypeMap: Record<string, string> = {
+  부족: 'danger',
+  주의: 'warning',
+  안전: 'positive',
 }
-type RecommendedOrder = (typeof recommendedOrders)[number]
 
-function StoreSalesOrder({ storeId }: { storeId: number }) {
-  const api = useApiData<OrderData>(`/api/ui/stores/${storeId}/orders`)
-  const [orderItems, setOrderItems] = useState<RecommendedOrder[]>([])
-
-  useEffect(() => {
-    if (api.data) setOrderItems(api.data.recommendedOrders)
-  }, [api.data])
-
-  const selectedItems = useMemo(
-    () => orderItems.filter((item) => item.recommendedQty !== '0kg'),
-    [orderItems],
+function StoreSalesOrder({ storeId: _storeId }: { storeId: number }) {
+  const [quantities, setQuantities] = useState<Record<number, string>>(() =>
+    recommendedOrders.reduce((acc, item) => ({ ...acc, [item.id]: item.recommendedQty }), {}),
   )
 
-  if (!api.data) return <ApiDataState loading={api.loading} error={api.error} retry={api.retry} />
-  const { aiOrderInsights, orderSummary, recentOrders } = api.data
-
-  function updateQuantity(id: number, value: string) {
-    setOrderItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, recommendedQty: value } : item,
-      ),
-    )
-  }
+  const selectedOrders = recommendedOrders.filter(
+    (item) => quantities[item.id] !== '0kg' && quantities[item.id] !== '0개',
+  )
 
   return (
-    <div className="store-order-page">
+    <div className="order-page">
       <header className="page-heading">
         <div>
           <span className="kicker">SMART ORDER MANAGEMENT</span>
@@ -55,46 +36,54 @@ function StoreSalesOrder({ storeId }: { storeId: number }) {
         </button>
       </header>
 
-      <section className="order-summary-grid">
-        <article className="metric-card">
-          <div className="order-metric-icon">₩</div>
-          <div>
-            <span>내일 예상 매출</span>
-            <strong>{orderSummary.expectedSales}</strong>
-            <small>전일 대비 +7.4%</small>
+      <section className="order-insight-layout">
+        <article className="panel">
+          <div className="panel-head">
+            <div>
+              <span className="panel-label">AI INSIGHTS</span>
+              <h2>AI 발주 인사이트</h2>
+            </div>
+          </div>
+
+          <div className="order-insight-list">
+            {aiOrderInsights.map((insight) => (
+              <div className="order-insight-card" key={insight.title}>
+                <span className={`insight-dot ${insight.type}`}></span>
+
+                <div>
+                  <strong>{insight.title}</strong>
+                  <p>{insight.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </article>
 
-        <article className="metric-card">
-          <div className="order-metric-icon purple">#</div>
-          <div>
-            <span>예상 주문 수</span>
-            <strong>{orderSummary.expectedOrders}건</strong>
-            <small>점심 피크 주문 증가 예상</small>
+        <article className="panel">
+          <div className="panel-head">
+            <div>
+              <span className="panel-label">WHY RECOMMENDED</span>
+              <h2>품목별 추천 사유</h2>
+            </div>
           </div>
-        </article>
 
-        <article className="metric-card">
-          <div className="order-metric-icon orange">!</div>
-          <div>
-            <span>발주 필요 품목</span>
-            <strong>{orderSummary.requiredItems}개</strong>
-            <small>연어, 포장 용기 확인 필요</small>
-          </div>
-        </article>
+          <div className="order-reason-list">
+            {recommendedOrders.map((item) => (
+              <div className="order-reason-card" key={item.id}>
+                <span className={`reason-dot ${reasonTypeMap[item.risk] ?? 'positive'}`}></span>
 
-        <article className="metric-card">
-          <div className="order-metric-icon green">✓</div>
-          <div>
-            <span>예상 발주 금액</span>
-            <strong>{orderSummary.estimatedAmount}</strong>
-            <small>AI 추천 기준</small>
+                <div>
+                  <strong>{item.item}</strong>
+                  <p>{item.reason}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </article>
       </section>
 
       <section className="order-layout">
-        <article className="panel order-recommend-panel">
+        <article className="panel">
           <div className="panel-head">
             <div>
               <span className="panel-label">AI RECOMMENDATION</span>
@@ -107,7 +96,7 @@ function StoreSalesOrder({ storeId }: { storeId: number }) {
           </div>
 
           <div className="table-scroll">
-            <table className="data-table order-table">
+            <table className="data-table">
               <thead>
                 <tr>
                   <th>품목</th>
@@ -120,15 +109,13 @@ function StoreSalesOrder({ storeId }: { storeId: number }) {
               </thead>
 
               <tbody>
-                {orderItems.map((item) => (
+                {recommendedOrders.map((item) => (
                   <tr key={item.id}>
                     <td>
+                      <span className="store-avatar">{item.item[0]}</span>
                       <div className="order-item-name">
-                        <span>{item.item[0]}</span>
-                        <div>
-                          <strong>{item.item}</strong>
-                          <small>{item.category}</small>
-                        </div>
+                        <strong>{item.item}</strong>
+                        <small>{item.category}</small>
                       </div>
                     </td>
                     <td>{item.currentStock}</td>
@@ -136,13 +123,15 @@ function StoreSalesOrder({ storeId }: { storeId: number }) {
                     <td>
                       <input
                         className="order-qty-input"
-                        value={item.recommendedQty}
-                        onChange={(event) => updateQuantity(item.id, event.target.value)}
+                        value={quantities[item.id]}
+                        onChange={(event) =>
+                          setQuantities((prev) => ({ ...prev, [item.id]: event.target.value }))
+                        }
                       />
                     </td>
                     <td>{item.amount}</td>
                     <td>
-                      <span className={`order-risk ${getRiskClass(item.risk)}`}>
+                      <span className={`order-status ${getStatusClass(item.risk)}`}>
                         {item.risk}
                       </span>
                     </td>
@@ -153,7 +142,7 @@ function StoreSalesOrder({ storeId }: { storeId: number }) {
           </div>
         </article>
 
-        <aside className="panel order-cart-panel">
+        <aside className="panel order-sheet-panel">
           <div className="panel-head">
             <div>
               <span className="panel-label">ORDER SHEET</span>
@@ -161,25 +150,25 @@ function StoreSalesOrder({ storeId }: { storeId: number }) {
             </div>
           </div>
 
-          <div className="order-sheet-box">
-            <div className="order-sheet-rate">
+          <div className="order-reflect-box">
+            <div className="target-ring">
               <strong>{orderSummary.autoOrderRate}%</strong>
               <span>AI 추천 반영률</span>
             </div>
 
-            <div className="order-sheet-info">
-              <span>선택된 품목</span>
-              <strong>{selectedItems.length}개</strong>
+            <div>
+              <strong>선택된 품목</strong>
+              <b>{orderSummary.requiredItems}개</b>
               <p>추천 수량을 수정한 뒤 발주 요청을 보낼 수 있습니다.</p>
             </div>
           </div>
 
           <div className="order-sheet-list">
-            {selectedItems.map((item) => (
+            {selectedOrders.map((item) => (
               <div className="order-sheet-item" key={item.id}>
                 <div>
                   <strong>{item.item}</strong>
-                  <span>{item.recommendedQty}</span>
+                  <small>{quantities[item.id]}</small>
                 </div>
                 <b>{item.amount}</b>
               </div>
@@ -191,56 +180,12 @@ function StoreSalesOrder({ storeId }: { storeId: number }) {
             <strong>{orderSummary.estimatedAmount}</strong>
           </div>
 
-          <button className="primary-action order-submit-button" type="button">
+          <button className="primary-action full-width" type="button">
             발주 요청 보내기
           </button>
         </aside>
 
-        <article className="panel order-reason-panel">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">WHY RECOMMENDED</span>
-              <h2>품목별 추천 사유</h2>
-            </div>
-          </div>
-
-          <div className="order-reason-list">
-            {orderItems.slice(0, 4).map((item) => (
-              <div className="order-reason-card" key={item.id}>
-                <span className={`order-reason-dot ${getRiskClass(item.risk)}`}></span>
-
-                <div>
-                  <strong>{item.item}</strong>
-                  <p>{item.reason}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="panel order-insight-panel">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">AI INSIGHTS</span>
-              <h2>AI 발주 인사이트</h2>
-            </div>
-          </div>
-
-          <div className="order-insight-list">
-            {aiOrderInsights.map((insight) => (
-              <div className="order-insight-card" key={insight.title}>
-                <span className={`order-insight-dot ${insight.type}`}></span>
-
-                <div>
-                  <strong>{insight.title}</strong>
-                  <p>{insight.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="panel order-wide-panel">
+        <article className="panel order-wide">
           <div className="panel-head">
             <div>
               <span className="panel-label">RECENT ORDERS</span>
@@ -268,13 +213,11 @@ function StoreSalesOrder({ storeId }: { storeId: number }) {
                 {recentOrders.map((order) => (
                   <tr key={order.orderNo}>
                     <td>{order.date}</td>
-                    <td>
-                      <strong>{order.orderNo}</strong>
-                    </td>
+                    <td>{order.orderNo}</td>
                     <td>{order.items}</td>
                     <td>{order.amount}</td>
                     <td>
-                      <span className={`order-status ${getOrderStatusClass(order.status)}`}>
+                      <span className={`order-state ${getRecentStatusClass(order.status)}`}>
                         {order.status}
                       </span>
                     </td>
@@ -289,16 +232,16 @@ function StoreSalesOrder({ storeId }: { storeId: number }) {
   )
 }
 
-function getRiskClass(risk: string) {
+function getStatusClass(risk: string) {
   if (risk === '부족') return 'danger'
   if (risk === '주의') return 'warning'
   return 'safe'
 }
 
-function getOrderStatusClass(status: string) {
-  if (status === '작성중') return 'draft'
-  if (status === '배송중') return 'shipping'
-  return 'done'
+function getRecentStatusClass(status: string) {
+  if (status === '입고완료') return 'safe'
+  if (status === '배송중') return 'warning'
+  return 'info'
 }
 
 export default StoreSalesOrder

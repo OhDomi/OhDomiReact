@@ -28,7 +28,7 @@ function AdminStoreManagement() {
   if (!api.data || !selectedStore) {
     return <ApiDataState loading={api.loading || !selectedStore} error={api.error} retry={api.retry} />
   }
-  const { actionRequiredStores, adminStoreSummary, adminStores, regionStats } = api.data
+  const { actionRequiredStores, adminStores, regionStats } = api.data
 
   return (
     <div className="admin-store-page">
@@ -44,43 +44,37 @@ function AdminStoreManagement() {
         </button>
       </header>
 
-      <section className="admin-store-summary">
-        <article className="metric-card">
-          <div className="admin-store-icon">🏪</div>
+      <article className="panel wide-panel" style={{ marginBottom: '18px' }}>
+        <div className="panel-head">
           <div>
-            <span>전체 가맹점</span>
-            <strong>{adminStoreSummary.totalStores}개</strong>
-            <small>운영 중 {adminStoreSummary.activeStores}개</small>
+            <span className="panel-label">ACTION REQUIRED</span>
+            <h2>본사 조치 필요 항목</h2>
           </div>
-        </article>
 
-        <article className="metric-card">
-          <div className="admin-store-icon danger">!</div>
-          <div>
-            <span>위험 매장</span>
-            <strong>{adminStoreSummary.riskStores}개</strong>
-            <small>긴급 확인 필요</small>
-          </div>
-        </article>
+          <button className="select-button" type="button">
+            우선순위순
+          </button>
+        </div>
 
-        <article className="metric-card">
-          <div className="admin-store-icon orange">✓</div>
-          <div>
-            <span>점검 대기</span>
-            <strong>{adminStoreSummary.pendingInspections}개</strong>
-            <small>오늘 중 확인 필요</small>
-          </div>
-        </article>
+        <div className="action-store-list">
+          {actionRequiredStores.map((item) => (
+            <div className="action-store-card" key={item.title}>
+              <span className={`action-priority ${item.priority === '긴급' ? 'danger' : 'warning'}`}>
+                {item.priority}
+              </span>
 
-        <article className="metric-card">
-          <div className="admin-store-icon purple">D</div>
-          <div>
-            <span>계약 만료 예정</span>
-            <strong>{adminStoreSummary.contractExpiring}개</strong>
-            <small>30일 이내 만료</small>
-          </div>
-        </article>
-      </section>
+              <div>
+                <strong>{item.store} · {item.title}</strong>
+                <p>{item.description}</p>
+              </div>
+
+              <button className="detail-button" type="button">
+                처리
+              </button>
+            </div>
+          ))}
+        </div>
+      </article>
 
       <section className="admin-store-layout">
         <article className="panel admin-store-table-panel">
@@ -195,38 +189,6 @@ function AdminStoreManagement() {
             </button>
           </div>
         </aside>
-
-        <article className="panel wide-panel">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">ACTION REQUIRED</span>
-              <h2>본사 조치 필요 항목</h2>
-            </div>
-
-            <button className="select-button" type="button">
-              우선순위순
-            </button>
-          </div>
-
-          <div className="action-store-list">
-            {actionRequiredStores.map((item) => (
-              <div className="action-store-card" key={item.title}>
-                <span className={`action-priority ${item.priority === '긴급' ? 'danger' : 'warning'}`}>
-                  {item.priority}
-                </span>
-
-                <div>
-                  <strong>{item.store} · {item.title}</strong>
-                  <p>{item.description}</p>
-                </div>
-
-                <button className="detail-button" type="button">
-                  처리
-                </button>
-              </div>
-            ))}
-          </div>
-        </article>
 
         <article className="panel wide-panel">
           <div className="panel-head">

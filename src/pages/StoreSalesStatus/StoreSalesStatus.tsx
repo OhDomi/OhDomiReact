@@ -36,45 +36,29 @@ function StoreSalesStatus({ storeId }: { storeId: number }) {
         </button>
       </header>
 
-      <section className="sales-status-summary">
-        <article className="metric-card">
-          <div className="sales-metric-icon">₩</div>
-          <div>
-            <span>오늘 매출</span>
-            <strong>{salesSummary.todaySales}</strong>
-            <small>어제보다 +7.4%</small>
-          </div>
-        </article>
-
-        <article className="metric-card">
-          <div className="sales-metric-icon purple">#</div>
-          <div>
-            <span>오늘 주문</span>
-            <strong>{salesSummary.todayOrders}건</strong>
-            <small>어제보다 +12건</small>
-          </div>
-        </article>
-
-        <article className="metric-card">
-          <div className="sales-metric-icon green">◎</div>
-          <div>
-            <span>평균 객단가</span>
-            <strong>{salesSummary.averageOrderPrice}</strong>
-            <small>전주보다 +1.2%</small>
-          </div>
-        </article>
-
-        <article className="metric-card">
-          <div className="sales-metric-icon orange">%</div>
-          <div>
-            <span>월 목표 달성률</span>
-            <strong>{salesSummary.targetRate}%</strong>
-            <small>{salesSummary.monthlySales} / {salesSummary.monthlyTarget}</small>
-          </div>
-        </article>
-      </section>
-
       <section className="sales-status-layout">
+        <article className="panel wide-panel insight-panel">
+          <div className="panel-head">
+            <div>
+              <span className="panel-label">AI INSIGHTS</span>
+              <h2>AI 매출 인사이트</h2>
+            </div>
+          </div>
+
+          <div className="sales-insight-list">
+            {aiInsights.map((insight) => (
+              <div className="sales-insight-card" key={insight.title}>
+                <span className={`insight-dot ${insight.type}`}></span>
+
+                <div>
+                  <strong>{insight.title}</strong>
+                  <p>{insight.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+
         <article className="panel sales-chart-panel">
           <div className="panel-head">
             <div>
@@ -129,7 +113,7 @@ function StoreSalesStatus({ storeId }: { storeId: number }) {
           </div>
 
           <div className="target-progress">
-            <div style={{ width: `${salesSummary.targetRate}%` }}></div>
+            <div style={{ width: `${Math.min(salesSummary.targetRate, 100)}%` }}></div>
           </div>
         </article>
 
@@ -182,7 +166,7 @@ function StoreSalesStatus({ storeId }: { storeId: number }) {
           </div>
         </article>
 
-        <article className="panel channel-panel">
+        <article className="panel channel-panel wide-panel">
           <div className="panel-head">
             <div>
               <span className="panel-label">SALES CHANNEL</span>
@@ -199,32 +183,10 @@ function StoreSalesStatus({ storeId }: { storeId: number }) {
                 </div>
 
                 <div className="channel-progress">
-                  <div style={{ width: `${item.rate}%` }}></div>
+                  <div style={{ width: `${Math.min(item.rate, 100)}%` }}></div>
                 </div>
 
                 <b>{item.rate}%</b>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="panel insight-panel">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">AI INSIGHTS</span>
-              <h2>AI 매출 인사이트</h2>
-            </div>
-          </div>
-
-          <div className="sales-insight-list">
-            {aiInsights.map((insight) => (
-              <div className="sales-insight-card" key={insight.title}>
-                <span className={`insight-dot ${insight.type}`}></span>
-
-                <div>
-                  <strong>{insight.title}</strong>
-                  <p>{insight.description}</p>
-                </div>
               </div>
             ))}
           </div>
