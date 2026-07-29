@@ -88,19 +88,22 @@ function StoreSalesStatus({ storeId }: { storeId: number }) {
           </div>
 
           <div className="hourly-chart">
-            {hourlySales.map((item) => (
-              <div className="hourly-column" key={item.time}>
-                <div className="hourly-bar-wrap">
-                  <div
-                    className="hourly-bar"
-                    style={{ height: `${item.sales}%` }}
-                  >
-                    {item.sales >= 80 && <span>{item.sales}만</span>}
+            {(() => {
+              const maxSales = Math.max(...hourlySales.map((s) => s.sales), 1)
+              return hourlySales.map((item) => (
+                <div className="hourly-column" key={item.time}>
+                  <div className="hourly-bar-wrap">
+                    <div
+                      className="hourly-bar"
+                      style={{ height: `${(item.sales / maxSales) * 100}%` }}
+                    >
+                      {item.sales >= maxSales * 0.8 && <span>{item.sales}만</span>}
+                    </div>
                   </div>
+                  <small>{item.time}</small>
                 </div>
-                <small>{item.time}</small>
-              </div>
-            ))}
+              ))
+            })()}
           </div>
         </article>
 

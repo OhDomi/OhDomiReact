@@ -240,19 +240,22 @@ function AdminRiskPrediction() {
           </div>
 
           <div className="risk-trend-chart">
-            {riskTrend.map((item) => (
-              <div className="risk-trend-column" key={item.label}>
-                <div className="risk-trend-bars">
-                  <div className="risk-trend-bar danger" style={{ height: `${item.high * 10}%` }}>
-                    <span>{item.high}</span>
+            {(() => {
+              const maxRisk = Math.max(...riskTrend.map((s) => Math.max(s.high, s.warning)), 1)
+              return riskTrend.map((item) => (
+                <div className="risk-trend-column" key={item.label}>
+                  <div className="risk-trend-bars">
+                    <div className="risk-trend-bar danger" style={{ height: `${(item.high / maxRisk) * 100}%` }}>
+                      <span>{item.high}</span>
+                    </div>
+                    <div className="risk-trend-bar warning" style={{ height: `${(item.warning / maxRisk) * 100}%` }}>
+                      <span>{item.warning}</span>
+                    </div>
                   </div>
-                  <div className="risk-trend-bar warning" style={{ height: `${item.warning * 5}%` }}>
-                    <span>{item.warning}</span>
-                  </div>
+                  <small>{item.label}</small>
                 </div>
-                <small>{item.label}</small>
-              </div>
-            ))}
+              ))
+            })()}
           </div>
 
           <div className="risk-trend-legend">

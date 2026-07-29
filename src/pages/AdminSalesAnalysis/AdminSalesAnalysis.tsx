@@ -100,19 +100,22 @@ function AdminSalesAnalysis() {
           </div>
 
           <div className="admin-sales-chart">
-            {monthlySalesTrend.map((item) => (
-              <div className="admin-sales-column" key={item.month}>
-                <div className="admin-sales-bar-wrap">
-                  <div
-                    className="admin-sales-bar"
-                    style={{ height: `${item.sales}%` }}
-                  >
-                    <span>{item.sales}</span>
+            {(() => {
+              const maxSales = Math.max(...monthlySalesTrend.map((s) => s.sales), 1)
+              return monthlySalesTrend.map((item) => (
+                <div className="admin-sales-column" key={item.month}>
+                  <div className="admin-sales-bar-wrap">
+                    <div
+                      className="admin-sales-bar"
+                      style={{ height: `${(item.sales / maxSales) * 100}%` }}
+                    >
+                      <span>{item.sales}</span>
+                    </div>
                   </div>
+                  <small>{item.month}</small>
                 </div>
-                <small>{item.month}</small>
-              </div>
-            ))}
+              ))
+            })()}
           </div>
         </article>
 
