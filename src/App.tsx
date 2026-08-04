@@ -923,7 +923,7 @@ function App() {
   function handlePreparingButtonClick(event: ReactMouseEvent<HTMLDivElement>) {
     const clickedButton = (event.target as HTMLElement).closest('button') as HTMLButtonElement | null
 
-    if (!clickedButton || clickedButton.disabled) {
+    if (!clickedButton || clickedButton.disabled || clickedButton.dataset.backendReady === 'true') {
       return
     }
 
