@@ -435,3 +435,207 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Risk model v2 */
+.risk-model-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.risk-model-summary-card {
+  display: grid;
+  gap: 8px;
+}
+
+.risk-model-summary-card span,
+.risk-detail-label {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.risk-model-summary-card strong {
+  overflow: hidden;
+  color: var(--navy);
+  font-size: 22px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.risk-model-summary-card.danger strong {
+  color: #dc4c5a;
+}
+
+.risk-model-summary-card.compact strong {
+  font-size: 14px;
+}
+
+.risk-level-filter {
+  display: grid;
+  gap: 6px;
+  min-width: 132px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.risk-level-filter select {
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--navy);
+  background: #fff;
+  font: inherit;
+}
+
+.risk-empty-state {
+  text-align: center;
+}
+
+.selected-risk-score > div:last-child strong {
+  display: block;
+  margin-top: 7px;
+}
+
+.risk-score-ring.safe {
+  border-color: #eaf8f3;
+  border-top-color: var(--green);
+}
+
+.risk-score-ring.warning {
+  border-color: #fff4e7;
+  border-top-color: var(--orange);
+}
+
+.shap-factors-panel {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.shap-factors-panel .panel-head small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.shap-factor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.shap-factor-card {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f8f9fb;
+}
+
+.shap-factor-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.shap-factor-heading div {
+  min-width: 0;
+}
+
+.shap-factor-heading span {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shap-factor-heading strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--navy);
+  font-size: 13px;
+}
+
+.shap-factor-heading b {
+  color: #dc4c5a;
+  font-size: 12px;
+}
+
+.shap-factor-card.lowers-risk .shap-factor-heading b {
+  color: var(--green);
+}
+
+.shap-factor-scale {
+  overflow: hidden;
+  height: 7px;
+  margin: 14px 0 11px;
+  border-radius: 999px;
+  background: #e9edf3;
+}
+
+.shap-factor-scale i {
+  display: block;
+  min-width: 3px;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #dc4c5a, var(--orange));
+}
+
+.shap-factor-card.lowers-risk .shap-factor-scale i {
+  background: linear-gradient(90deg, var(--green), #70d5b4);
+}
+
+.shap-factor-card > p,
+.shap-factor-action p,
+.risk-no-factors {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.shap-factor-action {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.shap-factor-action span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--orange);
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.risk-no-factors {
+  margin-top: 18px;
+}
+
+@media (max-width: 1100px) {
+  .risk-model-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .shap-factors-panel {
+    grid-column: auto;
+  }
+
+  .shap-factor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .risk-model-summary,
+  .shap-factor-grid {
+    grid-template-columns: 1fr;
+  }
+}

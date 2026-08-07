@@ -364,7 +364,7 @@ function OwnerOverview({ go, storeId, name }: { go: (p: Page) => void; storeId: 
 
       <section className="metrics-grid">
         <Metric label="오늘 매출" value={sales.salesSummary.todaySales} change={`${sales.salesSummary.todayOrders}건 주문`} icon="sales" />
-        <Metric label="예상 주문" value={`${orders.orderSummary.expectedOrders}건`} change="MySQL 주문 집계" icon="orders" tone="purple" />
+        <Metric label="예상 주문" value={`${orders.orderSummary.expectedOrders}건`} change="주문 집계" icon="orders" tone="purple" />
         <Metric label="위생 점수" value={`${hygiene.hygieneSummary.score}점`} change={`${hygiene.hygieneSummary.status} · ${hygiene.hygieneSummary.lastCheckedAt}`} icon="hygiene" tone="green" />
         <Metric label="발주 필요 품목" value={`${orders.orderSummary.requiredItems}개`} change="오늘 확인 필요" icon="bell" tone="orange" />
       </section>
@@ -487,7 +487,7 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
       </header>
 
       <section className="metrics-grid">
-        <Metric label="전체 가맹점" value={`${totalStores}개`} change="MySQL 등록 매장" icon="stores" />
+        <Metric label="전체 가맹점" value={`${totalStores}개`} change="등록 매장" icon="stores" />
         <Metric label="오늘 통합 매출" value={sales.adminSalesSummary.todayTotalSales} change="전체 주문 집계" icon="sales" tone="purple" />
         <Metric label="위생 점검 완료" value={`${hygiene.adminHygieneSummary.checkedStores} / ${totalStores}`} change={`${hygiene.adminHygieneSummary.pendingStores}개 매장 확인 필요`} icon="hygiene" tone="green" />
         <Metric label="위험 알림" value={`${risks.riskSummary.highRiskStores + risks.riskSummary.warningStores}건`} change={`긴급 ${risks.riskSummary.highRiskStores} · 주의 ${risks.riskSummary.warningStores}`} icon="bell" tone="orange" />
@@ -886,7 +886,7 @@ function ModulePage({ page, role, account }: { page: Page; role: Role; account: 
 }
 
 function UnlinkedStore() {
-  return <section className="panel full-module"><h2>연결된 매장이 없습니다</h2><p>이 계정에 매장이 배정되면 MySQL의 운영 데이터를 확인할 수 있습니다.</p></section>
+  return <section className="panel full-module"><h2>연결된 매장이 없습니다</h2><p>이 계정에 매장이 배정되면 운영 데이터를 확인할 수 있습니다.</p></section>
 }
 
 function App() {
@@ -1058,7 +1058,7 @@ function App() {
                       <span className="alert-dot info"></span>
                       <div>
                         <strong>최신 운영 데이터를 확인하세요</strong>
-                        <p>MySQL에 저장된 {role === 'admin' ? '매장 위험 정보' : '발주 추천 정보'}로 이동합니다.</p>
+                        <p>저장된 {role === 'admin' ? '매장 위험 정보' : '발주 추천 정보'}로 이동합니다.</p>
                         <small>실시간 데이터</small>
                       </div>
                     </button>
