@@ -20,6 +20,8 @@ export const adminStores = [
     issue: '조리대 청결 재확인 필요',
     phone: '010-4820-1593',
     address: '서울 강남구 테헤란로 18길 12',
+    storeCode: 'ST-GANGNAM',
+    source: 'DEMO' as const,
   },
   {
     name: '성수점',
@@ -34,6 +36,8 @@ export const adminStores = [
     issue: '특이사항 없음',
     phone: '010-7412-8850',
     address: '서울 성동구 연무장길 42',
+    storeCode: 'ST-SEONGSU',
+    source: 'DEMO' as const,
   },
   {
     name: '잠실점',
@@ -48,6 +52,8 @@ export const adminStores = [
     issue: '월 매출 목표 미달 가능성',
     phone: '010-3387-2140',
     address: '서울 송파구 올림픽로 35길 10',
+    storeCode: 'ST-JAMSIL',
+    source: 'DEMO' as const,
   },
   {
     name: '여의도점',
@@ -62,6 +68,8 @@ export const adminStores = [
     issue: '특이사항 없음',
     phone: '010-9061-3724',
     address: '서울 영등포구 국제금융로 8길 16',
+    storeCode: 'ST-YEOUIDO',
+    source: 'DEMO' as const,
   },
   {
     name: '부산서면점',
@@ -76,6 +84,8 @@ export const adminStores = [
     issue: '위생 점수 하락 및 매출 감소',
     phone: '010-6112-4409',
     address: '부산 부산진구 중앙대로 692',
+    storeCode: 'ST-BUSAN',
+    source: 'DEMO' as const,
   },
 ]
 

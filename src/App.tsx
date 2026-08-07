@@ -17,7 +17,7 @@ import { useApiData } from './api/useApiData'
 import ApiDataState from './api/ApiDataState'
 
 type Role = 'owner' | 'admin'
-type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'orders' | 'board'
+type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'renewalCheck' | 'storeRiskList' | 'districtProspect' | 'orders' | 'board'
 
 const icons: Record<string, ReactNode> = {
   overview: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
@@ -25,6 +25,9 @@ const icons: Record<string, ReactNode> = {
   hygiene: <><path d="M12 3l7 3v5c0 4.8-3 8.4-7 10-4-1.6-7-5.2-7-10V6l7-3z"/><path d="M9 12l2 2 4-5"/></>,
   sales: <><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></>,
   forecast: <><path d="M3 17l5-5 4 3 8-9"/><path d="M15 6h5v5"/></>,
+  renewalCheck: <><path d="M9 3h6a2 2 0 0 1 2 2v1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1V5a2 2 0 0 1 2-2z"/><circle cx="12" cy="13" r="2.5"/><path d="M14 15l2 2"/></>,
+  storeRiskList: <><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></>,
+  districtProspect: <><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></>,
   orders: <><path d="M6 7h14l-2 9H8L6 4H3"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></>,
   bell: <><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></>,
   search: <><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></>,
@@ -248,6 +251,9 @@ function Sidebar({
     { id: 'hygiene', label: '위생 점검', icon: 'hygiene' },
     { id: 'sales', label: '매출 분석', icon: 'sales' },
     { id: 'forecast', label: '리스크 예측', icon: 'forecast' },
+    { id: 'renewalCheck', label: '재계약 대상 점검', icon: 'renewalCheck' },
+    { id: 'storeRiskList', label: '전체 매장 목록', icon: 'storeRiskList' },
+    { id: 'districtProspect', label: '희망상권 탐색', icon: 'districtProspect' },
     { id: 'board', label: '공지/문의게시판', icon: 'bell' },
   ]
 
@@ -711,6 +717,16 @@ function StoreTable({
   )
 }
 
+function RiskToolFrame({ src, title }: { src: string; title: string }) {
+  return (
+    <iframe
+      src={src}
+      title={title}
+      style={{ width: '100%', height: 'calc(100vh - 160px)', minHeight: 600, border: '1px solid var(--line)', borderRadius: 13 }}
+    />
+  )
+}
+
 function ModulePage({ page, role, account }: { page: Page; role: Role; account: LoginResponse }) {
   const content = useMemo(() => ({
     stores: {
@@ -780,6 +796,24 @@ function ModulePage({ page, role, account }: { page: Page; role: Role; account: 
 
   if (role === 'admin' && page === 'forecast') {
     return <AdminRiskPrediction />
+  }
+
+  // closure-risk-model의 기존 정적 페이지 3개를 각각 별도 탭으로 그대로 얹은 것(2026-08-07,
+  // 사용자 요청: 하나로 묶지 말고 개별로). React로 다시 만들지 않고 iframe으로 그대로 붙임 —
+  // public/risk-tool/은 closure-risk-model/web/을 가리키는 NTFS 정션이라(복사 아님) 원본을
+  // 고치면 바로 반영됨, 같은 origin으로 서빙되니 별도 CORS 설정도 불필요. "리스크 예측"
+  // (AdminRiskPrediction, SHAP 원점수를 그대로 보여주는 별개 통합)과는 다른 도구라 이름을
+  // 다르게 둬서 헷갈리지 않게 함.
+  if (role === 'admin' && page === 'renewalCheck') {
+    return <RiskToolFrame src="/risk-tool/dashboard.html" title="재계약 대상 점검" />
+  }
+
+  if (role === 'admin' && page === 'storeRiskList') {
+    return <RiskToolFrame src="/risk-tool/store-list.html" title="전체 매장 목록" />
+  }
+
+  if (role === 'admin' && page === 'districtProspect') {
+    return <RiskToolFrame src="/risk-tool/prospect-district.html" title="희망상권 탐색" />
   }
 
   if (role === 'owner' && page === 'orders') {
@@ -889,8 +923,19 @@ function UnlinkedStore() {
   return <section className="panel full-module"><h2>연결된 매장이 없습니다</h2><p>이 계정에 매장이 배정되면 운영 데이터를 확인할 수 있습니다.</p></section>
 }
 
+// 2026-08-07: 테스트할 때마다 매번 로그인해야 하는 게 번거롭다는 요청 — 개발 서버(`npm run
+// dev`)에서만 관리자 계정으로 자동 로그인해서 로그인 화면을 건너뛴다. `import.meta.env.DEV`는
+// Vite가 프로덕션 빌드(`npm run build`)에서 정적으로 false로 치환해 이 분기 자체가 빌드
+// 결과물에서 제거됨(dead-code elimination) — 배포본에는 이 우회가 전혀 안 남음. Spring 로그인
+// 응답에 토큰/세션 쿠키가 없어(app.tsx의 다른 API 호출도 Authorization 헤더를 안 씀 — 이
+// 프로토타입 단계의 인증은 클라이언트 상태로만 유지됨) 실제 API를 호출할 필요 없이 같은
+// 모양의 객체를 바로 넣어도 이후 화면 동작이 동일하다. data.sql의 admin 계정 값 그대로.
+const DEV_AUTO_LOGIN: LoginResponse | null = import.meta.env.DEV
+  ? { userId: 1, loginId: 'admin', name: '본사 운영팀', role: 'ADMIN', phone: '02-1234-5678', storeId: null }
+  : null
+
 function App() {
-  const [account, setAccount] = useState<LoginResponse | null>(null)
+  const [account, setAccount] = useState<LoginResponse | null>(DEV_AUTO_LOGIN)
   const [page, setPage] = useState<Page>('overview')
   const role: Role | null = account
     ? account.role === 'ADMIN' ? 'admin' : 'owner'

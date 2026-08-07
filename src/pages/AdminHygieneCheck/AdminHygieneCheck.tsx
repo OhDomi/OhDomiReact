@@ -19,9 +19,14 @@ type AdminHygieneData = {
 }
 type HygieneStore = (typeof hygieneStoreList)[number]
 
+// 2026-08-08: AdminStoreManagement.tsx와 같은 이유(216개 임포트 후 5줄→221줄) — 검색/페이지네이션.
+const PAGE_SIZE = 20
+
 function AdminHygieneCheck() {
   const api = useApiData<AdminHygieneData>('/api/ui/admin/hygiene')
   const [selectedStore, setSelectedStore] = useState<HygieneStore | null>(null)
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     if (api.data?.hygieneStoreList.length) setSelectedStore(api.data.hygieneStoreList[0])
@@ -31,6 +36,13 @@ function AdminHygieneCheck() {
     return <ApiDataState loading={api.loading || !selectedStore} error={api.error} retry={api.retry} />
   }
   const { hygieneActions, hygieneStoreList, hygieneTrend, reviewQueue } = api.data
+
+  const q = query.trim()
+  const filteredStores = q
+    ? hygieneStoreList.filter((store) => `${store.name} ${store.region} ${store.owner}`.includes(q))
+    : hygieneStoreList
+  const totalPages = Math.max(1, Math.ceil(filteredStores.length / PAGE_SIZE))
+  const pageStores = filteredStores.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <div className="admin-hygiene-page">
@@ -83,10 +95,24 @@ function AdminHygieneCheck() {
             </div>
 
             <div className="admin-hygiene-filter">
+              <input
+                className="admin-store-search"
+                type="search"
+                placeholder="가맹점명·지역·점주 검색"
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value)
+                  setPage(1)
+                }}
+              />
               <button className="select-button" type="button">전체 상태</button>
               <button className="select-button" type="button">전체 지역</button>
             </div>
           </div>
+
+          <p className="admin-store-count">
+            총 {filteredStores.length}개 매장{q ? ` ("${q}" 검색 결과)` : ''} — {page}/{totalPages}페이지
+          </p>
 
           <div className="table-scroll">
             <table className="data-table selectable">
@@ -102,7 +128,7 @@ function AdminHygieneCheck() {
               </thead>
 
               <tbody>
-                {hygieneStoreList.map((store) => (
+                {pageStores.map((store) => (
                   <tr
                     key={store.name}
                     className={selectedStore.name === store.name ? 'selected' : ''}
@@ -111,6 +137,7 @@ function AdminHygieneCheck() {
                     <td>
                       <span className="store-avatar">{store.name[0]}</span>
                       <strong>{store.name}</strong>
+                      {store.source === 'IMPORTED' && <span className="source-badge">임포트</span>}
                     </td>
                     <td>{store.region}</td>
                     <td>{store.category}</td>
@@ -127,6 +154,26 @@ function AdminHygieneCheck() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="admin-store-pager">
+            <button
+              className="outline-button"
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              이전
+            </button>
+            <span>{page} / {totalPages}</span>
+            <button
+              className="outline-button"
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              다음
+            </button>
           </div>
         </article>
 

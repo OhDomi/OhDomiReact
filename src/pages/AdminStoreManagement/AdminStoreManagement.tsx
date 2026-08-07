@@ -17,9 +17,16 @@ type AdminStoreData = {
 }
 type AdminStore = (typeof adminStores)[number]
 
+// 2026-08-08: 216개 실매장 임포트 후 목록이 5줄→221줄로 늘어나면서 검색/페이지 없이는
+// 원래 데모 5곳을 찾기도 어려워졌다는 리포트 — 검색(이름/지역/점주)과 클라이언트 페이지네이션만
+// 추가(전체 데이터는 이미 useApiData로 다 받아와 있어 서버 쪽 변경 없이 처리 가능).
+const PAGE_SIZE = 20
+
 function AdminStoreManagement() {
   const api = useApiData<AdminStoreData>('/api/ui/admin/stores')
   const [selectedStore, setSelectedStore] = useState<AdminStore | null>(null)
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     if (api.data?.adminStores.length) setSelectedStore(api.data.adminStores[0])
@@ -29,6 +36,13 @@ function AdminStoreManagement() {
     return <ApiDataState loading={api.loading || !selectedStore} error={api.error} retry={api.retry} />
   }
   const { actionRequiredStores, adminStores, regionStats } = api.data
+
+  const q = query.trim()
+  const filteredStores = q
+    ? adminStores.filter((store) => `${store.name} ${store.region} ${store.owner}`.includes(q))
+    : adminStores
+  const totalPages = Math.max(1, Math.ceil(filteredStores.length / PAGE_SIZE))
+  const pageStores = filteredStores.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <div className="admin-store-page">
@@ -85,10 +99,24 @@ function AdminStoreManagement() {
             </div>
 
             <div className="admin-store-filter">
+              <input
+                className="admin-store-search"
+                type="search"
+                placeholder="가맹점명·지역·점주 검색"
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value)
+                  setPage(1)
+                }}
+              />
               <button className="select-button" type="button">전체 지역</button>
               <button className="select-button" type="button">전체 리스크</button>
             </div>
           </div>
+
+          <p className="admin-store-count">
+            총 {filteredStores.length}개 매장{q ? ` ("${q}" 검색 결과)` : ''} — {page}/{totalPages}페이지
+          </p>
 
           <div className="table-scroll">
             <table className="data-table selectable">
@@ -104,7 +132,7 @@ function AdminStoreManagement() {
               </thead>
 
               <tbody>
-                {adminStores.map((store) => (
+                {pageStores.map((store) => (
                   <tr
                     key={store.name}
                     className={selectedStore.name === store.name ? 'selected' : ''}
@@ -113,6 +141,7 @@ function AdminStoreManagement() {
                     <td>
                       <span className="store-avatar">{store.name[0]}</span>
                       <strong>{store.name}</strong>
+                      {store.source === 'IMPORTED' && <span className="source-badge">임포트</span>}
                     </td>
                     <td>{store.region}</td>
                     <td>{store.sales}</td>
@@ -129,6 +158,26 @@ function AdminStoreManagement() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="admin-store-pager">
+            <button
+              className="outline-button"
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              이전
+            </button>
+            <span>{page} / {totalPages}</span>
+            <button
+              className="outline-button"
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              다음
+            </button>
           </div>
         </article>
 

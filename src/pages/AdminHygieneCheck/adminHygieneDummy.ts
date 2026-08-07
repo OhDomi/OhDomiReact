@@ -18,6 +18,8 @@ export const hygieneStoreList = [
     imageCount: 4,
     category: '조리대',
     reviewer: 'AI 자동 분석',
+    storeCode: 'ST-GANGNAM',
+    source: 'DEMO' as const,
   },
   {
     name: '성수점',
@@ -30,6 +32,8 @@ export const hygieneStoreList = [
     imageCount: 5,
     category: '전체 점검',
     reviewer: 'AI 자동 분석',
+    storeCode: 'ST-SEONGSU',
+    source: 'DEMO' as const,
   },
   {
     name: '잠실점',
@@ -42,6 +46,8 @@ export const hygieneStoreList = [
     imageCount: 3,
     category: '홀/출입구',
     reviewer: '운영관리팀',
+    storeCode: 'ST-JAMSIL',
+    source: 'DEMO' as const,
   },
   {
     name: '여의도점',
@@ -54,6 +60,8 @@ export const hygieneStoreList = [
     imageCount: 4,
     category: '전체 점검',
     reviewer: 'AI 자동 분석',
+    storeCode: 'ST-YEOUIDO',
+    source: 'DEMO' as const,
   },
   {
     name: '부산서면점',
@@ -66,6 +74,8 @@ export const hygieneStoreList = [
     imageCount: 6,
     category: '냉장고/바닥',
     reviewer: 'AI 자동 분석',
+    storeCode: 'ST-BUSAN',
+    source: 'DEMO' as const,
   },
 ]
 

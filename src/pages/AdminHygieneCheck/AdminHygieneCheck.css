@@ -391,3 +391,48 @@
     grid-template-columns: repeat(7, 44px);
   }
 }
+/* 2026-08-08: 216개 실매장 임포트 지원 — 검색/페이지네이션/임포트 배지 (적용 전 준비 작업) */
+.admin-store-search {
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 10px;
+  min-width: 200px;
+}
+
+.admin-store-count {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.source-badge {
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  color: var(--purple);
+  background: var(--purple-soft);
+  font-size: 7px;
+  font-weight: 700;
+}
+
+.admin-store-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 14px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.admin-store-pager .outline-button {
+  width: auto;
+  margin: 0;
+  padding: 7px 14px;
+}
+
+.admin-store-pager .outline-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
