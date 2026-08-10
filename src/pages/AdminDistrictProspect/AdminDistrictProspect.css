@@ -1,0 +1,346 @@
+.admin-district-page {
+  min-width: 0;
+}
+
+.district-step-layout {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.district-step-rail {
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.district-rail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.district-rail-item span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.district-rail-item.done span {
+  color: #fff;
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.district-rail-item.active {
+  color: var(--navy);
+  font-weight: 800;
+}
+
+.district-rail-item.active span {
+  color: #fff;
+  border-color: var(--purple);
+  background: var(--purple);
+}
+
+.district-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.district-map-wrap {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.district-map {
+  width: 100%;
+  height: auto;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+}
+
+.gu-shape {
+  fill: #eef0f4;
+  stroke: #fff;
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+
+.gu-shape:hover {
+  stroke: var(--purple);
+  stroke-width: 2.5;
+}
+
+/* 클릭(마우스)으로 얻은 포커스엔 브라우저 기본 포커스 링(굵은 사각 테두리)이 뜨는데,
+   이 SVG는 선택 여부를 이미 stroke(위 :hover, 아래 [aria-pressed])로 보여주고 있어
+   중복이자 시각적으로 튀어 보인다는 리포트 — 마우스 클릭 포커스는 없애고, 키보드로
+   Tab 이동했을 때만(:focus-visible) 접근성을 위해 얇은 링을 남긴다. */
+.gu-shape:focus {
+  outline: none;
+}
+
+.gu-shape:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 2px;
+}
+
+.gu-shape[aria-pressed="true"] {
+  stroke: var(--purple);
+  stroke-width: 3;
+}
+
+.gu-shape.preview-good {
+  fill: var(--green);
+}
+
+.gu-shape.preview-caution {
+  fill: var(--orange);
+}
+
+.gu-shape.preview-poor {
+  fill: #dc4c5a;
+}
+
+.gu-shape.preview-unknown {
+  fill: #eef0f4;
+}
+
+.hangang-shape {
+  fill: #cfe0fb;
+  stroke: none;
+  cursor: default;
+}
+
+.gu-label {
+  font-size: 8.5px;
+  fill: var(--navy);
+  text-anchor: middle;
+}
+
+.district-map-caption {
+  margin: 10px 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.district-map-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.district-map-legend .swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 5px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.district-map-legend .swatch.good { background: var(--green); }
+.district-map-legend .swatch.caution { background: var(--orange); }
+.district-map-legend .swatch.poor { background: #dc4c5a; }
+.district-map-legend .swatch.unknown { background: #eef0f4; }
+
+.district-gu-select-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.district-gu-select-row select {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 11px;
+}
+
+.district-explain {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.district-listing-note {
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid #dcd6ff;
+  border-radius: 10px;
+  background: #f6f4ff;
+}
+
+.district-listing-label {
+  margin-bottom: 4px;
+  color: var(--purple);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.district-listing-note p {
+  margin: 0;
+  color: var(--navy);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.district-empty-hint {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.district-candidate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.district-candidate-card {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.district-candidate-card:hover {
+  background: #f8f9fb;
+}
+
+.district-candidate-card.is-selected {
+  border-color: var(--purple);
+}
+
+.district-candidate-card.blocked {
+  cursor: default;
+  opacity: .75;
+}
+
+.district-candidate-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.district-candidate-title {
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.district-candidate-coords {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.district-indicator-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.district-candidate-reason {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.district-map-links {
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.district-map-links a {
+  color: var(--purple);
+  font-size: 9px;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.doc-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.check-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--navy);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.check-btn:hover {
+  background: #f8f9fb;
+}
+
+.packet-md {
+  overflow-x: auto;
+  padding: 16px;
+  border-radius: 10px;
+  background: #f8f9fb;
+  color: var(--navy);
+  font-family: ui-monospace, "Consolas", monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.results-error {
+  padding: 14px;
+  border: 1px solid #f4d8dc;
+  border-radius: 10px;
+  background: #fffafa;
+  color: #dc4c5a;
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  .district-step-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .district-step-rail {
+    position: static;
+    flex-direction: row;
+  }
+}

@@ -1,0 +1,152 @@
+.admin-store-risk-page {
+  min-width: 0;
+}
+
+.risk-list-toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.risk-list-search {
+  flex: 1;
+  min-width: 220px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.risk-list-tier-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.risk-list-count {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.risk-list-table-wrap {
+  padding: 0;
+  overflow: hidden;
+}
+
+.risk-list-table th {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.risk-list-table th.th-num {
+  text-align: right;
+}
+
+.risk-list-empty {
+  padding: 30px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.risk-list-panel {
+  z-index: 60;
+}
+
+.risk-list-panel-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.risk-list-panel-label {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.risk-list-scale-hint {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.risk-list-stat-row {
+  margin-bottom: 14px;
+  font-size: 11px;
+}
+
+.risk-list-stat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--navy);
+}
+
+.risk-list-stat-top .muted {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.risk-list-stat-track {
+  display: block;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e9edf3;
+}
+
+.risk-list-stat-fill {
+  display: block;
+  height: 100%;
+  background: var(--purple);
+}
+
+.risk-list-stat-fill.danger {
+  background: #dc4c5a;
+}
+
+.risk-list-stat-fill.caution {
+  background: var(--orange);
+}
+
+.risk-list-stat-fill.safe {
+  background: var(--green);
+}
+
+.risk-list-top-factor {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  color: var(--orange);
+  background: #fff4e7;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: help;
+}
+
+.risk-list-panel-footnote {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.risk-list-panel-link {
+  display: inline-block;
+  width: auto;
+  margin-top: 20px;
+  padding: 10px 16px;
+  text-decoration: none;
+}

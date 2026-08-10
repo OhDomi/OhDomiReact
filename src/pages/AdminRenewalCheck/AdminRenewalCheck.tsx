@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import ApiDataState from '../../api/ApiDataState'
+import { badgeTier, dummyContractExpiryDays, riskTagClass, type BadgeTier, type RankingRow } from '../riskTool/riskToolShared'
 import './AdminRenewalCheck.css'
 
 // closure-risk-model(src/api.py, /risk-api로 프록시)의 dashboard.html을 React로 재구현
@@ -10,15 +11,7 @@ import './AdminRenewalCheck.css'
 const COORDINATION_DEADLINE_DAYS = 90
 const COORDINATION_WINDOW_DAYS = 200
 
-interface RankingRow {
-  store_label: string
-  classification: string
-  v1_percentile: number
-  v2_percentile: number | null
-}
-
 type UrgencyTier = 'urgent' | 'soon' | 'ok' | 'none'
-type BadgeTier = 'danger' | 'caution' | 'safe' | 'unknown'
 
 interface PriorityRow extends RankingRow {
   address: string
@@ -32,18 +25,6 @@ interface TopFactor {
   category: string
   evidence: string
   action: string
-}
-
-function hashSeed(s: string): number {
-  let h = 0
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0
-  return Math.abs(h)
-}
-
-function dummyContractExpiryDays(storeLabel: string): string {
-  const expiry = new Date()
-  expiry.setDate(expiry.getDate() + (hashSeed(storeLabel + '|contract') % 491) - 90)
-  return expiry.toISOString().slice(0, 10)
 }
 
 function daysUntilExpiry(contractExpiry: string | null): number | null {
@@ -60,14 +41,6 @@ function urgencyTier(days: number | null): UrgencyTier {
   if (days <= COORDINATION_DEADLINE_DAYS) return 'urgent'
   if (days <= COORDINATION_WINDOW_DAYS) return 'soon'
   return 'ok'
-}
-
-function badgeTier(classification: string | undefined): BadgeTier {
-  if (!classification) return 'unknown'
-  if (classification.includes('고위험')) return 'danger'
-  if (classification.includes('위험')) return 'caution'
-  if (classification.includes('안전')) return 'safe'
-  return 'unknown'
 }
 
 function ddayLabel(days: number | null): { tier: UrgencyTier; text: string; sub: string } {
@@ -253,7 +226,7 @@ function AdminRenewalCheck() {
                   </div>
                   <div className="renewal-priority-badges">
                     <span className={`renewal-dday-badge ${dday.tier}`}>{dday.text} {dday.sub}</span>
-                    <span className={`risk-tag ${row.badgeTier === 'danger' ? 'high' : row.badgeTier === 'caution' ? 'medium' : row.badgeTier === 'safe' ? 'low' : ''}`}>
+                    <span className={`risk-tag ${riskTagClass(row.badgeTier)}`}>
                       {row.classification.split(' — ')[0]}
                     </span>
                   </div>

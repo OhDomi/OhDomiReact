@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { FormEvent, ReactNode, MouseEvent as ReactMouseEvent } from 'react'
 import './App.css'
 import StoreSalesOrder from './pages/StoreSalesOrder/StoreSalesOrder'
@@ -11,6 +11,8 @@ import AdminHygieneCheck from './pages/AdminHygieneCheck/AdminHygieneCheck'
 import AdminSalesAnalysis from './pages/AdminSalesAnalysis/AdminSalesAnalysis'
 import AdminRiskPrediction from './pages/AdminRiskPrediction/AdminRiskPrediction'
 import AdminRenewalCheck from './pages/AdminRenewalCheck/AdminRenewalCheck'
+import AdminStoreRiskList from './pages/AdminStoreRiskList/AdminStoreRiskList'
+import AdminDistrictProspect from './pages/AdminDistrictProspect/AdminDistrictProspect'
 import RegisterPage from './pages/Auth/RegisterPage'
 import { loginAccount } from './api/authApi'
 import type { LoginResponse } from './api/authApi'
@@ -718,62 +720,6 @@ function StoreTable({
   )
 }
 
-// closure-risk-model의 정적 페이지 3개를 사이드바를 유지한 채(다른 페이지와 같은 레이아웃)
-// 그대로 보여주기 위한 iframe(2026-08-07, 하나로 묶지 말고 개별로 요청). public/risk-tool/은
-// closure-risk-model/web/을 가리키는 NTFS 정션이라(복사 아님) 원본을 고치면 바로 반영되고,
-// 같은 origin으로 서빙되니 CORS 설정도 불필요. "리스크 예측"(AdminRiskPrediction, SHAP
-// 원점수를 그대로 보여주는 별개 통합)과는 다른 도구라 이름을 다르게 둬서 헷갈리지 않게 함.
-//
-// 2026-08-10: iframe에 고정 높이(calc(100vh - 160px))를 주면 내용이 더 길 때 iframe 자체
-// 스크롤바가 생기고, 그 iframe을 담은 바깥 페이지도 따로 스크롤되어 스크롤바가 2개 겹쳐
-// 보인다는 리포트 — 같은 origin이라 iframe 내부 문서의 실제 콘텐츠 높이를 읽어와 iframe
-// 자체를 그 높이로 늘려서 내부 스크롤을 없앤다(바깥 페이지 스크롤 하나만 남게 됨).
-// dashboard.html이 API 응답 후 비동기로 내용이 늘어나므로 load 시점 한 번뿐 아니라
-// ResizeObserver로 이후 크기 변화도 계속 반영.
-function RiskToolFrame({ src, title }: { src: string; title: string }) {
-  const frameRef = useRef<HTMLIFrameElement>(null)
-  const [height, setHeight] = useState(600)
-
-  useEffect(() => {
-    const frame = frameRef.current
-    if (!frame) return
-    let observer: ResizeObserver | undefined
-    // body.scrollHeight만 재면 브라우저마다/여백에 따라 1~2px씩 어긋나 iframe이 딱 그만큼
-    // 모자라서 내부 스크롤바가 여전히 뜬다는 리포트 — documentElement까지 같이 재서 더 큰
-    // 값을 쓰고, scrolling="no"(아래)로 내부 스크롤 자체를 막아 오차가 있어도 스크롤바
-    // 자체는 절대 안 뜨게 이중으로 막는다.
-    const syncHeight = () => {
-      const doc = frame.contentWindow?.document
-      if (!doc) return
-      const next = Math.max(doc.body?.scrollHeight ?? 0, doc.documentElement?.scrollHeight ?? 0)
-      if (next > 0) setHeight(next)
-    }
-    const handleLoad = () => {
-      syncHeight()
-      const body = frame.contentWindow?.document.body
-      if (body) {
-        observer = new ResizeObserver(syncHeight)
-        observer.observe(body)
-      }
-    }
-    frame.addEventListener('load', handleLoad)
-    return () => {
-      frame.removeEventListener('load', handleLoad)
-      observer?.disconnect()
-    }
-  }, [src])
-
-  return (
-    <iframe
-      ref={frameRef}
-      src={src}
-      title={title}
-      scrolling="no"
-      style={{ display: 'block', width: '100%', height, minHeight: 600, border: 0, borderRadius: 0, overflow: 'hidden', background: 'transparent' }}
-    />
-  )
-}
-
 function ModulePage({ page, role, account }: { page: Page; role: Role; account: LoginResponse }) {
   const content = useMemo(() => ({
     stores: {
@@ -850,11 +796,11 @@ function ModulePage({ page, role, account }: { page: Page; role: Role; account: 
   }
 
   if (role === 'admin' && page === 'storeRiskList') {
-    return <RiskToolFrame src="/risk-tool/store-list.html" title="전체 매장 목록" />
+    return <AdminStoreRiskList />
   }
 
   if (role === 'admin' && page === 'districtProspect') {
-    return <RiskToolFrame src="/risk-tool/prospect-district.html" title="희망상권 탐색" />
+    return <AdminDistrictProspect />
   }
 
 
