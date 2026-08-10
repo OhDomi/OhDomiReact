@@ -1,0 +1,379 @@
+import { useEffect, useMemo, useState } from 'react'
+import {
+  badgeTier, downloadMarkdown, dummyMonthlyRent, dummyMonthlySales, fmtWon, pctLabel,
+  riskTagClass, stripMarkdownSymbols, topClauseFactor, type RankingRow, type TopFactor,
+} from '../riskTool/riskToolShared'
+import './AdminStoreDetail.css'
+
+// closure-risk-model의 store-detail.html을 React로 재구현(2026-08-10, "모든 페이지에
+// 사이드바가 빠짐없이 보였으면 좋겠다" 요청) — 위험도 요약(해석 5개 항목)+상권 원자료
+// (헤드라인 3개+그룹별 통계+경쟁점포 목록)+상담자료(재계약/예비창업자 탭, 다운로드)까지
+// 원본과 동일한 3단 구성을 그대로 포팅.
+
+interface DistrictStat {
+  key: string
+  label: string
+  formatted: string
+  value: number | string | null
+  avg?: number | null
+  avg_formatted?: string | null
+}
+
+interface Competitor {
+  name: string
+  distance_m: number
+}
+
+interface DistrictAnalysis {
+  district_stats: DistrictStat[]
+  nearby_competitors: Competitor[] | null
+}
+
+interface DocResult {
+  internal_md: string
+  franchisee_md?: string
+  prospect_md?: string
+}
+
+type DocKind = 'renewal' | 'prospect'
+
+const KIND_LABELS: Record<DocKind, { audience: string; internal: string }> = {
+  renewal: { audience: '가맹점주용', internal: '내부용(상세)' },
+  prospect: { audience: '예비창업자용', internal: '내부용(상세)' },
+}
+
+const DISTRICT_STAT_ICONS: Record<string, string> = {
+  trdar_flpop: '🚶',
+  trdar_flpop_lunch: '🍱',
+  trdar_flpop_dinner: '🌆',
+  avg_selng_amt_per_store: '💰',
+  trdar_cls_sale_mt_gap: '⏳',
+  trdar_chnge_ix: '📊',
+  adstrd_expndtr_total: '💳',
+  adstrd_fd_expndtr: '🍜',
+  avg_competitors_250m: '🏪',
+  avg_competitors_500m: '🏬',
+  sgis_grid_population: '👥',
+  dist_subway_m: '🚇',
+}
+
+const DISTRICT_HERO_KEYS = ['trdar_flpop', 'sgis_grid_population', 'avg_competitors_500m']
+const DISTRICT_STAT_GROUPS: { title: string; keys: string[] }[] = [
+  { title: '유동인구 · 소비', keys: ['trdar_flpop_lunch', 'trdar_flpop_dinner', 'avg_selng_amt_per_store', 'adstrd_expndtr_total', 'adstrd_fd_expndtr'] },
+  { title: '경쟁 · 접근성', keys: ['avg_competitors_250m', 'dist_subway_m'] },
+  { title: '상권 변화', keys: ['trdar_chnge_ix', 'trdar_cls_sale_mt_gap'] },
+]
+
+function splitValueUnit(formatted: string): { num: string; unit: string } {
+  const m = String(formatted).match(/^([+-]?[\d,.]+)(.*)$/)
+  return m ? { num: m[1], unit: m[2].trim() } : { num: formatted, unit: '' }
+}
+
+function avgCompareText(s: DistrictStat): string {
+  if (s.avg == null || s.avg_formatted == null || typeof s.value !== 'number') return ''
+  if (s.avg === 0) return `평균 ${s.avg_formatted}`
+  const diffPct = ((s.value - s.avg) / s.avg) * 100
+  const sign = diffPct > 0 ? '+' : ''
+  return `평균 ${s.avg_formatted} · ${sign}${diffPct.toFixed(0)}%`
+}
+
+function axisNarrative(percentile: number | null | undefined, subject: string): string | null {
+  if (percentile == null) return null
+  const rank = Math.round(100 - percentile)
+  let level: string, note: string
+  if (percentile >= 75) { level = '위험한 편'; note = '비슷한 조건 대비 위험 신호가 뚜렷하게 나타납니다.' }
+  else if (percentile >= 50) { level = '다소 주의가 필요한 편'; note = '평균보다는 위험 신호가 있지만 아직 심각한 수준은 아닙니다.' }
+  else if (percentile >= 25) { level = '비교적 안전한 편'; note = '평균보다 위험 신호가 적은 편입니다.' }
+  else { level = '안전한 편'; note = '비슷한 조건 대비 위험 신호가 적게 나타납니다.' }
+  return `${subject} 기준 상위 ${rank}%로 ${level}입니다. ${note} (백분위 ${percentile.toFixed(1)})`
+}
+
+function rentBurdenNarrative(storeLabel: string): string {
+  const sales = dummyMonthlySales(storeLabel)
+  const rent = dummyMonthlyRent(storeLabel)
+  const ratioPct = (rent / sales) * 100
+  const level = ratioPct >= 18 ? '부담이 큰 편' : ratioPct >= 13 ? '평균보다 다소 높은 편' : '평균적인 수준'
+  return `추정 월매출 ${fmtWon(sales)} 대비 추정 월임대료 ${fmtWon(rent)}로, 임대료가 매출의 ${ratioPct.toFixed(1)}%를 차지합니다(외식업 통상 참고 기준 10~15% — ${level}).`
+}
+
+function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => void }) {
+  const [summary, setSummary] = useState<RankingRow | null | 'loading' | 'error'>('loading')
+  const [district, setDistrict] = useState<DistrictAnalysis | null | 'loading' | 'error'>(null)
+  const [docs, setDocs] = useState<Partial<Record<DocKind, DocResult>>>({})
+  const [docLoading, setDocLoading] = useState<DocKind | null>(null)
+  const [docError, setDocError] = useState<Partial<Record<DocKind, string>>>({})
+  const [activeTab, setActiveTab] = useState<DocKind>('renewal')
+
+  useEffect(() => {
+    setSummary('loading')
+    setDistrict(null)
+    setDocs({})
+    setDocError({})
+    setActiveTab('renewal')
+
+    fetch('/risk-api/rankings')
+      .then((r) => r.json() as Promise<(RankingRow & { error?: string })[]>)
+      .then((rows) => {
+        const row = rows.find((r) => r.store_label === address && !r.error) ?? null
+        setSummary(row)
+        if (row && row.v2_percentile != null) loadDistrict()
+      })
+      .catch(() => setSummary('error'))
+
+    async function loadDistrict() {
+      setDistrict('loading')
+      try {
+        const resp = await fetch('/risk-api/district-analysis', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand_nm: '김가네', address, sbiz_category: '김밥/만두/분식' }),
+        })
+        if (!resp.ok) throw new Error('failed')
+        setDistrict(await resp.json())
+      } catch {
+        setDistrict('error')
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address])
+
+  useEffect(() => {
+    if (!address || docs[activeTab] || docLoading === activeTab) return
+    setDocLoading(activeTab)
+    fetch('/risk-api/store-packet', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address, kind: activeTab }),
+    })
+      .then(async (resp) => {
+        if (!resp.ok) throw new Error('failed')
+        const body: DocResult = await resp.json()
+        setDocs((prev) => ({ ...prev, [activeTab]: body }))
+      })
+      .catch(() => setDocError((prev) => ({ ...prev, [activeTab]: '자료를 만들지 못했습니다.' })))
+      .finally(() => setDocLoading(null))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, activeTab])
+
+  const renewalDoc = docs.renewal
+  const topFactor = useMemo<TopFactor | null>(() => {
+    if (!renewalDoc || summary === 'loading' || summary === 'error' || !summary) return null
+    const axisLabel = summary.v2_percentile != null ? '입지 기준, 서울 매장' : '업종 기준, 전국'
+    return topClauseFactor(renewalDoc.internal_md || '', axisLabel)
+  }, [renewalDoc, summary])
+
+  if (!address) {
+    return (
+      <div className="admin-store-detail-page">
+        <button type="button" className="detail-back-link" onClick={onBack}>← 전체 매장 목록으로</button>
+        <div className="panel">주소 정보가 없어 표시할 수 없습니다 — 전체 매장 목록에서 매장을 클릭해 들어와 주세요.</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="admin-store-detail-page">
+      <button type="button" className="detail-back-link" onClick={onBack}>← 전체 매장 목록으로</button>
+      <h1>{address}</h1>
+      <p className="page-heading-sub">이 매장의 위험도와 실제 계산된 상담자료를 확인합니다.</p>
+
+      <section className="panel store-detail-section">
+        <h2><span className="step">1</span> 위험도 요약</h2>
+        {summary === 'loading' && <p className="results-empty">불러오는 중…</p>}
+        {summary === 'error' && <div className="results-error">위험도 요약을 불러오지 못했습니다.</div>}
+        {summary === null && <p className="results-empty">이 매장의 사전 계산된 순위 데이터를 찾지 못했습니다 — 아래 상담자료 탭은 그대로 이용할 수 있습니다.</p>}
+        {summary && summary !== 'loading' && summary !== 'error' && (
+          <SummaryCard row={summary} topFactor={topFactor} />
+        )}
+      </section>
+
+      {summary && summary !== 'loading' && summary !== 'error' && summary.v2_percentile != null && (
+        <section className="panel store-detail-section">
+          <h2><span className="step">2</span> 상권 원자료</h2>
+          <p className="explain">이 매장 상권의 유동인구·경쟁점포·배후인구 등 공공데이터 원자료입니다 — 위험도 판단(1번)과는 별개로, 판단 근거가 된 숫자를 그대로 보여줍니다.</p>
+          {district === 'loading' && <p className="results-empty">불러오는 중…</p>}
+          {district === 'error' && <div className="results-error">상권 원자료를 불러오지 못했습니다.</div>}
+          {district && district !== 'loading' && district !== 'error' && (
+            <DistrictStats stats={district.district_stats} competitors={district.nearby_competitors} />
+          )}
+        </section>
+      )}
+
+      <section className="panel store-detail-section">
+        <h2><span className="step">3</span> 상담자료</h2>
+        <p className="explain">이 매장 주소로 실제 계산해서 만든 자료입니다(미리 만들어둔 문서를 재활용하지 않습니다) — 재계약 검토 자료와 예비창업자 상담자료 중 골라 보고, 필요하면 그대로 다운로드할 수 있습니다.</p>
+
+        <div className="doc-tabs" role="group" aria-label="자료 종류">
+          <button type="button" className="doc-tab" aria-pressed={activeTab === 'renewal'} onClick={() => setActiveTab('renewal')}>재계약 검토 자료</button>
+          <button type="button" className="doc-tab" aria-pressed={activeTab === 'prospect'} onClick={() => setActiveTab('prospect')}>예비창업자 상담자료</button>
+        </div>
+
+        {docLoading === activeTab && <p className="results-empty">자료 생성 중… (실제 계산이라 몇 초~수십 초 걸릴 수 있습니다)</p>}
+        {docError[activeTab] && <div className="results-error">{docError[activeTab]}</div>}
+        {docs[activeTab] && <DocBody kind={activeTab} body={docs[activeTab]!} address={address} />}
+      </section>
+    </div>
+  )
+}
+
+function SummaryCard({ row, topFactor }: { row: RankingRow; topFactor: TopFactor | null }) {
+  const v1 = pctLabel(row.v1_percentile)
+  const v2 = pctLabel(row.v2_percentile)
+  const tier = badgeTier(row.classification)
+  const v1Narrative = axisNarrative(row.v1_percentile, '같은 업종 전체')
+  const v2Narrative = row.v2_percentile != null ? axisNarrative(row.v2_percentile, '서울 매장 전체') : null
+  const summaryText = row.v2_percentile != null
+    ? `종합적으로 이 매장은 ${row.classification} 상태로 판단됩니다.`
+    : `입지 위험도를 계산할 수 없어 업종 위험도만으로 판단하며, 그 결과는 ${row.classification}입니다.`
+
+  return (
+    <>
+      <div className="store-detail-card-header">
+        <span className={`risk-tag ${riskTagClass(tier)}`}>{row.classification}</span>
+      </div>
+      <div className="risk-list-stat-row">
+        <div className="risk-list-stat-top"><span>업종 평균 대비</span><b>{v1.text}</b></div>
+        <span className="risk-list-stat-track"><span className={`risk-list-stat-fill ${v1.tier}`} style={{ width: `${v1.width}%` }} /></span>
+      </div>
+      <div className="risk-list-stat-row">
+        <div className="risk-list-stat-top"><span>입지(서울 매장만)</span><b className={v2.na ? 'muted' : ''}>{v2.text}</b></div>
+        <span className="risk-list-stat-track"><span className={`risk-list-stat-fill ${v2.tier}`} style={{ width: `${v2.width}%` }} /></span>
+      </div>
+
+      <div className="interp-detail">
+        <div className="interp-item">
+          <h3>업종 위험도 해석</h3>
+          <p>{v1Narrative ?? <span className="muted">업종 위험도를 계산할 데이터가 없습니다.</span>}</p>
+        </div>
+        <div className="interp-item">
+          <h3>입지 위험도 해석 (서울 매장 기준)</h3>
+          <p>{v2Narrative ?? '이 매장은 서울 밖 주소이거나 위치 정보가 없어 입지 위험도를 계산할 수 없습니다 — 입지 관련 위험은 상담자료나 별도 확인이 필요합니다.'}</p>
+        </div>
+        <div className="interp-item">
+          <h3>종합 해석</h3>
+          <p>{summaryText}</p>
+        </div>
+        <div className="interp-item">
+          <h3>매출 대비 임대료 부담 <span className="muted" style={{ fontWeight: 400 }}>(참고용 더미 데이터)</span></h3>
+          <p>{rentBurdenNarrative(row.store_label)}</p>
+          <p className="muted" style={{ fontSize: 'var(--text-xs)' }}>※ 매출·임대료 실 데이터 연동 전이라 주소를 기준으로 고정된 더미 값입니다(새로고침해도 동일, 실제 수치 아님).</p>
+        </div>
+        <div className="interp-item">
+          <h3>가장 큰 영향 요인</h3>
+          {topFactor ? (
+            <p><strong>{topFactor.category}</strong> — {topFactor.evidence}<br />권장 조치: {topFactor.action}</p>
+          ) : (
+            <p className="muted">확인 중… (3번 상담자료를 함께 준비하고 있습니다)</p>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+
+function DistrictStats({ stats, competitors }: { stats: DistrictStat[]; competitors: Competitor[] | null }) {
+  if (!stats || !stats.length) return <p className="results-empty">상권 원자료가 없습니다.</p>
+  const byKey = Object.fromEntries(stats.map((s) => [s.key, s]))
+  const heroItems = DISTRICT_HERO_KEYS.map((k) => byKey[k]).filter(Boolean)
+  const usedKeys = new Set(DISTRICT_HERO_KEYS)
+  const groups = DISTRICT_STAT_GROUPS.map((g) => {
+    const items = g.keys.map((k) => byKey[k]).filter(Boolean)
+    items.forEach((s) => usedKeys.add(s.key))
+    return { title: g.title, items }
+  }).filter((g) => g.items.length)
+  const leftover = stats.filter((s) => !usedKeys.has(s.key))
+  if (leftover.length) groups.push({ title: '기타', items: leftover })
+
+  const maxDist = competitors && competitors.length ? Math.max(...competitors.map((c) => c.distance_m)) : 0
+
+  return (
+    <>
+      {heroItems.length > 0 && (
+        <div className="dstat-hero">
+          {heroItems.map((s) => {
+            const { num, unit } = splitValueUnit(s.formatted)
+            const avgText = avgCompareText(s)
+            return (
+              <div className="dstat-hero-item" key={s.key}>
+                <span className="dstat-hero-icon" aria-hidden="true">{DISTRICT_STAT_ICONS[s.key] || '📍'}</span>
+                <div className="dstat-hero-value">{num}<span className="unit">{unit}</span></div>
+                <div className="dstat-hero-label">{s.label}</div>
+                {avgText && <div className="dstat-hero-avg">{avgText}</div>}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      <div className="dstat-groups">
+        {groups.map((g) => (
+          <div className="dstat-group" key={g.title}>
+            <div className="group-title">{g.title}</div>
+            {g.items.map((s) => {
+              const avgText = avgCompareText(s)
+              return (
+                <div className="dstat-line" key={s.key}>
+                  <span className="dstat-line-label">{DISTRICT_STAT_ICONS[s.key] || '📍'} {s.label}</span>
+                  <span className="dstat-line-value-wrap">
+                    <span className="dstat-line-value">{s.formatted}</span>
+                    {avgText && <span className="dstat-line-avg">{avgText}</span>}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        ))}
+      </div>
+
+      <h3 className="dstat-subheading">🍽️ 인근 경쟁 점포 (반경 500m, 가까운 순)</h3>
+      {!competitors ? (
+        <p className="results-empty">인근 경쟁 점포 목록을 가져오지 못했습니다.</p>
+      ) : !competitors.length ? (
+        <p className="results-empty">반경 500m 내 같은 업종 점포가 없습니다.</p>
+      ) : (
+        <div className="competitor-list">
+          {competitors.map((c, i) => (
+            <div className="competitor-row" key={`${c.name}-${i}`}>
+              <span className="competitor-rank">{i + 1}</span>
+              <span className="competitor-name">{c.name}</span>
+              <span className="competitor-bar-wrap"><span className="competitor-bar" style={{ width: `${((c.distance_m / maxDist) * 100).toFixed(0)}%` }} /></span>
+              <span className="competitor-dist">{c.distance_m.toFixed(0)}m</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
+
+function DocBody({ kind, body, address }: { kind: DocKind; body: DocResult; address: string }) {
+  const labels = KIND_LABELS[kind]
+  const audienceMd = kind === 'renewal' ? body.franchisee_md : body.prospect_md
+
+  function filename(variant: string) {
+    const safeAddr = address.replace(/[\\/:*?"<>|]/g, '_').slice(0, 40)
+    return `${safeAddr}_${kind}_${variant}.md`
+  }
+
+  return (
+    <>
+      <div className="doc-actions">
+        {/* data-backend-ready="true": App.tsx의 전역 "준비 중" 인터셉터가 버튼 텍스트에
+            "다운로드"가 들어가면 무조건 토스트로 막는데, 이 버튼은 실제로 동작하는
+            기능이라 예외 처리 필요(2026-08-10, HygieneCheck.tsx와 동일 패턴). */}
+        <button type="button" className="check-btn" data-backend-ready="true" onClick={() => downloadMarkdown(filename('audience'), audienceMd || '')}>다운로드 ({labels.audience})</button>
+        <button type="button" className="check-btn" data-backend-ready="true" onClick={() => downloadMarkdown(filename('internal'), body.internal_md || '')}>다운로드 ({labels.internal})</button>
+      </div>
+      <div className="doc-columns">
+        <div className="doc-col">
+          <div className="group-title">{labels.audience}</div>
+          <pre className="packet-md">{stripMarkdownSymbols(audienceMd || '(내용 없음)')}</pre>
+        </div>
+        <div className="doc-col">
+          <div className="group-title">{labels.internal}</div>
+          <pre className="packet-md">{stripMarkdownSymbols(body.internal_md || '(내용 없음)')}</pre>
+        </div>
+      </div>
+    </>
+  )
+}
+
+export default AdminStoreDetail

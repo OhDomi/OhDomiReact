@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import ApiDataState from '../../api/ApiDataState'
-import { badgeTier, dummyContractExpiryDays, riskTagClass, type BadgeTier, type RankingRow } from '../riskTool/riskToolShared'
+import { badgeTier, dummyContractExpiryDays, riskTagClass, topClauseFactor, type BadgeTier, type RankingRow, type TopFactor } from '../riskTool/riskToolShared'
 import './AdminRenewalCheck.css'
 
 // closure-risk-model(src/api.py, /risk-api로 프록시)의 dashboard.html을 React로 재구현
@@ -19,12 +19,6 @@ interface PriorityRow extends RankingRow {
   tier: UrgencyTier
   badgeTier: BadgeTier
   isHighRisk: boolean
-}
-
-interface TopFactor {
-  category: string
-  evidence: string
-  action: string
 }
 
 function daysUntilExpiry(contractExpiry: string | null): number | null {
@@ -51,20 +45,6 @@ function ddayLabel(days: number | null): { tier: UrgencyTier; text: string; sub:
   return { tier, text, sub }
 }
 
-// store-detail.html(같은 origin 정적 페이지)의 마크다운에서 1위 위험요인만 뽑아낸다 —
-// 원본 shared.js/dashboard.html의 topClauseFactor와 동일 정규식.
-function topClauseFactor(md: string, axisLabel: string): TopFactor | null {
-  const startMarker = `## 위험요인 근거 및 조항 후보 (${axisLabel})`
-  const startIdx = md.indexOf(startMarker)
-  if (startIdx === -1) return null
-  const rest = md.slice(startIdx + startMarker.length)
-  const endIdx = rest.indexOf('\n## ')
-  const section = endIdx === -1 ? rest : rest.slice(0, endIdx)
-  const m = section.match(/-\s+\*\*\[(.+?)\]\*\*\s+(.+?)\s+\(영향 순위 1위\)\s*\n\s*-\s*예방조치:\s*(.+)/)
-  if (!m) return null
-  return { category: m[1], evidence: m[2].trim(), action: m[3].trim() }
-}
-
 const FILTERS: { id: 'all' | UrgencyTier | 'highRisk'; label: string }[] = [
   { id: 'all', label: '전체' },
   { id: 'urgent', label: '마감 임박·경과' },
@@ -72,7 +52,7 @@ const FILTERS: { id: 'all' | UrgencyTier | 'highRisk'; label: string }[] = [
   { id: 'highRisk', label: '고위험만' },
 ]
 
-function AdminRenewalCheck() {
+function AdminRenewalCheck({ onOpenDetail }: { onOpenDetail: (address: string) => void }) {
   const [rows, setRows] = useState<PriorityRow[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -244,14 +224,9 @@ function AdminRenewalCheck() {
                   )}
                 </div>
                 <div className="renewal-priority-actions">
-                  <a
-                    className="outline-button"
-                    href={`/risk-tool/store-detail.html?address=${encodeURIComponent(row.address)}`}
-                    target="_blank"
-                    rel="noopener"
-                  >
+                  <button type="button" className="outline-button" onClick={() => onOpenDetail(row.address)}>
                     매장 상세·상담자료 보기
-                  </a>
+                  </button>
                 </div>
               </article>
             )

@@ -13,6 +13,7 @@ import AdminRiskPrediction from './pages/AdminRiskPrediction/AdminRiskPrediction
 import AdminRenewalCheck from './pages/AdminRenewalCheck/AdminRenewalCheck'
 import AdminStoreRiskList from './pages/AdminStoreRiskList/AdminStoreRiskList'
 import AdminDistrictProspect from './pages/AdminDistrictProspect/AdminDistrictProspect'
+import AdminStoreDetail from './pages/AdminStoreDetail/AdminStoreDetail'
 import RegisterPage from './pages/Auth/RegisterPage'
 import { loginAccount } from './api/authApi'
 import type { LoginResponse } from './api/authApi'
@@ -20,7 +21,7 @@ import { useApiData } from './api/useApiData'
 import ApiDataState from './api/ApiDataState'
 
 type Role = 'owner' | 'admin'
-type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'renewalCheck' | 'storeRiskList' | 'districtProspect' | 'orders' | 'board'
+type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'renewalCheck' | 'storeRiskList' | 'districtProspect' | 'storeDetail' | 'orders' | 'board'
 
 const icons: Record<string, ReactNode> = {
   overview: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
@@ -720,7 +721,16 @@ function StoreTable({
   )
 }
 
-function ModulePage({ page, role, account }: { page: Page; role: Role; account: LoginResponse }) {
+function ModulePage({
+  page, role, account, detailAddress, openStoreDetail, backToStoreList,
+}: {
+  page: Page
+  role: Role
+  account: LoginResponse
+  detailAddress: string | null
+  openStoreDetail: (address: string) => void
+  backToStoreList: () => void
+}) {
   const content = useMemo(() => ({
     stores: {
       kicker: 'FRANCHISE NETWORK',
@@ -792,15 +802,19 @@ function ModulePage({ page, role, account }: { page: Page; role: Role; account: 
   }
 
   if (role === 'admin' && page === 'renewalCheck') {
-    return <AdminRenewalCheck />
+    return <AdminRenewalCheck onOpenDetail={openStoreDetail} />
   }
 
   if (role === 'admin' && page === 'storeRiskList') {
-    return <AdminStoreRiskList />
+    return <AdminStoreRiskList onOpenDetail={openStoreDetail} />
   }
 
   if (role === 'admin' && page === 'districtProspect') {
     return <AdminDistrictProspect />
+  }
+
+  if (role === 'admin' && page === 'storeDetail') {
+    return <AdminStoreDetail address={detailAddress ?? ''} onBack={backToStoreList} />
   }
 
 
@@ -925,6 +939,7 @@ const DEV_AUTO_LOGIN: LoginResponse | null = import.meta.env.DEV
 function App() {
   const [account, setAccount] = useState<LoginResponse | null>(DEV_AUTO_LOGIN)
   const [page, setPage] = useState<Page>('overview')
+  const [detailAddress, setDetailAddress] = useState<string | null>(null)
   const role: Role | null = account
     ? account.role === 'ADMIN' ? 'admin' : 'owner'
     : null
@@ -945,6 +960,13 @@ function App() {
     setPage('overview')
     setNotificationOpen(false)
     setProfileMenuOpen(false)
+  }
+
+  // 매장 상세를 iframe/새 탭 대신 앱 안(사이드바 유지)에서 보여주기 위한 내비게이션
+  // (2026-08-10, "모든 페이지에 사이드바가 빠짐없이 보였으면 좋겠다" 요청).
+  function openStoreDetail(address: string) {
+    setDetailAddress(address)
+    setPage('storeDetail')
   }
 
   function openPreparingMessage(label: string) {
@@ -1173,7 +1195,14 @@ function App() {
               : account.storeId
                 ? <OwnerOverview go={setPage} storeId={account.storeId} name={account.name} />
                 : <UnlinkedStore />
-            : <ModulePage page={page} role={role} account={account} />}
+            : <ModulePage
+                page={page}
+                role={role}
+                account={account}
+                detailAddress={detailAddress}
+                openStoreDetail={openStoreDetail}
+                backToStoreList={() => setPage('storeRiskList')}
+              />}
         </main>
       </div>
 

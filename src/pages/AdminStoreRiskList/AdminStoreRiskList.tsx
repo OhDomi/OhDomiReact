@@ -21,7 +21,7 @@ function riskValue(row: RankingRow): number | null {
   return row.v2_percentile != null ? row.v2_percentile : row.v1_percentile
 }
 
-function AdminStoreRiskList() {
+function AdminStoreRiskList({ onOpenDetail }: { onOpenDetail: (address: string) => void }) {
   const [rows, setRows] = useState<RankingRow[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -159,20 +159,24 @@ function AdminStoreRiskList() {
         </table>
       </div>
 
-      {selected && <DetailPanel row={selected} onClose={() => setSelected(null)} />}
+      {selected && <DetailPanel row={selected} onClose={() => setSelected(null)} onOpenDetail={onOpenDetail} />}
     </div>
   )
 }
 
-function DetailPanel({ row, onClose }: { row: RankingRow; onClose: () => void }) {
+function DetailPanel({ row, onClose, onOpenDetail }: { row: RankingRow; onClose: () => void; onOpenDetail: (address: string) => void }) {
   const v1 = pctLabel(row.v1_percentile)
   const v2 = pctLabel(row.v2_percentile)
   const tier = badgeTier(row.classification)
 
   return (
-    <>
-      <div className="detail-backdrop" onClick={onClose} />
-      <aside className="store-detail risk-list-panel" aria-label="매장 요약">
+    // 2026-08-10: .detail-backdrop는 CSS상(display:flex; justify-content:flex-end)
+    // .store-detail을 자식으로 두고 오른쪽에 정렬하는 구조인데, 형제로 렌더링했더니
+    // .store-detail이 position:static이 돼(z-index가 안 먹힘) 배경 오버레이 밑에 깔려
+    // 안의 버튼을 클릭할 수 없었다(Playwright로 재현) — 자식으로 중첩해 수정.
+    // 패널 안 클릭이 배경까지 버블링돼 바로 닫히지 않도록 stopPropagation.
+    <div className="detail-backdrop" onClick={onClose}>
+      <aside className="store-detail risk-list-panel" aria-label="매장 요약" onClick={(e) => e.stopPropagation()}>
         <button type="button" className="detail-close" onClick={onClose} aria-label="닫기">×</button>
         <h2>{row.store_label}</h2>
 
@@ -212,16 +216,11 @@ function DetailPanel({ row, onClose }: { row: RankingRow; onClose: () => void })
           <p className="risk-list-panel-footnote">[비고] 서울 밖 주소 또는 주소 미입력 — 입지 위험도는 서울 매장 데이터 기준으로만 산출됩니다.</p>
         )}
 
-        <a
-          className="outline-button risk-list-panel-link"
-          href={`/risk-tool/store-detail.html?address=${encodeURIComponent(row.store_label)}`}
-          target="_blank"
-          rel="noopener"
-        >
+        <button type="button" className="outline-button risk-list-panel-link" onClick={() => onOpenDetail(row.store_label)}>
           전체 상세·상담자료 보기 →
-        </a>
+        </button>
       </aside>
-    </>
+    </div>
   )
 }
 
