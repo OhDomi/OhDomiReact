@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import ApiDataState from '../../api/ApiDataState'
 import { badgeTier, pctLabel, riskTagClass, riskTierFromPercentile, shortBadgeLabel, type RankingRow } from '../riskTool/riskToolShared'
+import { apiUrl } from '../../api/useApiData'
 import './AdminStoreRiskList.css'
 
 // closure-risk-model의 store-list.html을 React로 재구현(2026-08-10, iframe 제거 요청) —
 // 216개 매장 정렬 가능한 표 + 클릭 시 오른쪽 슬라이드오버 요약 패널. 로직은 원본
 // web/store-list.html·shared.js(renderCard)와 동일하게 포팅.
 
-type SortKey = 'store_label' | 'v2_percentile' | 'classification'
+type SortKey = 'store_label' | 'v2_percentile' | 'classification' | 'sales'
 type TierFilter = 'all' | 'danger' | 'caution' | 'safe'
 
 const TIER_FILTERS: { id: TierFilter; label: string }[] = [
@@ -21,16 +22,32 @@ function riskValue(row: RankingRow): number | null {
   return row.v2_percentile != null ? row.v2_percentile : row.v1_percentile
 }
 
-function AdminStoreRiskList({ onOpenDetail }: { onOpenDetail: (address: string) => void }) {
+function AdminStoreRiskList({
+  onOpenDetail,
+  initialSort,
+  onSortConsumed,
+}: {
+  onOpenDetail: (address: string) => void
+  initialSort?: SortKey
+  onSortConsumed?: () => void
+}) {
   const [rows, setRows] = useState<RankingRow[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [requestVersion, setRequestVersion] = useState(0)
   const [query, setQuery] = useState('')
   const [tierFilter, setTierFilter] = useState<TierFilter>('all')
-  const [sortKey, setSortKey] = useState<SortKey>('v2_percentile')
+  const [sortKey, setSortKey] = useState<SortKey>(initialSort ?? 'v2_percentile')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [selected, setSelected] = useState<RankingRow | null>(null)
+  // 매출 분석 페이지의 "가맹점 매출 순위 전체보기"에서 매출순으로 정렬된 채 도착하려면
+  // 필요한 매장별 매출액(address로 조인) — 여기서만 쓰는 값이라 별도 API 클라이언트 없이 조회.
+  const [salesByAddress, setSalesByAddress] = useState<Map<string, number>>(new Map())
+
+  useEffect(() => {
+    if (onSortConsumed) onSortConsumed()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -55,6 +72,27 @@ function AdminStoreRiskList({ onOpenDetail }: { onOpenDetail: (address: string) 
     return () => controller.abort()
   }, [requestVersion])
 
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch(apiUrl('/api/ui/admin/sales'), { signal: controller.signal, credentials: 'include' })
+      .then((resp) => (resp.ok ? resp.json() : null))
+      .then((data: { storeSalesRanking?: { address?: string; salesAmount?: number }[] } | null) => {
+        if (!data?.storeSalesRanking) return
+        const map = new Map<string, number>()
+        for (const row of data.storeSalesRanking) {
+          if (row.address) map.set(row.address, row.salesAmount ?? 0)
+        }
+        setSalesByAddress(map)
+      })
+      .catch(() => {})
+
+    return () => controller.abort()
+  }, [])
+
+  function salesValue(row: RankingRow): number {
+    return salesByAddress.get(row.store_label) ?? -1
+  }
+
   const visibleRows = useMemo(() => {
     if (!rows) return []
     const q = query.trim()
@@ -70,6 +108,9 @@ function AdminStoreRiskList({ onOpenDetail }: { onOpenDetail: (address: string) 
       if (sortKey === 'v2_percentile') {
         av = riskValue(a) ?? -1
         bv = riskValue(b) ?? -1
+      } else if (sortKey === 'sales') {
+        av = salesValue(a)
+        bv = salesValue(b)
       } else {
         av = a[sortKey]
         bv = b[sortKey]
@@ -77,7 +118,7 @@ function AdminStoreRiskList({ onOpenDetail }: { onOpenDetail: (address: string) 
       if (typeof av === 'string') return av.localeCompare(bv as string) * dir
       return (av - (bv as number)) * dir
     })
-  }, [rows, query, tierFilter, sortKey, sortDir])
+  }, [rows, query, tierFilter, sortKey, sortDir, salesByAddress])
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
@@ -138,11 +179,12 @@ function AdminStoreRiskList({ onOpenDetail }: { onOpenDetail: (address: string) 
               <th onClick={() => toggleSort('store_label')}>매장 {sortKey === 'store_label' && (sortDir === 'asc' ? '↑' : '↓')}</th>
               <th className="th-num" onClick={() => toggleSort('v2_percentile')}>입지 위험(백분위) {sortKey === 'v2_percentile' && (sortDir === 'asc' ? '↑' : '↓')}</th>
               <th onClick={() => toggleSort('classification')}>종합 판정 {sortKey === 'classification' && (sortDir === 'asc' ? '↑' : '↓')}</th>
+              <th className="th-num" onClick={() => toggleSort('sales')}>매출 {sortKey === 'sales' && (sortDir === 'asc' ? '↑' : '↓')}</th>
             </tr>
           </thead>
           <tbody>
             {visibleRows.length === 0 ? (
-              <tr><td colSpan={3} className="risk-list-empty">표시할 매장이 없습니다.</td></tr>
+              <tr><td colSpan={4} className="risk-list-empty">표시할 매장이 없습니다.</td></tr>
             ) : (
               visibleRows.map((row, i) => (
                 // store_label(주소)이 유일 식별자 역할을 하는데, 실제 216개 매장 중 4곳은
@@ -152,6 +194,7 @@ function AdminStoreRiskList({ onOpenDetail }: { onOpenDetail: (address: string) 
                   <td><strong>{row.store_label}</strong></td>
                   <td className="cell-num">{row.v2_percentile != null ? row.v2_percentile.toFixed(1) : '-'}</td>
                   <td><span className={`risk-tag ${riskTagClass(badgeTier(row.classification))}`}>{shortBadgeLabel(row.classification)}</span></td>
+                  <td className="cell-num">{salesValue(row) >= 0 ? `${salesValue(row).toLocaleString('ko-KR')}원` : '-'}</td>
                 </tr>
               ))
             )}

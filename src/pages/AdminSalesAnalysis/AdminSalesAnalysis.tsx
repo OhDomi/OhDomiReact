@@ -21,9 +21,12 @@ type AdminSalesData = {
 }
 type RankedStore = (typeof storeSalesRanking)[number]
 
-function AdminSalesAnalysis() {
+const RANKING_PAGE_SIZE = 5
+
+function AdminSalesAnalysis({ onViewAllBySales }: { onViewAllBySales: () => void }) {
   const api = useApiData<AdminSalesData>('/api/ui/admin/sales')
   const [selectedStore, setSelectedStore] = useState<RankedStore | null>(null)
+  const [showAllRanking, setShowAllRanking] = useState(false)
 
   useEffect(() => {
     if (api.data?.storeSalesRanking.length) setSelectedStore(api.data.storeSalesRanking[0])
@@ -87,7 +90,7 @@ function AdminSalesAnalysis() {
       </section>
 
       <section className="admin-sales-layout">
-        <article className="panel admin-sales-trend-panel">
+        <article className="panel admin-sales-trend-panel admin-sales-wide">
           <div className="panel-head">
             <div>
               <span className="panel-label">MONTHLY TREND</span>
@@ -117,6 +120,75 @@ function AdminSalesAnalysis() {
               ))
             })()}
           </div>
+        </article>
+
+        <article className="panel admin-sales-ranking-panel">
+          <div className="panel-head">
+            <div>
+              <span className="panel-label">STORE RANKING</span>
+              <h2>가맹점 매출 순위</h2>
+            </div>
+
+            <button className="select-button" type="button" onClick={onViewAllBySales}>
+              전체 보기
+            </button>
+          </div>
+
+          <div className="table-scroll">
+            <table className="data-table selectable">
+              <thead>
+                <tr>
+                  <th>순위</th>
+                  <th>가맹점</th>
+                  <th>지역</th>
+                  <th>월 매출</th>
+                  <th>주문 수</th>
+                  <th>성장률</th>
+                  <th>상태</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {(showAllRanking ? storeSalesRanking : storeSalesRanking.slice(0, RANKING_PAGE_SIZE)).map((store) => (
+                  <tr
+                    key={store.store}
+                    className={selectedStore.store === store.store ? 'selected' : ''}
+                    onClick={() => setSelectedStore(store)}
+                  >
+                    <td>
+                      <span className="sales-rank-badge">{store.rank}</span>
+                    </td>
+                    <td>
+                      <strong>{store.store}</strong>
+                    </td>
+                    <td>{store.region}</td>
+                    <td>{store.sales}</td>
+                    <td>{store.orders}</td>
+                    <td>
+                      <span className={store.growth.startsWith('-') ? 'sales-down' : 'sales-up'}>
+                        {store.growth}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`sales-status ${getStatusClass(store.status)}`}>
+                        {store.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {storeSalesRanking.length > RANKING_PAGE_SIZE && (
+            <button
+              type="button"
+              className="outline-button"
+              onClick={() => setShowAllRanking((v) => !v)}
+            >
+              {showAllRanking ? '접기' : `더보기 (${storeSalesRanking.length - RANKING_PAGE_SIZE}곳 더)`}
+            </button>
+          )}
         </article>
 
         <aside className="panel selected-sales-panel">
@@ -203,65 +275,6 @@ function AdminSalesAnalysis() {
                 </p>
               </div>
             ))}
-          </div>
-        </article>
-
-        <article className="panel admin-sales-wide">
-          <div className="panel-head">
-            <div>
-              <span className="panel-label">STORE RANKING</span>
-              <h2>가맹점 매출 순위</h2>
-            </div>
-
-            <button className="select-button" type="button">
-              매출순
-            </button>
-          </div>
-
-          <div className="table-scroll">
-            <table className="data-table selectable">
-              <thead>
-                <tr>
-                  <th>순위</th>
-                  <th>가맹점</th>
-                  <th>지역</th>
-                  <th>월 매출</th>
-                  <th>주문 수</th>
-                  <th>성장률</th>
-                  <th>상태</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {storeSalesRanking.map((store) => (
-                  <tr
-                    key={store.store}
-                    className={selectedStore.store === store.store ? 'selected' : ''}
-                    onClick={() => setSelectedStore(store)}
-                  >
-                    <td>
-                      <span className="sales-rank-badge">{store.rank}</span>
-                    </td>
-                    <td>
-                      <strong>{store.store}</strong>
-                    </td>
-                    <td>{store.region}</td>
-                    <td>{store.sales}</td>
-                    <td>{store.orders}</td>
-                    <td>
-                      <span className={store.growth.startsWith('-') ? 'sales-down' : 'sales-up'}>
-                        {store.growth}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`sales-status ${getStatusClass(store.status)}`}>
-                        {store.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </article>
 

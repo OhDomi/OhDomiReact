@@ -25,7 +25,7 @@ export function useApiData<T>(path: string): ApiDataState<T> {
     setLoading(true)
     setError('')
 
-    fetch(apiUrl(path), { signal: controller.signal })
+    fetch(apiUrl(path), { signal: controller.signal, credentials: 'include' })
       .then(async (response) => {
         if (!response.ok) {
           const body = (await response.json().catch(() => ({}))) as { message?: string }

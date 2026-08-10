@@ -12,7 +12,10 @@ export async function getLatestRiskAssessments(
   const query = level ? `?level=${level}` : ''
   let response: Response
   try {
-    response = await fetch(apiUrl(`/api/risk-assessments/latest${query}`), { signal })
+    response = await fetch(apiUrl(`/api/risk-assessments/latest${query}`), {
+      signal,
+      credentials: 'include',
+    })
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error
     throw new Error('위험 예측 API에 연결할 수 없습니다.')

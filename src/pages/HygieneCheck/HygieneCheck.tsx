@@ -145,7 +145,12 @@ function HygieneCheck({ storeId }: { storeId: number }) {
     body.append('itemId', itemId)
     body.append('retakeCount', String(retakeCount))
     body.append('image', image)
-    const response = await fetch(apiUrl('/api/hygiene-inspections/analyze'), { method: 'POST', body })
+    const response = await fetch(apiUrl('/api/hygiene-inspections/analyze'), {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body,
+      credentials: 'include',
+    })
     if (!response.ok) {
       const errorBody = await response.json().catch(() => ({})) as { message?: string }
       throw new Error(errorBody.message ?? `AI 분석 요청에 실패했습니다. (${response.status})`)

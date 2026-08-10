@@ -13,6 +13,18 @@
   text-align: center;
 }
 
+.consent-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.consent-checkbox input {
+  margin-top: 3px;
+}
+
 @media (max-width: 760px) {
   .register-card {
     padding-block: 0;

@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { registerAccount } from '../../api/authApi'
+import { getCaptcha, registerAccount } from '../../api/authApi'
+import type { CaptchaChallenge } from '../../api/authApi'
+import PrivacyPolicyPage from './PrivacyPolicyPage'
 import './RegisterPage.css'
 
 type RegisterPageProps = {
@@ -11,6 +13,19 @@ type RegisterPageProps = {
 function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [privacyConsent, setPrivacyConsent] = useState(false)
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
+  const [captcha, setCaptcha] = useState<CaptchaChallenge | null>(null)
+
+  function refreshCaptcha() {
+    getCaptcha().then(setCaptcha).catch(() => setCaptcha(null))
+  }
+
+  useEffect(refreshCaptcha, [])
+
+  if (showPrivacyPolicy) {
+    return <PrivacyPolicyPage onBack={() => setShowPrivacyPolicy(false)} />
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -22,6 +37,14 @@ function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
       setError('비밀번호가 일치하지 않습니다.')
       return
     }
+    if (!privacyConsent) {
+      setError('개인정보 수집·이용에 동의해야 가입할 수 있습니다.')
+      return
+    }
+    if (!captcha) {
+      setError('캡챠를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
+      return
+    }
 
     setError('')
     setIsSubmitting(true)
@@ -31,6 +54,9 @@ function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
         password,
         name: String(form.get('name') ?? ''),
         phone: String(form.get('phone') ?? ''),
+        privacyConsent,
+        captchaToken: captcha.token,
+        captchaAnswer: String(form.get('captchaAnswer') ?? ''),
       })
       onRegistered(account.loginId)
     } catch (registrationError) {
@@ -39,6 +65,7 @@ function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
           ? registrationError.message
           : '회원가입에 실패했습니다.',
       )
+      refreshCaptcha()
     } finally {
       setIsSubmitting(false)
     }
@@ -100,7 +127,7 @@ function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
                 placeholder="영문, 숫자 4자 이상"
                 minLength={4}
                 maxLength={100}
-                pattern="[A-Za-z0-9._-]+"
+                pattern="[A-Za-z0-9._\-]+"
                 required
               />
             </label>
@@ -122,9 +149,35 @@ function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
               />
             </label>
 
+            <label>
+              {captcha ? `사람 확인: ${captcha.question}` : '캡챠 불러오는 중...'}
+              <input
+                name="captchaAnswer"
+                inputMode="numeric"
+                placeholder="정답을 입력하세요"
+                required
+                disabled={!captcha}
+              />
+            </label>
+
+            <label className="consent-checkbox">
+              <input
+                type="checkbox"
+                checked={privacyConsent}
+                onChange={(event) => setPrivacyConsent(event.target.checked)}
+                required
+              />
+              <span>
+                <button type="button" className="text-button" onClick={() => setShowPrivacyPolicy(true)}>
+                  개인정보처리방침
+                </button>
+                에 동의합니다 (필수)
+              </span>
+            </label>
+
             {error && <p className="form-error">{error}</p>}
 
-            <button className="login-button" type="submit" disabled={isSubmitting}>
+            <button className="login-button" type="submit" disabled={isSubmitting || !privacyConsent}>
               {isSubmitting ? '가입 처리 중...' : '회원가입 →'}
             </button>
           </form>

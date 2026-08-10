@@ -102,6 +102,10 @@
   font-weight: 800;
 }
 
+.admin-sales-ranking-panel {
+  min-width: 0;
+}
+
 .selected-sales-panel {
   min-width: 0;
 }

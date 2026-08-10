@@ -95,6 +95,26 @@ function AdminRiskPrediction() {
         </section>
       ) : (
         <section className="admin-risk-layout">
+          <article className="panel shap-factors-panel">
+            <div className="panel-head">
+              <div>
+                <span className="panel-label">SHAP RISK FACTORS</span>
+                <h2>{selectedRisk.storeName} 위험요인</h2>
+              </div>
+              <small>양수는 위험 증가, 음수는 위험 완화 방향입니다.</small>
+            </div>
+
+            {selectedRisk.riskFactors.length ? (
+              <div className="shap-factor-grid">
+                {selectedRisk.riskFactors.map((factor) => (
+                  <ShapFactorCard factor={factor} key={factor.riskFactorId} />
+                ))}
+              </div>
+            ) : (
+              <p className="risk-no-factors">저장된 SHAP 위험요인이 없습니다.</p>
+            )}
+          </article>
+
           <article className="panel admin-risk-table-panel">
             <div className="panel-head">
               <div>
@@ -176,26 +196,6 @@ function AdminRiskPrediction() {
               <p>{selectedRisk.recommendedAction ?? '등록된 권고 조치가 없습니다.'}</p>
             </div>
           </aside>
-
-          <article className="panel shap-factors-panel">
-            <div className="panel-head">
-              <div>
-                <span className="panel-label">SHAP RISK FACTORS</span>
-                <h2>{selectedRisk.storeName} 위험요인</h2>
-              </div>
-              <small>양수는 위험 증가, 음수는 위험 완화 방향입니다.</small>
-            </div>
-
-            {selectedRisk.riskFactors.length ? (
-              <div className="shap-factor-grid">
-                {selectedRisk.riskFactors.map((factor) => (
-                  <ShapFactorCard factor={factor} key={factor.riskFactorId} />
-                ))}
-              </div>
-            ) : (
-              <p className="risk-no-factors">저장된 SHAP 위험요인이 없습니다.</p>
-            )}
-          </article>
         </section>
       )}
     </div>

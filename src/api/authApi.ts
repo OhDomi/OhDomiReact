@@ -5,6 +5,14 @@ export type RegisterRequest = {
   password: string
   name: string
   phone: string
+  privacyConsent: boolean
+  captchaToken: string
+  captchaAnswer: string
+}
+
+export type CaptchaChallenge = {
+  question: string
+  token: string
 }
 
 export type RegisterResponse = {
@@ -35,6 +43,12 @@ type ApiErrorResponse = {
   message?: string
 }
 
+export async function getCaptcha(): Promise<CaptchaChallenge> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/captcha`, { credentials: 'include' })
+  if (!response.ok) throw new Error('캡챠를 불러오지 못했습니다.')
+  return response.json() as Promise<CaptchaChallenge>
+}
+
 export async function registerAccount(
   request: RegisterRequest,
 ): Promise<RegisterResponse> {
@@ -42,8 +56,9 @@ export async function registerAccount(
   try {
     response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify(request),
+      credentials: 'include',
     })
   } catch {
     throw new Error('백엔드 서버에 연결할 수 없습니다. Spring 서버가 실행 중인지 확인해 주세요.')
@@ -62,8 +77,9 @@ export async function loginAccount(request: LoginRequest): Promise<LoginResponse
   try {
     response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify(request),
+      credentials: 'include',
     })
   } catch {
     throw new Error('백엔드 서버에 연결할 수 없습니다. Spring 서버가 실행 중인지 확인해 주세요.')
@@ -75,4 +91,12 @@ export async function loginAccount(request: LoginRequest): Promise<LoginResponse
   }
 
   return response.json() as Promise<LoginResponse>
+}
+
+export async function logoutAccount(): Promise<void> {
+  await fetch(`${API_BASE_URL}/api/auth/logout`, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    credentials: 'include',
+  }).catch(() => {})
 }

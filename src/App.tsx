@@ -15,7 +15,7 @@ import AdminStoreRiskList from './pages/AdminStoreRiskList/AdminStoreRiskList'
 import AdminDistrictProspect from './pages/AdminDistrictProspect/AdminDistrictProspect'
 import AdminStoreDetail from './pages/AdminStoreDetail/AdminStoreDetail'
 import RegisterPage from './pages/Auth/RegisterPage'
-import { loginAccount } from './api/authApi'
+import { loginAccount, logoutAccount } from './api/authApi'
 import type { LoginResponse } from './api/authApi'
 import { useApiData } from './api/useApiData'
 import ApiDataState from './api/ApiDataState'
@@ -182,7 +182,7 @@ function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
                 onChange={(event) => setLoginId(event.target.value)}
                 minLength={4}
                 maxLength={100}
-                pattern="[A-Za-z0-9._-]+"
+                pattern="[A-Za-z0-9._\-]+"
                 required
               />
             </label>
@@ -723,6 +723,7 @@ function StoreTable({
 
 function ModulePage({
   page, role, account, detailAddress, openStoreDetail, backToStoreList,
+  storeListInitialSort, onStoreListSortConsumed, goToStoreListBySales,
 }: {
   page: Page
   role: Role
@@ -730,6 +731,9 @@ function ModulePage({
   detailAddress: string | null
   openStoreDetail: (address: string) => void
   backToStoreList: () => void
+  storeListInitialSort: 'sales' | undefined
+  onStoreListSortConsumed: () => void
+  goToStoreListBySales: () => void
 }) {
   const content = useMemo(() => ({
     stores: {
@@ -794,7 +798,7 @@ function ModulePage({
   }
 
   if (role === 'admin' && page === 'sales') {
-    return <AdminSalesAnalysis />
+    return <AdminSalesAnalysis onViewAllBySales={goToStoreListBySales} />
   }
 
   if (role === 'admin' && page === 'forecast') {
@@ -806,7 +810,13 @@ function ModulePage({
   }
 
   if (role === 'admin' && page === 'storeRiskList') {
-    return <AdminStoreRiskList onOpenDetail={openStoreDetail} />
+    return (
+      <AdminStoreRiskList
+        onOpenDetail={openStoreDetail}
+        initialSort={storeListInitialSort}
+        onSortConsumed={onStoreListSortConsumed}
+      />
+    )
   }
 
   if (role === 'admin' && page === 'districtProspect') {
@@ -925,21 +935,11 @@ function UnlinkedStore() {
   return <section className="panel full-module"><h2>연결된 매장이 없습니다</h2><p>이 계정에 매장이 배정되면 운영 데이터를 확인할 수 있습니다.</p></section>
 }
 
-// 2026-08-07: 테스트할 때마다 매번 로그인해야 하는 게 번거롭다는 요청 — 개발 서버(`npm run
-// dev`)에서만 관리자 계정으로 자동 로그인해서 로그인 화면을 건너뛴다. `import.meta.env.DEV`는
-// Vite가 프로덕션 빌드(`npm run build`)에서 정적으로 false로 치환해 이 분기 자체가 빌드
-// 결과물에서 제거됨(dead-code elimination) — 배포본에는 이 우회가 전혀 안 남음. Spring 로그인
-// 응답에 토큰/세션 쿠키가 없어(app.tsx의 다른 API 호출도 Authorization 헤더를 안 씀 — 이
-// 프로토타입 단계의 인증은 클라이언트 상태로만 유지됨) 실제 API를 호출할 필요 없이 같은
-// 모양의 객체를 바로 넣어도 이후 화면 동작이 동일하다. data.sql의 admin 계정 값 그대로.
-const DEV_AUTO_LOGIN: LoginResponse | null = import.meta.env.DEV
-  ? { userId: 1, loginId: 'admin', name: '본사 운영팀', role: 'ADMIN', phone: '02-1234-5678', storeId: null }
-  : null
-
 function App() {
-  const [account, setAccount] = useState<LoginResponse | null>(DEV_AUTO_LOGIN)
+  const [account, setAccount] = useState<LoginResponse | null>(null)
   const [page, setPage] = useState<Page>('overview')
   const [detailAddress, setDetailAddress] = useState<string | null>(null)
+  const [storeListInitialSort, setStoreListInitialSort] = useState<'sales' | undefined>(undefined)
   const role: Role | null = account
     ? account.role === 'ADMIN' ? 'admin' : 'owner'
     : null
@@ -956,6 +956,7 @@ function App() {
   }
 
   function handleLogout() {
+    void logoutAccount()
     setAccount(null)
     setPage('overview')
     setNotificationOpen(false)
@@ -967,6 +968,14 @@ function App() {
   function openStoreDetail(address: string) {
     setDetailAddress(address)
     setPage('storeDetail')
+  }
+
+  // 매출 분석의 "가맹점 매출 순위 전체보기" → 전체 매장 목록으로 이동하면서 매출순 정렬로
+  // 시작(2026-08-10). 전체 매장 목록이 마운트되는 즉시 소비하고 원래대로 되돌려, 사이드바로
+  // 직접 들어올 땐 이 정렬이 남아있지 않도록 함.
+  function goToStoreListBySales() {
+    setStoreListInitialSort('sales')
+    setPage('storeRiskList')
   }
 
   function openPreparingMessage(label: string) {
@@ -1202,6 +1211,9 @@ function App() {
                 detailAddress={detailAddress}
                 openStoreDetail={openStoreDetail}
                 backToStoreList={() => setPage('storeRiskList')}
+                storeListInitialSort={storeListInitialSort}
+                onStoreListSortConsumed={() => setStoreListInitialSort(undefined)}
+                goToStoreListBySales={goToStoreListBySales}
               />}
         </main>
       </div>
