@@ -67,7 +67,7 @@
 .checklist-upload-head p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .upload-count {
@@ -86,7 +86,7 @@
 }
 
 .upload-count span {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -124,7 +124,7 @@
 }
 
 .analysis-running-banner strong {
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .analysis-running-banner span {
@@ -139,7 +139,7 @@
 .checklist-message {
   margin: 18px 26px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .checklist-message.error {
@@ -155,7 +155,7 @@
   border-radius: 7px;
   color: var(--purple);
   background: var(--purple-soft);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -195,7 +195,7 @@
   border-radius: 8px;
   color: #69758a;
   background: #eef1f5;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 900;
 }
 
@@ -217,7 +217,7 @@
 
 .check-description strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .check-description em {
@@ -233,7 +233,7 @@
 .check-description p {
   margin: 5px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.45;
 }
 
@@ -344,7 +344,7 @@
 
 .checklist-submit-bar strong {
   color: var(--navy);
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .checklist-submit-bar span {
@@ -423,7 +423,7 @@
 .photo-preview-modal p {
   margin: 14px 0 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.6;
 }
 
@@ -445,7 +445,7 @@
 
 .hygiene-field span {
   color: var(--navy);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 800;
 }
 
@@ -518,14 +518,14 @@
   border-radius: 10px;
   color: var(--muted);
   background: #f8f9fb;
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.6;
 }
 
 .hygiene-empty {
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .upload-guide {
@@ -546,7 +546,7 @@
   margin: 10px 0 0;
   padding-left: 18px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.6;
 }
 
@@ -579,7 +579,7 @@
 .hygiene-score-box p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.7;
 }
 
@@ -601,7 +601,7 @@
 
 .recent-inspection-list span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .recent-inspection-list strong {
@@ -701,7 +701,7 @@
 .hygiene-item-bottom p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -752,7 +752,7 @@
 .improvement-card p {
   margin: 5px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 @media (max-width: 1050px) {

@@ -17,7 +17,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   font: inherit;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .risk-list-tier-filter {
@@ -29,7 +29,7 @@
 .risk-list-count {
   margin: 0 0 10px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .risk-list-table-wrap {
@@ -81,7 +81,7 @@
 
 .risk-list-stat-row {
   margin-bottom: 14px;
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .risk-list-stat-top {
@@ -131,7 +131,7 @@
   border-radius: 10px;
   color: var(--orange);
   background: #fff4e7;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   cursor: help;
 }

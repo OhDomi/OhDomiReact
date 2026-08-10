@@ -10,7 +10,7 @@
   background: none;
   color: var(--purple);
   font: inherit;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -28,7 +28,7 @@
 .page-heading-sub {
   margin: 0 0 20px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .store-detail-section {
@@ -53,20 +53,20 @@
   border-radius: 50%;
   background: #eef0f4;
   color: var(--navy);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
 .explain {
   margin: 0 0 14px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.7;
 }
 
 .results-empty {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .store-detail-card-header {
@@ -93,14 +93,14 @@
 .interp-item h3 {
   margin: 0 0 6px;
   color: var(--navy);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 800;
 }
 
 .interp-item p {
   margin: 0;
   color: var(--navy);
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.7;
 }
 
@@ -175,7 +175,7 @@
   gap: 10px;
   padding: 8px 0;
   border-top: 1px dashed var(--line);
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .dstat-line:first-of-type {
@@ -211,7 +211,7 @@
 .dstat-subheading {
   margin: 24px 0 12px;
   color: var(--navy);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -226,7 +226,7 @@
   gap: 10px;
   padding: 8px 0;
   border-top: 1px dashed var(--line);
-  font-size: 12px;
+  font-size: 15px;
 }
 
 .competitor-row:first-child {
@@ -293,7 +293,7 @@
   background: none;
   color: var(--muted);
   font: inherit;
-  font-size: 12px;
+  font-size: 15px;
   cursor: pointer;
   text-decoration: underline;
   text-decoration-color: var(--line);

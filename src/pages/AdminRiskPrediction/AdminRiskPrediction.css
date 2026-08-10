@@ -117,7 +117,7 @@
 
 .risk-score-ring span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -130,7 +130,7 @@
 .selected-risk-score p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .selected-risk-info {
@@ -183,7 +183,7 @@
 .risk-prediction-box p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -252,7 +252,7 @@
 .risk-factor-card p {
   margin: 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -318,7 +318,7 @@
 
 .risk-trend-column small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -334,7 +334,7 @@
   align-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -394,7 +394,7 @@
 .ai-risk-card p {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -565,7 +565,7 @@
 
 .shap-factor-heading b {
   color: #dc4c5a;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .shap-factor-card.lowers-risk .shap-factor-heading b {
@@ -597,7 +597,7 @@
 .risk-no-factors {
   margin: 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.55;
 }
 

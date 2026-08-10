@@ -98,7 +98,7 @@
 
 .admin-sales-column small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -136,12 +136,12 @@
 .selected-sales-profile p {
   margin: 6px 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .selected-sales-profile span {
   color: var(--purple);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -218,7 +218,7 @@
   display: block;
   margin-top: 5px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -244,7 +244,7 @@
 .region-sales-card p {
   margin: 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .region-sales-card p strong {
@@ -259,7 +259,7 @@
   border-radius: 9px;
   color: var(--purple);
   background: var(--purple-soft);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 900;
 }
 
@@ -347,7 +347,7 @@
 .weak-store-card p {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -389,7 +389,7 @@
 .admin-sales-insight-card p {
   margin: 7px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.6;
 }
 

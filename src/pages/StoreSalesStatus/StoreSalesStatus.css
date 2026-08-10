@@ -132,7 +132,7 @@
 
 .target-ring span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -142,7 +142,7 @@
 
 .target-info span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -157,7 +157,7 @@
 .target-info p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .target-progress {
@@ -186,7 +186,7 @@
   border-radius: 9px;
   color: var(--purple);
   background: var(--purple-soft);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 900;
 }
 
@@ -229,13 +229,13 @@
 
 .channel-item span {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 800;
 }
 
 .channel-item b {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .channel-progress {
@@ -296,7 +296,7 @@
 .sales-insight-card p {
   margin: 7px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.6;
 }
 
@@ -366,7 +366,7 @@
 }
 
 .order-reflect-box > div:last-child > strong {
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted, #8a90a6);
   font-weight: 600;
 }
@@ -379,7 +379,7 @@
 
 .order-reflect-box > div:last-child > p {
   margin: 6px 0 0;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted, #8a90a6);
   line-height: 1.5;
 }

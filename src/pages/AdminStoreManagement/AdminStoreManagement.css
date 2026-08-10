@@ -86,13 +86,13 @@
 .selected-store-profile p {
   margin: 6px 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
 .selected-store-profile span {
   color: var(--purple);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -201,7 +201,7 @@
 .action-store-card p {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -232,7 +232,7 @@
 
 .region-status-card span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -253,7 +253,7 @@
 .region-status-card p {
   margin: 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 @media (max-width: 1100px) {
@@ -295,7 +295,7 @@
   padding: 8px 11px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 14px;
   min-width: 200px;
 }
 
@@ -321,7 +321,7 @@
   justify-content: center;
   gap: 14px;
   margin-top: 14px;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 

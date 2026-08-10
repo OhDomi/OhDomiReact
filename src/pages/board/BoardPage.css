@@ -64,7 +64,7 @@
   padding: 9px 15px;
   color: var(--muted);
   background: transparent;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 900;
   cursor: pointer;
 }
@@ -87,7 +87,7 @@
 .board-actions .primary-action {
   height: 35px;
   padding: 0 14px;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .board-table td {
@@ -102,7 +102,7 @@
 
 .board-title-cell strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .pinned-badge {
@@ -181,7 +181,7 @@
 
 .board-meta span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -210,7 +210,7 @@
 .board-answer-box p {
   margin: 8px 0 0;
   color: var(--navy);
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.6;
 }
 
@@ -237,7 +237,7 @@
   display: grid;
   gap: 8px;
   color: var(--navy);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 900;
 }
 
@@ -250,7 +250,7 @@
   padding: 12px 13px;
   color: var(--navy);
   background: #f8f9fb;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 800;
   outline: none;
 }
@@ -282,7 +282,7 @@
   border-radius: 11px;
   color: var(--orange);
   background: #fff4e7;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -329,7 +329,7 @@
 .board-guide-grid p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.6;
 }
 

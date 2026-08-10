@@ -114,7 +114,7 @@
 
 .hygiene-score-ring span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -127,7 +127,7 @@
 .hygiene-detail-score p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .hygiene-detail-list {
@@ -152,7 +152,7 @@
 .hygiene-detail-list dd {
   margin: 6px 0 0;
   color: var(--navy);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 900;
 }
 
@@ -243,7 +243,7 @@
 .review-card-body p {
   margin: 10px 0 5px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -299,7 +299,7 @@
 .hygiene-action-card p {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -354,7 +354,7 @@
 
 .trend-column small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -396,7 +396,7 @@
   padding: 8px 11px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 14px;
   min-width: 200px;
 }
 
@@ -422,7 +422,7 @@
   justify-content: center;
   gap: 14px;
   margin-top: 14px;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 
