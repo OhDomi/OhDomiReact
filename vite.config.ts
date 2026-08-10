@@ -5,6 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    // 팀원이 외부(인터넷)에서 터널(ngrok/cloudflared 등)을 통해 접속할 때, Vite가 낯선
+    // Host 헤더(예: xxxx.trycloudflare.com)를 보안상 자동으로 차단하는 것을 막는다
+    // (2026-08-10). 로컬 전용 개발 서버라 위험 낮음 — 실 서비스 배포에는 안 씀.
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:8080',

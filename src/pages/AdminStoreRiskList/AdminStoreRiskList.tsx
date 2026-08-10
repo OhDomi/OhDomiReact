@@ -144,8 +144,11 @@ function AdminStoreRiskList() {
             {visibleRows.length === 0 ? (
               <tr><td colSpan={3} className="risk-list-empty">표시할 매장이 없습니다.</td></tr>
             ) : (
-              visibleRows.map((row) => (
-                <tr key={row.store_label} onClick={() => setSelected(row)}>
+              visibleRows.map((row, i) => (
+                // store_label(주소)이 유일 식별자 역할을 하는데, 실제 216개 매장 중 4곳은
+                // 주소가 중복돼(같은 건물에 다른 매장 등) key 충돌로 React가 클릭 대상을
+                // 잘못 연결하는 문제가 있었다(2026-08-10) — 인덱스를 더해 항상 유일하게.
+                <tr key={`${row.store_label}-${i}`} onClick={() => setSelected(row)}>
                   <td><strong>{row.store_label}</strong></td>
                   <td className="cell-num">{row.v2_percentile != null ? row.v2_percentile.toFixed(1) : '-'}</td>
                   <td><span className={`risk-tag ${riskTagClass(badgeTier(row.classification))}`}>{shortBadgeLabel(row.classification)}</span></td>

@@ -215,11 +215,13 @@ function AdminRenewalCheck() {
         <div className="panel renewal-empty">이 필터에 해당하는 매장이 없습니다.</div>
       ) : (
         <div className="renewal-priority-list">
-          {filteredRows.map((row) => {
+          {filteredRows.map((row, i) => {
             const dday = ddayLabel(row.days)
             const factor = topFactors[row.store_label]
             return (
-              <article key={row.store_label} className="panel renewal-priority-row">
+              // store_label(주소) 중복 4건 때문에 key 충돌 나던 것과 동일 문제 —
+              // AdminStoreRiskList와 같은 방식으로 인덱스를 더해 유일하게(2026-08-10).
+              <article key={`${row.store_label}-${i}`} className="panel renewal-priority-row">
                 <div className="renewal-priority-head">
                   <div>
                     <div className="renewal-priority-store">{row.store_label}</div>
