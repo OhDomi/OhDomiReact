@@ -10,7 +10,7 @@
   background: none;
   color: var(--purple);
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -28,7 +28,7 @@
 .page-heading-sub {
   margin: 0 0 20px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .store-detail-section {
@@ -53,20 +53,20 @@
   border-radius: 50%;
   background: #eef0f4;
   color: var(--navy);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
 .explain {
   margin: 0 0 14px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.7;
 }
 
 .results-empty {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .store-detail-card-header {
@@ -93,14 +93,14 @@
 .interp-item h3 {
   margin: 0 0 6px;
   color: var(--navy);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
 }
 
 .interp-item p {
   margin: 0;
   color: var(--navy);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.7;
 }
 
@@ -138,20 +138,20 @@
 .dstat-hero-value .unit {
   margin-left: 3px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .dstat-hero-label {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .dstat-hero-avg {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -175,7 +175,7 @@
   gap: 10px;
   padding: 8px 0;
   border-top: 1px dashed var(--line);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .dstat-line:first-of-type {
@@ -203,7 +203,7 @@
 .dstat-line-avg {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -211,7 +211,7 @@
 .dstat-subheading {
   margin: 24px 0 12px;
   color: var(--navy);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -226,7 +226,7 @@
   gap: 10px;
   padding: 8px 0;
   border-top: 1px dashed var(--line);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .competitor-row:first-child {
@@ -244,7 +244,7 @@
   border-radius: 50%;
   background: #eef0f4;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -293,7 +293,7 @@
   background: none;
   color: var(--muted);
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
   text-decoration: underline;
   text-decoration-color: var(--line);
@@ -320,7 +320,7 @@
 .doc-col .group-title {
   margin-bottom: 8px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: .04em;

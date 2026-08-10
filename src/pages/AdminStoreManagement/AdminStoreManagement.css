@@ -86,13 +86,13 @@
 .selected-store-profile p {
   margin: 6px 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
 .selected-store-profile span {
   color: var(--purple);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -111,14 +111,14 @@
 
 .selected-store-info dt {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
 }
 
 .selected-store-info dd {
   margin: 6px 0 0;
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 900;
 }
 
@@ -131,7 +131,7 @@
 
 .selected-store-issue span {
   color: var(--orange);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
 }
 
@@ -139,7 +139,7 @@
   display: block;
   margin-top: 7px;
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .selected-store-actions {
@@ -179,7 +179,7 @@
 .action-priority {
   padding: 6px 9px;
   border-radius: 999px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
 }
 
@@ -195,13 +195,13 @@
 
 .action-store-card strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .action-store-card p {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -232,7 +232,7 @@
 
 .region-status-card span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -253,7 +253,7 @@
 .region-status-card p {
   margin: 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 @media (max-width: 1100px) {
@@ -295,14 +295,14 @@
   padding: 8px 11px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  font-size: 10px;
+  font-size: 11px;
   min-width: 200px;
 }
 
 .admin-store-count {
   margin: 10px 0 0;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .source-badge {
@@ -311,7 +311,7 @@
   border-radius: 10px;
   color: var(--purple);
   background: var(--purple-soft);
-  font-size: 7px;
+  font-size: 8px;
   font-weight: 700;
 }
 
@@ -321,7 +321,7 @@
   justify-content: center;
   gap: 14px;
   margin-top: 14px;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--muted);
 }
 

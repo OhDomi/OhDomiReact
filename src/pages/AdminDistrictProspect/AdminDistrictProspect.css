@@ -22,7 +22,7 @@
   align-items: center;
   gap: 8px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .district-rail-item span {
@@ -34,7 +34,7 @@
   height: 22px;
   border: 1px solid var(--line);
   border-radius: 50%;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
 }
 
@@ -136,7 +136,7 @@
 .district-map-caption {
   margin: 10px 0;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.6;
 }
 
@@ -146,7 +146,7 @@
   flex-wrap: wrap;
   margin-bottom: 18px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .district-map-legend .swatch {
@@ -169,7 +169,7 @@
   gap: 10px;
   flex-wrap: wrap;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .district-gu-select-row select {
@@ -177,13 +177,13 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .district-explain {
   margin: 0 0 14px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.7;
 }
 
@@ -198,7 +198,7 @@
 .district-listing-label {
   margin-bottom: 4px;
   color: var(--purple);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: .04em;
@@ -207,13 +207,13 @@
 .district-listing-note p {
   margin: 0;
   color: var(--navy);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.7;
 }
 
 .district-empty-hint {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .district-candidate-list {
@@ -254,13 +254,13 @@
 
 .district-candidate-title {
   color: var(--navy);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }
 
 .district-candidate-coords {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .district-indicator-row {
@@ -268,13 +268,13 @@
   gap: 14px;
   flex-wrap: wrap;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .district-candidate-reason {
   margin: 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.6;
 }
 
@@ -286,7 +286,7 @@
 
 .district-map-links a {
   color: var(--purple);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   text-decoration: underline;
 }
@@ -304,7 +304,7 @@
   background: #fff;
   color: var(--navy);
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -320,7 +320,7 @@
   background: #f8f9fb;
   color: var(--navy);
   font-family: ui-monospace, "Consolas", monospace;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.7;
   white-space: pre-wrap;
 }
@@ -331,7 +331,7 @@
   border-radius: 10px;
   background: #fffafa;
   color: #dc4c5a;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 @media (max-width: 720px) {

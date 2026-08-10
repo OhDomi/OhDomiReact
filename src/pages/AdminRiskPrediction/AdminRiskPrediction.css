@@ -55,7 +55,7 @@
   padding: 5px 9px;
   border-radius: 999px;
   white-space: nowrap;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
 }
 
@@ -117,7 +117,7 @@
 
 .risk-score-ring span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -130,7 +130,7 @@
 .selected-risk-score p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .selected-risk-info {
@@ -148,14 +148,14 @@
 
 .selected-risk-info dt {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
 }
 
 .selected-risk-info dd {
   margin: 6px 0 0;
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 900;
 }
 
@@ -168,7 +168,7 @@
 
 .risk-prediction-box span {
   color: var(--orange);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
 }
 
@@ -176,14 +176,14 @@
   display: block;
   margin-top: 7px;
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
 .risk-prediction-box p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -227,12 +227,12 @@
 
 .risk-factor-top strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .risk-factor-top b {
   color: #dc4c5a;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .risk-factor-progress {
@@ -252,7 +252,7 @@
 .risk-factor-card p {
   margin: 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -312,13 +312,13 @@
   left: 50%;
   transform: translateX(-50%);
   color: var(--navy);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 900;
 }
 
 .risk-trend-column small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -334,7 +334,7 @@
   align-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -372,7 +372,7 @@
 .ai-risk-priority {
   padding: 6px 9px;
   border-radius: 999px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
 }
 
@@ -388,13 +388,13 @@
 
 .ai-risk-card strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .ai-risk-card p {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -452,7 +452,7 @@
 .risk-model-summary-card span,
 .risk-detail-label {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
 }
 
@@ -478,7 +478,7 @@
   gap: 6px;
   min-width: 132px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
 }
 
@@ -518,7 +518,7 @@
 
 .shap-factors-panel .panel-head small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .shap-factor-grid {
@@ -550,7 +550,7 @@
   display: block;
   overflow: hidden;
   color: var(--muted);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -560,12 +560,12 @@
   display: block;
   margin-top: 5px;
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .shap-factor-heading b {
   color: #dc4c5a;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .shap-factor-card.lowers-risk .shap-factor-heading b {
@@ -597,7 +597,7 @@
 .risk-no-factors {
   margin: 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.55;
 }
 
@@ -611,7 +611,7 @@
   display: block;
   margin-bottom: 5px;
   color: var(--orange);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 900;
 }
 

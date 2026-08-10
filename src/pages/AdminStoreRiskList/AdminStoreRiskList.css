@@ -17,7 +17,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .risk-list-tier-filter {
@@ -29,7 +29,7 @@
 .risk-list-count {
   margin: 0 0 10px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .risk-list-table-wrap {
@@ -66,7 +66,7 @@
 .risk-list-panel-label {
   margin-bottom: 8px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: .04em;
@@ -75,13 +75,13 @@
 .risk-list-scale-hint {
   margin: 0 0 12px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.5;
 }
 
 .risk-list-stat-row {
   margin-bottom: 14px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .risk-list-stat-top {
@@ -131,7 +131,7 @@
   border-radius: 10px;
   color: var(--orange);
   background: #fff4e7;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   cursor: help;
 }
@@ -139,7 +139,7 @@
 .risk-list-panel-footnote {
   margin-top: 16px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.6;
 }
 

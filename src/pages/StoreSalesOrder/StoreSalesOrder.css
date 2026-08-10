@@ -66,21 +66,21 @@
   border-radius: 9px;
   color: var(--purple);
   background: var(--purple-soft);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
 }
 
 .order-item-name strong {
   display: block;
   color: var(--navy);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .order-item-name small {
   display: block;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
 }
 
@@ -91,7 +91,7 @@
   border-radius: 9px;
   color: var(--navy);
   background: white;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
   outline: none;
 }
@@ -109,7 +109,7 @@
   padding: 5px 9px;
   border-radius: 999px;
   white-space: nowrap;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
 }
 
@@ -164,13 +164,13 @@
 
 .order-sheet-rate span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
 }
 
 .order-sheet-info span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -185,7 +185,7 @@
 .order-sheet-info p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -209,20 +209,20 @@
 .order-sheet-item strong {
   display: block;
   color: var(--navy);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .order-sheet-item span {
   display: block;
   margin-top: 4px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
 }
 
 .order-sheet-item b {
   color: var(--purple);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .order-total-box {
@@ -238,7 +238,7 @@
 
 .order-total-box span {
   color: var(--orange);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
 }
 
@@ -303,14 +303,14 @@
 .order-reason-card strong,
 .order-insight-card strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .order-reason-card p,
 .order-insight-card p {
   margin: 7px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.6;
 }
 
@@ -371,7 +371,7 @@
 .order-insight-card p,
 .order-reason-card p {
   margin: 5px 0 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted, #8a90a6);
   line-height: 1.5;
 }

@@ -92,13 +92,13 @@
   border-radius: 999px;
   color: white;
   background: var(--navy);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 800;
 }
 
 .admin-sales-column small {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -136,12 +136,12 @@
 .selected-sales-profile p {
   margin: 6px 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .selected-sales-profile span {
   color: var(--purple);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -160,14 +160,14 @@
 
 .selected-sales-info dt {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
 }
 
 .selected-sales-info dd {
   margin: 6px 0 0;
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 900;
 }
 
@@ -218,13 +218,13 @@
   display: block;
   margin-top: 5px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
 .region-sales-top b {
   color: var(--purple);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .region-sales-progress {
@@ -244,7 +244,7 @@
 .region-sales-card p {
   margin: 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .region-sales-card p strong {
@@ -259,7 +259,7 @@
   border-radius: 9px;
   color: var(--purple);
   background: var(--purple-soft);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
 }
 
@@ -270,7 +270,7 @@
   padding: 5px 9px;
   border-radius: 999px;
   white-space: nowrap;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
 }
 
@@ -325,7 +325,7 @@
 .weak-priority {
   padding: 6px 9px;
   border-radius: 999px;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
 }
 
@@ -341,13 +341,13 @@
 
 .weak-store-card strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .weak-store-card p {
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
@@ -383,13 +383,13 @@
 
 .admin-sales-insight-card strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .admin-sales-insight-card p {
   margin: 7px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.6;
 }
 

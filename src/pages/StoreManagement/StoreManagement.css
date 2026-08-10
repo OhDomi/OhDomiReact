@@ -23,14 +23,14 @@
 
 .store-info-list dt {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
 .store-info-list dd {
   margin: 5px 0 0;
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -49,7 +49,7 @@
   border-radius: 10px;
   color: var(--navy);
   background: #f8f9fb;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -89,13 +89,13 @@
 .facility-card p {
   margin: 8px 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.5;
 }
 
 .facility-card small {
   color: #9aa3b3;
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .facility-status {
@@ -103,7 +103,7 @@
   padding: 5px 8px;
   border-radius: 999px;
   white-space: nowrap;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 800;
 }
 

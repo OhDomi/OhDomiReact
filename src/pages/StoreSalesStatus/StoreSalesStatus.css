@@ -92,14 +92,14 @@
   border-radius: 999px;
   color: white;
   background: var(--navy);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 800;
   white-space: nowrap;
 }
 
 .hourly-column small {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -132,7 +132,7 @@
 
 .target-ring span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -142,7 +142,7 @@
 
 .target-info span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -157,7 +157,7 @@
 .target-info p {
   margin: 8px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .target-progress {
@@ -186,7 +186,7 @@
   border-radius: 9px;
   color: var(--purple);
   background: var(--purple-soft);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
 }
 
@@ -224,18 +224,18 @@
 
 .channel-item strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .channel-item span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
 }
 
 .channel-item b {
   color: var(--navy);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .channel-progress {
@@ -290,13 +290,13 @@
 
 .sales-insight-card strong {
   color: var(--navy);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .sales-insight-card p {
   margin: 7px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.6;
 }
 
@@ -344,7 +344,7 @@
 
 .target-ring span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
   text-align: center;
 }
@@ -366,7 +366,7 @@
 }
 
 .order-reflect-box > div:last-child > strong {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted, #8a90a6);
   font-weight: 600;
 }
@@ -379,7 +379,7 @@
 
 .order-reflect-box > div:last-child > p {
   margin: 6px 0 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted, #8a90a6);
   line-height: 1.5;
 }
