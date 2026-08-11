@@ -9,6 +9,11 @@ export default defineConfig({
     // Host 헤더(예: xxxx.trycloudflare.com)를 보안상 자동으로 차단하는 것을 막는다
     // (2026-08-10). 로컬 전용 개발 서버라 위험 낮음 — 실 서비스 배포에는 안 씀.
     allowedHosts: true,
+    // Vite's own CORS preflight handling intercepts OPTIONS requests on proxied /api paths
+    // before they reach the proxy target, stripping Access-Control-Allow-Origin from Spring's
+    // real response (2026-08-12, broke login through the Tailscale Funnel domain). Turn it off
+    // so preflight requests pass through to Spring, which already handles CORS itself.
+    cors: false,
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:8080',
