@@ -8,6 +8,7 @@ import type {
 } from './hygieneCheckDummy'
 import { apiUrl, useApiData } from '../../api/useApiData'
 import ApiDataState from '../../api/ApiDataState'
+import GeneratingBanner from '../../api/GeneratingBanner'
 
 type HygieneData = {
   hygieneItems: typeof hygieneItems
@@ -234,16 +235,19 @@ function HygieneCheck({ storeId }: { storeId: number }) {
           </div>
 
           {uploading && (
-            <div className="analysis-running-banner" role="status" aria-live="polite">
-              <i aria-hidden="true" />
-              <div>
-                <strong>AI가 사진을 분석하고 있습니다</strong>
-                <span>현재 {uploadProgress}번째 사진 처리 중 · 완료될 때까지 입력 버튼이 잠깁니다.</span>
-              </div>
-            </div>
+            <GeneratingBanner
+              title="AI가 사진을 분석하고 있습니다"
+              detail={`현재 ${uploadProgress}번째 사진 처리 중 · 완료될 때까지 입력 버튼이 잠깁니다.`}
+            />
           )}
 
-          {checklistApi.loading && <p className="checklist-message">AI 점검 항목을 불러오는 중입니다.</p>}
+          {checklistApi.loading && (
+            <div className="skeleton-panel-row rows">
+              <span className="skeleton-block" style={{ height: 32 }} />
+              <span className="skeleton-block" style={{ height: 32 }} />
+              <span className="skeleton-block" style={{ height: 32 }} />
+            </div>
+          )}
           {checklistApi.error && (
             <div className="checklist-message error">
               <span>{checklistApi.error}</span>

@@ -20,10 +20,11 @@ import { loginAccount, logoutAccount } from './api/authApi'
 import type { LoginResponse } from './api/authApi'
 import { useApiData } from './api/useApiData'
 import ApiDataState from './api/ApiDataState'
+import GeneratingBanner from './api/GeneratingBanner'
 import Footer from './components/Footer'
 
 type Role = 'owner' | 'admin'
-type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'renewalCheck' | 'storeRiskList' | 'districtProspect' | 'storeDetail' | 'orders' | 'board'
+type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'renewalCheck' | 'storeRiskList' | 'districtProspect' | 'storeDetail' | 'orders' | 'board' | 'loadingPreview'
 
 const NOTIFICATION_LIMIT = 5
 
@@ -43,6 +44,7 @@ const icons: Record<string, ReactNode> = {
   camera: <><path d="M4 7h4l2-3h4l2 3h4v13H4z"/><circle cx="12" cy="13" r="4"/></>,
   check: <path d="M5 12l4 4L19 6"/>,
   logout: <><path d="M10 5V3H4v18h6v-2"/><path d="M13 8l5 4-5 4"/><path d="M18 12H8"/></>,
+  loadingTest: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
 }
 
 function Icon({ name, size = 20 }: { name: string; size?: number }) {
@@ -254,6 +256,7 @@ function Sidebar({
     { id: 'sales', label: '매출 현황', icon: 'sales' },
     { id: 'orders', label: '발주 관리', icon: 'orders' },
     { id: 'board', label: '공지/문의게시판', icon: 'bell' },
+    { id: 'loadingPreview', label: '로딩 화면 (테스트)', icon: 'loadingTest' },
   ]
 
   const adminNav: { id: Page; label: string; icon: string }[] = [
@@ -266,6 +269,7 @@ function Sidebar({
     { id: 'storeRiskList', label: '전체 매장 목록', icon: 'storeRiskList' },
     { id: 'districtProspect', label: '희망상권 탐색', icon: 'districtProspect' },
     { id: 'board', label: '공지/문의게시판', icon: 'bell' },
+    { id: 'loadingPreview', label: '로딩 화면 (테스트)', icon: 'loadingTest' },
   ]
 
   return (
@@ -942,6 +946,59 @@ function UnlinkedStore() {
   return <section className="panel full-module"><h2>연결된 매장이 없습니다</h2><p>이 계정에 매장이 배정되면 운영 데이터를 확인할 수 있습니다.</p></section>
 }
 
+function LoadingPreviewPage() {
+  return (
+    <>
+      <header className="page-heading">
+        <div>
+          <span className="kicker">INTERNAL TEST</span>
+          <h1>로딩 화면 모음</h1>
+          <p>앱 곳곳에서 쓰는 로딩 상태를 실제 데이터 없이 계속 보면서 점검하는 테스트 탭입니다.</p>
+        </div>
+      </header>
+
+      <section className="panel" style={{ marginBottom: 18 }}>
+        <div className="panel-head">
+          <div>
+            <span className="panel-label">DASHBOARD SKELETON</span>
+            <h2>대시보드 데이터 로딩 (ApiDataState)</h2>
+          </div>
+        </div>
+        <p className="muted" style={{ margin: '4px 0 18px' }}>대시보드/오너 화면 진입 시 첫 데이터를 기다리는 동안 보이는 모습</p>
+        <ApiDataState loading error="" retry={() => {}} />
+      </section>
+
+      <section className="panel" style={{ marginBottom: 18 }}>
+        <div className="panel-head">
+          <div>
+            <span className="panel-label">LONG-RUNNING TASK</span>
+            <h2>생성/계산 중 배너 (GeneratingBanner)</h2>
+          </div>
+        </div>
+        <p className="muted" style={{ margin: '4px 0 0' }}>결과 형태를 미리 알 수 없는, 몇 초~수십 초 걸리는 작업에 사용</p>
+        <GeneratingBanner title="AI가 사진을 분석하고 있습니다" detail="현재 3번째 사진 처리 중 · 완료될 때까지 입력 버튼이 잠깁니다." />
+        <GeneratingBanner title="상담자료 생성 중…" detail="실제 계산이라 몇 초~수십 초 걸릴 수 있습니다" />
+        <GeneratingBanner title="후보지 계산 중…" detail="실제 계산이라 격자점마다 몇 초~수십 초 걸릴 수 있습니다" />
+      </section>
+
+      <section className="panel">
+        <div className="panel-head">
+          <div>
+            <span className="panel-label">INLINE SKELETON</span>
+            <h2>목록/라인 단위 스켈레톤 (.skeleton-block)</h2>
+          </div>
+        </div>
+        <p className="muted" style={{ margin: '4px 0 18px' }}>게시판 목록, 위생 체크리스트 등 짧은 목록 로딩에 사용</p>
+        <div className="skeleton-panel-row rows">
+          <span className="skeleton-block" style={{ height: 40 }} />
+          <span className="skeleton-block" style={{ height: 40 }} />
+          <span className="skeleton-block" style={{ height: 40 }} />
+        </div>
+      </section>
+    </>
+  )
+}
+
 function App() {
   const [account, setAccount] = useState<LoginResponse | null>(null)
   const [page, setPage] = useState<Page>('overview')
@@ -1257,6 +1314,8 @@ function App() {
               : account.storeId
                 ? <OwnerOverview go={setPage} storeId={account.storeId} name={account.name} />
                 : <UnlinkedStore />
+            : page === 'loadingPreview'
+            ? <LoadingPreviewPage />
             : <ModulePage
                 page={page}
                 role={role}

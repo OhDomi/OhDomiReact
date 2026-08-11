@@ -3,6 +3,7 @@ import {
   badgeTier, dummyMonthlyRent, dummyMonthlySales, fmtWon, pctLabel,
   riskTagClass, stripMarkdownSymbols, topClauseFactor, type RankingRow, type TopFactor,
 } from '../riskTool/riskToolShared'
+import GeneratingBanner from '../../api/GeneratingBanner'
 import './AdminStoreDetail.css'
 
 // closure-risk-model의 store-detail.html을 React로 재구현(2026-08-10, "모든 페이지에
@@ -177,7 +178,7 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
 
       <section className="panel store-detail-section">
         <h2><span className="step">1</span> 위험도 요약</h2>
-        {summary === 'loading' && <p className="results-empty">불러오는 중…</p>}
+        {summary === 'loading' && <span className="skeleton-block" style={{ display: 'block', height: 90 }} />}
         {summary === 'error' && <div className="results-error">위험도 요약을 불러오지 못했습니다.</div>}
         {summary === null && <p className="results-empty">이 매장의 사전 계산된 순위 데이터를 찾지 못했습니다 — 아래 상담자료 탭은 그대로 이용할 수 있습니다.</p>}
         {summary && summary !== 'loading' && summary !== 'error' && (
@@ -189,7 +190,7 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
         <section className="panel store-detail-section">
           <h2><span className="step">2</span> 상권 원자료</h2>
           <p className="explain">이 매장 상권의 유동인구·경쟁점포·배후인구 등 공공데이터 원자료입니다 — 위험도 판단(1번)과는 별개로, 판단 근거가 된 숫자를 그대로 보여줍니다.</p>
-          {district === 'loading' && <p className="results-empty">불러오는 중…</p>}
+          {district === 'loading' && <span className="skeleton-block" style={{ display: 'block', height: 120 }} />}
           {district === 'error' && <div className="results-error">상권 원자료를 불러오지 못했습니다.</div>}
           {district && district !== 'loading' && district !== 'error' && (
             <DistrictStats stats={district.district_stats} competitors={district.nearby_competitors} />
@@ -206,7 +207,7 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
           <button type="button" className="doc-tab" aria-pressed={activeTab === 'transfer'} onClick={() => setActiveTab('transfer')}>가맹점 양도·양수 자료</button>
         </div>
 
-        {docLoading === activeTab && <p className="results-empty">자료 생성 중… (실제 계산이라 몇 초~수십 초 걸릴 수 있습니다)</p>}
+        {docLoading === activeTab && <GeneratingBanner title="자료 생성 중…" detail="실제 계산이라 몇 초~수십 초 걸릴 수 있습니다" />}
         {docError[activeTab] && <div className="results-error">{docError[activeTab]}</div>}
         {docs[activeTab] && <DocBody kind={activeTab} body={docs[activeTab]!} address={address} />}
       </section>

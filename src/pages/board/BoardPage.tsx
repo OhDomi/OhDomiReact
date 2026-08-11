@@ -53,7 +53,7 @@ function BoardPage({ userId, storeId, userName, isAdmin }: Props) {
         <div className="panel-head board-panel-head"><div><span className="panel-label">{activeTab}</span><h2>게시글 목록</h2></div>
           <button className="primary-action" type="button" disabled={activeTab === 'NOTICE' && !isAdmin} onClick={() => setWriting(true)}>글쓰기</button>
         </div>
-        {loading ? <p>MySQL 데이터를 불러오는 중...</p> : <div className="table-scroll"><table className="data-table selectable board-table"><thead><tr><th>제목</th><th>분류</th><th>작성자</th><th>작성일</th><th>조회</th><th>상태</th></tr></thead><tbody>
+        {loading ? <div className="skeleton-panel-row rows"><span className="skeleton-block" style={{ height: 40 }} /><span className="skeleton-block" style={{ height: 40 }} /><span className="skeleton-block" style={{ height: 40 }} /></div> : <div className="table-scroll"><table className="data-table selectable board-table"><thead><tr><th>제목</th><th>분류</th><th>작성자</th><th>작성일</th><th>조회</th><th>상태</th></tr></thead><tbody>
           {posts.map((post) => <tr key={post.postId} className={selected?.postId === post.postId && !writing ? 'selected' : ''} onClick={() => void selectPost(post.postId)}>
             <td><div className="board-title-cell">{post.isPinned && <span className="pinned-badge">고정</span>}<strong>{post.title}</strong></div></td><td>{post.category}</td><td>{post.authorName}</td><td>{post.createdAt.slice(0, 10)}</td><td>{post.viewCount}</td><td><Status value={post.status} /></td>
           </tr>)}</tbody></table></div>}

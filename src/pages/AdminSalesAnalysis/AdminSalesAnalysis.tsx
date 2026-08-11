@@ -70,23 +70,6 @@ function AdminSalesAnalysis({ onViewAllBySales }: { onViewAllBySales: () => void
           </div>
         </article>
 
-        <article className="metric-card">
-          <div className="admin-sales-icon green">#</div>
-          <div>
-            <span>총 주문 수</span>
-            <strong>{adminSalesSummary.totalOrders}</strong>
-            <small>전체 가맹점 합산</small>
-          </div>
-        </article>
-
-        <article className="metric-card">
-          <div className="admin-sales-icon orange">◎</div>
-          <div>
-            <span>평균 객단가</span>
-            <strong>{adminSalesSummary.averageOrderPrice}</strong>
-            <small>전월 대비 +1.2%</small>
-          </div>
-        </article>
       </section>
 
       <section className="admin-sales-layout">

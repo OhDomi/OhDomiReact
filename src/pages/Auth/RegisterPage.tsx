@@ -147,7 +147,7 @@ function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
             </label>
 
             <label>
-              {captcha ? `사람 확인: ${captcha.question}` : '캡챠 불러오는 중...'}
+              {captcha ? `사람 확인: ${captcha.question}` : <>사람 확인: <span className="skeleton-block skeleton-line" style={{ width: 100, height: 14 }} /></>}
               <input
                 name="captchaAnswer"
                 inputMode="numeric"

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { downloadMarkdown, stripMarkdownSymbols } from '../riskTool/riskToolShared'
+import GeneratingBanner from '../../api/GeneratingBanner'
 import './AdminDistrictProspect.css'
 
 // closure-risk-model의 prospect-district.html을 React로 재구현(2026-08-10, iframe 제거
@@ -264,7 +265,7 @@ function AdminDistrictProspect() {
                 </div>
               )}
 
-              {candidatesLoading && <p className="district-empty-hint">계산 중… (실제 계산이라 격자점마다 몇 초~수십 초 걸릴 수 있습니다)</p>}
+              {candidatesLoading && <GeneratingBanner title="후보지 계산 중…" detail="실제 계산이라 격자점마다 몇 초~수십 초 걸릴 수 있습니다" />}
               {candidatesError && <div className="results-error">후보지를 불러오지 못했습니다. ({candidatesError})</div>}
 
               {candidates && !candidatesLoading && (
@@ -313,7 +314,7 @@ function AdminDistrictProspect() {
           {selectedCandidateIndex !== null && (
             <section className="panel district-doc-section">
               <h2>선택한 후보지 상담자료</h2>
-              {doc === 'loading' && <p className="district-empty-hint">상담자료 생성 중… (실제 계산이라 몇 초~수십 초 걸릴 수 있습니다)</p>}
+              {doc === 'loading' && <GeneratingBanner title="상담자료 생성 중…" detail="실제 계산이라 몇 초~수십 초 걸릴 수 있습니다" />}
               {doc === 'error' && <div className="results-error">상담자료를 만들지 못했습니다.</div>}
               {doc && doc !== 'loading' && doc !== 'error' && (
                 <>
@@ -331,7 +332,7 @@ function AdminDistrictProspect() {
             <section className="panel district-doc-section">
               <h2>예상매출액 산정서 (공정위 표준양식)</h2>
               <p className="district-explain">공정거래위원회 「예상매출액 산정서의 표준양식에 관한 규정」 별지 서식 구조에 맞춘 법정 서면입니다 — 위 상담자료의 "3. 예상매출액 산정서"와 계산은 동일하고, 문서 구조만 표준양식에 맞춰 별도로 다운로드할 수 있게 한 것입니다.</p>
-              {salesDoc === 'loading' && <p className="district-empty-hint">산정서 생성 중… (실제 계산이라 몇 초~수십 초 걸릴 수 있습니다)</p>}
+              {salesDoc === 'loading' && <GeneratingBanner title="산정서 생성 중…" detail="실제 계산이라 몇 초~수십 초 걸릴 수 있습니다" />}
               {salesDoc === 'error' && <div className="results-error">예상매출액 산정서를 만들지 못했습니다.</div>}
               {salesDoc && salesDoc !== 'loading' && salesDoc !== 'error' && (
                 <>
