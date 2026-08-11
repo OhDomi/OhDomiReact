@@ -1,0 +1,213 @@
+/* ===== 2026-08-07: OhDomiReact 사이트 통합 — 기존 "Quiet Ledger"(steel-blue) 토큰을
+   OhDomiReact의 실제 팔레트(src/App.css)에 맞춰 재발급. 토큰 이름·역할 매핑은 그대로 유지해
+   HTML/JS는 한 줄도 안 바꿔도 되게 함(색상 값만 교체). 배경(화이트 카드/연회색 페이지 배경)
+   +그림자로 입체감을 주는 방식도 OhDomiReact 패턴을 따름(기존의 "테두리만, 그림자 없음"
+   원칙에서 전환). 폰트는 OhDomiReact와 동일하게 Manrope + Noto Sans KR. */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap');
+:root {
+  --neutral-1: #ffffff; --neutral-2: #f5f7fa; --neutral-3: #eef1f5; --neutral-4: #e7ebf1;
+  --neutral-5: #dde2ea; --neutral-6: #cdd3dd; --neutral-7: #b8c0cc; --neutral-8: #9aa5b5;
+  --neutral-9: #5c6472; --neutral-10: #6b7791; --neutral-11: #4a566d; --neutral-12: #17223b;
+  --accent-1: #f6f4fe; --accent-2: #efedff; --accent-3: #e4dffc; --accent-4: #d6cef9;
+  --accent-5: #c3b6f5; --accent-6: #ac9aef; --accent-7: #9179e8; --accent-8: #7a5de5;
+  --accent-9: #6246e5; --accent-10: #5135d5; --accent-11: #4c2ec7; --accent-12: #2c1a70;
+  --accent-on-solid: #ffffff;
+  --error-3: #fff0f1; --error-9: #e95664; --error-11: #b03c48;
+  --success-3: #e8f8f1; --success-9: #20a873; --success-11: #0e6948;
+  --warning-3: #fff4e6; --warning-9: #f39b32; --warning-11: #955a16;
+  --info-3: #edf2ff; --info-9: #5277d9; --info-11: #3d5fc4;
+  --background: var(--neutral-2); --surface: var(--neutral-1); --surface-hover: var(--neutral-3);
+  --surface-active: var(--neutral-4); --border-subtle: var(--neutral-4); --border: var(--neutral-5);
+  --border-strong: var(--neutral-6); --border-interactive: var(--neutral-10);
+  --text-secondary: var(--neutral-9); --text: var(--neutral-12);
+  --accent-bg-subtle: var(--accent-2); --accent-solid: var(--accent-9);
+  --accent-solid-hover: var(--accent-10); --accent-text: var(--accent-10);
+  --shadow: 0 8px 30px rgba(31, 43, 72, .06);
+
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
+  --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem; --text-4xl: 2.25rem;
+  --space-1: 0.35rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.3rem; --space-6: 2rem;
+  --radius: 0.8125rem; --radius-pill: 1rem;
+  --font: 'Manrope', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", sans-serif;
+}
+[data-theme="dark"] {
+  /* OhDomiReact 자체는 다크모드가 없어서(라이트 전용 사이트) 참고할 기존 톤이 없음 — 위
+     라이트 팔레트(네이비/퍼플)를 같은 색상 관계로 반전해 만든 자체 다크 변형. */
+  --neutral-1: #121623; --neutral-2: #171c2c; --neutral-3: #1e2436;
+  --neutral-4: #262d42; --neutral-5: #2f374e; --neutral-6: #3c455e; --neutral-7: #4e5875;
+  --neutral-8: #69738f; --neutral-9: #8994ac; --neutral-10: #aab3c6; --neutral-11: #ccd2e0;
+  --neutral-12: #f1f3f8;
+  --accent-1: #191531; --accent-2: #211a45; --accent-3: #2b2158; --accent-4: #392b74;
+  --accent-5: #4b3892; --accent-6: #5f47ab; --accent-7: #7458c4; --accent-8: #8b6de0;
+  --accent-9: #9c85e8; --accent-10: #b0a1ee; --accent-11: #6a50e8; --accent-12: #ece7fb;
+  /* accent-11은 h2 .step 원형 배지 배경(흰 글자 위에 얹힘)이자 포커스 링 색이라 양쪽 다
+     맞아야 함 — 배경 위 자기 자신(비텍스트 3:1)과 그 위 흰 글자(4.5:1)를 동시에 만족하는
+     톤으로 OhDomiReact 브랜드 퍼플(#6246e5)에서 살짝 밝힘(흰 글자 5.35:1 · 배경 대비 3.17:1). */
+  --accent-on-solid: #ffffff;
+  --error-3: #391f26; --error-9: #f0707c; --error-11: #f6a3ab;
+  --success-3: #12352a; --success-9: #3fc593; --success-11: #82ddb8;
+  --warning-3: #3a2a14; --warning-9: #f7ad51; --warning-11: #fac785;
+  --info-3: #1c2542; --info-9: #7d9bef; --info-11: #aebdf6;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font); background: var(--background); color: var(--text);
+  line-height: 1.5; font-size: 16px;
+  scrollbar-color: var(--border-strong) var(--surface);
+}
+/* 브라우저 기본값(선택 영역 파란색, 스크롤바)도 토큰을 따르게 함 — Quiet Ledger의
+   절제된 톤이 여기서만 갑자기 브라우저 기본 파랑으로 끊기지 않도록. */
+::selection { background: var(--accent-6); color: var(--accent-12); }
+pre::-webkit-scrollbar { height: .5rem; width: .5rem; }
+pre::-webkit-scrollbar-track { background: var(--surface); }
+pre::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: var(--radius-pill); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+/* DESIGN.md 모션 규격(120ms ease-out, hover/focus의 배경·테두리·글자색 전환만) — 지금까지
+   토큰만 정의돼 있고 실제로 적용된 곳이 없었다. 인터랙티브 요소 전반에 한 번에 적용. */
+a, button, input, select, .sample-card, .rank-item, .candidate-card, .gu-shape, .sort-btn, .doc-tab {
+  transition: background-color 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out, stroke 120ms ease-out, stroke-width 120ms ease-out;
+}
+
+.wrap { max-width: 1100px; margin: 0 auto; padding: var(--space-6) 1.25rem 4rem; }
+
+h1 { font-size: var(--text-2xl); font-weight: 800; letter-spacing: -.03em; margin-bottom: .3rem; }
+.lede { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-6); max-width: 62ch; }
+
+.back-link {
+  display: inline-block; margin-bottom: var(--space-4); font-size: var(--text-sm); color: var(--text-secondary);
+  text-decoration: underline; text-decoration-color: var(--border-interactive); text-underline-offset: .2rem;
+}
+.back-link:hover { color: var(--text); }
+
+/* 2026-08-07: 좌측 내비게이션(.site-nav) 제거 — 이 페이지들이 이제 OhDomiReact 사이드바의
+   개별 탭(iframe)으로 들어가 있어서, 같은 화면 안에 사이드바가 두 개(OhDomi 것 + 이거) 겹쳐
+   보이는 게 중복이라는 리포트. .site-shell은 원래 "12rem 내비 + 본문" 2열 그리드였는데
+   본문 한 칸만 남아 1열로 단순화. */
+.site-shell { display: block; }
+
+section.workflow { margin-bottom: var(--space-6); padding-top: var(--space-5); border-top: 1px solid var(--border-subtle); }
+.main-content section.workflow:first-of-type { border-top: none; padding-top: 0; }
+h2 { font-size: var(--text-xl); font-weight: 800; letter-spacing: -.02em; margin-bottom: .3rem; display: flex; align-items: center; gap: var(--space-2); }
+h2 .step {
+  display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem;
+  border-radius: 50%; background: var(--accent-11); color: var(--accent-on-solid); font-size: var(--text-sm);
+  flex-shrink: 0;
+}
+.explain { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-5); }
+.group-title { font-size: var(--text-xs); font-weight: 700; color: var(--text-secondary); text-transform: uppercase;
+  letter-spacing: .04em; margin: var(--space-5) 0 var(--space-2); }
+
+/* ---- 결과 영역 ---- */
+.results-empty {
+  border: 1px dashed var(--border); border-radius: var(--radius); padding: var(--space-5);
+  text-align: center; color: var(--text-secondary); font-size: var(--text-sm); margin-top: var(--space-4);
+}
+.results-error {
+  border: 1px solid var(--error-9); background: var(--error-3); color: var(--error-11);
+  border-radius: var(--radius); padding: var(--space-4); font-size: var(--text-sm); margin-top: var(--space-4);
+}
+
+/* ---- 결과 카드: 하나의 테두리 레벨만 사용, 내부 중첩 박스 없음(DW-2.6) ---- */
+/* 2026-08-07: OhDomiReact 카드 패턴(흰 배경 + 옅은 테두리 + 그림자, 페이지 배경보다 밝게
+   떠 보임)으로 전환 — 기존엔 background:var(--background)로 페이지와 카드가 같은 톤이라
+   테두리만으로 구분됐음(DW-2.6 "카드 안에 카드 없음" 원칙은 유지, 입체감 표현 방식만 교체). */
+.result-card {
+  background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space-5) var(--space-5); margin-top: var(--space-4);
+  /* 2026-08-07: 해석(배지 하나)은 내용이 적어 1fr 1fr로 반반 나누면 왼쪽은 텅 비고 오른쪽
+     (원자료: 범례+막대 2줄)은 몰려 보인다는 리포트 — 원자료 쪽에 더 많은 폭을 줌. */
+  display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 0 var(--space-5);
+}
+@media (max-width: 640px) {
+  .result-card { grid-template-columns: 1fr; }
+  .interp-region { border-right: none !important; border-bottom: 1px dashed var(--border);
+    padding-right: 0 !important; padding-bottom: var(--space-4); margin-bottom: var(--space-4); }
+  .raw-region { padding-left: 0 !important; }
+}
+.result-card .card-header {
+  grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline;
+  gap: var(--space-2); flex-wrap: wrap; padding-bottom: var(--space-3); margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.store-label { font-weight: 700; font-size: var(--text-lg); }
+.store-sub { color: var(--text-secondary); font-size: var(--text-xs); }
+
+.interp-region { border-right: 1px dashed var(--border); padding-right: var(--space-5); }
+.region-label { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .05em; color: var(--text-secondary); margin-bottom: var(--space-2); }
+
+/* 배지: 배경만, 테두리 없음(카드 안에 3번째 테두리 레이어를 만들지 않기 위해) */
+.badge {
+  display: inline-block; padding: .25rem .75rem; border-radius: var(--radius-pill);
+  font-size: var(--text-sm); font-weight: 700; margin-bottom: var(--space-2);
+}
+/* 2026-08-07: OhDomiReact의 risk-tag 패턴(연한 색 배경 + 진한 색 글자, 예: .risk-tag.high)으로
+   전환 — 기존엔 진한 배경 + 흰 글자였음. -3/-11 페어는 둘 다 4.5:1 이상 확보(위에서 재계산해
+   기존 OhDomi 원본 hex보다 살짝 진하게 조정 — DW-2.3 유지). */
+.badge.tier-danger  { background: var(--error-3);   color: var(--error-11); }
+.badge.tier-caution { background: var(--warning-3); color: var(--warning-11); }
+.badge.tier-safe    { background: var(--success-3); color: var(--success-11); }
+.badge.tier-unknown { background: var(--info-3);    color: var(--info-11); }
+.badge.small { padding: .12rem .5rem; font-size: var(--text-xs); margin-bottom: 0; }
+.verdict-sentence { font-size: var(--text-base); }
+.verdict-sentence.muted { color: var(--text-secondary); font-style: italic; margin-top: var(--space-2); font-size: var(--text-sm); }
+
+.raw-region { padding-left: .2rem; }
+.stat-scale { font-size: var(--text-xs); color: var(--text-secondary); margin-bottom: var(--space-2); }
+/* 2026-08-07: 이름+막대+수치를 한 줄에 다 넣으면(이전 방식) 좁은 칼럼에서 수치 문구
+   ("위험도 상위 88% · 안전한 편 (백분위 11.8)")가 막대 옆에서 줄바꿈되며 뭉개졌다는
+   리포트 — 이름/수치를 윗줄로, 막대를 아랫줄 전체 폭으로 분리해 항상 여유 있게 읽히게 함. */
+.stat-row { font-size: var(--text-sm); margin-bottom: var(--space-3); }
+.stat-row-top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); margin-bottom: .35rem; }
+.stat-name { color: var(--text-secondary); }
+.stat-track { display: block; width: 100%; height: .5rem; background: var(--border-subtle); border-radius: var(--radius-pill); overflow: hidden; }
+/* display:block 필수 — <span>은 기본 inline이라 renderCard()가 인라인으로 붙이는
+   style="width:X%"가 무시돼(inline 요소는 width 미적용) 막대 색이 안 보이던 원인(2026-08-07). */
+.stat-fill { display: block; height: 100%; background: var(--accent-solid); }
+/* 2026-08-07: 막대가 항상 같은 색이라 숫자를 안 읽으면 위험한지 안전한지 감이 안 잡힌다는
+   리포트 — 배지(.badge.tier-*)와 똑같은 기능색을 재사용(새 색 안 만듦, DESIGN.md "제2
+   강조색 금지" 원칙 유지). riskTierFromPercentile()이 같은 경계값(75/50/25)으로 tier를
+   매겨 pctLabel()이 반환 -> renderCard()가 이 클래스를 그대로 붙인다. */
+.stat-fill.tier-danger  { background: var(--error-9); }
+.stat-fill.tier-caution { background: var(--warning-9); }
+.stat-fill.tier-safe    { background: var(--success-9); }
+.stat-fill.tier-unknown { background: var(--info-9); }
+/* null 값: width:0로 두고 트랙 전체를 빗금으로 — 100% 채움("매우 위험")과 오독되지 않게 */
+.stat-track.na { background: repeating-linear-gradient(45deg, var(--border) 0 4px, var(--surface) 4px 8px); }
+.stat-value { text-align: right; font-variant-numeric: tabular-nums; font-size: var(--text-sm); }
+.stat-value.na { color: var(--text-secondary); font-style: italic; }
+
+.card-footer { grid-column: 1 / -1; margin-top: var(--space-3); padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle); font-size: var(--text-sm); color: var(--text-secondary); }
+
+/* 2026-08-08: 목록에서 "왜 이 점수인지" 원인 태그 — 새 강조색 안 만들고 기존 warning
+   톤(주의가 필요한 신호라는 의미)만 재사용(DESIGN.md 제2 강조색 금지 원칙 유지). */
+.top-factor { grid-column: 1 / -1; margin-top: var(--space-3); font-size: var(--text-sm);
+  color: var(--warning-11); cursor: help; }
+
+/* ---- 버튼/인터랙티브 요소: 비텍스트 대비 >=3:1 토큰(--border-interactive)만 사용(DW-2.5) ---- */
+button.check-btn {
+  font: inherit; font-size: var(--text-sm); cursor: pointer; border-radius: var(--radius);
+  padding: .5rem 1rem; background: var(--surface); color: var(--text);
+  border: 1px solid var(--border-interactive);
+}
+button.check-btn:hover { background: var(--surface-hover); }
+button.check-btn:focus-visible { outline: 2px solid var(--accent-11); outline-offset: 2px; }
+
+.packet-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-4); }
+/* 2026-08-07: 상담자료 문서가 자체 스크롤 박스(max-height+overflow) 안에 갇혀 있어서 "따로
+   구별된 텍스트 상자"처럼 보인다는 리포트 — 내부 스크롤/테두리를 없애고 페이지 본문과
+   그냥 이어지게 함(페이지 자체 스크롤을 그대로 씀). */
+.packet-md {
+  white-space: pre-wrap; font-family: ui-monospace, "Consolas", monospace; font-size: var(--text-sm);
+  line-height: 1.6; margin-top: var(--space-4); padding-top: var(--space-4); max-width: 75ch;
+}
+
+footer.pagefoot { max-width: 1100px; margin: var(--space-6) auto 0; color: var(--text-secondary);
+  font-size: var(--text-xs); border-top: 1px solid var(--border-subtle); padding-top: var(--space-4); }
+footer.pagefoot input { font-size: var(--text-xs); padding: .2rem .4rem; border: 1px solid var(--border-interactive);
+  border-radius: .3rem; background: var(--background); color: var(--text); }

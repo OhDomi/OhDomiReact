@@ -335,3 +335,21 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+.page-number-button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.page-number-button.active {
+  border-color: var(--purple);
+  color: #fff;
+  background: var(--purple);
+}

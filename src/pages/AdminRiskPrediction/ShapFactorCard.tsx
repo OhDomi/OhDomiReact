@@ -2,12 +2,13 @@ import type { RiskFactor } from '../../types/risk'
 
 type ShapFactorCardProps = {
   factor: RiskFactor
+  maxAbsContribution: number
 }
 
-function ShapFactorCard({ factor }: ShapFactorCardProps) {
+function ShapFactorCard({ factor, maxAbsContribution }: ShapFactorCardProps) {
   const contribution = Number(factor.shapContribution)
   const raisesRisk = contribution >= 0
-  const width = Math.min(Math.abs(contribution) * 100, 100)
+  const width = maxAbsContribution > 0 ? Math.min((Math.abs(contribution) / maxAbsContribution) * 100, 100) : 0
 
   return (
     <article className={`shap-factor-card ${raisesRisk ? 'raises-risk' : 'lowers-risk'}`}>

@@ -15,13 +15,17 @@ import AdminStoreRiskList from './pages/AdminStoreRiskList/AdminStoreRiskList'
 import AdminDistrictProspect from './pages/AdminDistrictProspect/AdminDistrictProspect'
 import AdminStoreDetail from './pages/AdminStoreDetail/AdminStoreDetail'
 import RegisterPage from './pages/Auth/RegisterPage'
+import type { hygieneActions } from './pages/AdminHygieneCheck/adminHygieneDummy'
 import { loginAccount, logoutAccount } from './api/authApi'
 import type { LoginResponse } from './api/authApi'
 import { useApiData } from './api/useApiData'
 import ApiDataState from './api/ApiDataState'
+import Footer from './components/Footer'
 
 type Role = 'owner' | 'admin'
 type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'renewalCheck' | 'storeRiskList' | 'districtProspect' | 'storeDetail' | 'orders' | 'board'
+
+const NOTIFICATION_LIMIT = 5
 
 const icons: Record<string, ReactNode> = {
   overview: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
@@ -113,6 +117,7 @@ function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
   }
 
   return (
+    <>
     <main className="login-page">
       <section className="login-story">
         <a className="brand brand-light" href="#top">
@@ -226,6 +231,8 @@ function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
         </div>
       </section>
     </main>
+    <Footer />
+    </>
   )
 }
 
@@ -943,6 +950,10 @@ function App() {
   const role: Role | null = account
     ? account.role === 'ADMIN' ? 'admin' : 'owner'
     : null
+  const adminHygieneAlerts = useApiData<{ hygieneActions: typeof hygieneActions }>(
+    role === 'admin' ? '/api/ui/admin/hygiene' : null,
+  )
+  const hygieneAlerts = role === 'admin' ? adminHygieneAlerts.data?.hygieneActions ?? [] : []
   const [notificationOpen, setNotificationOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
@@ -1110,23 +1121,65 @@ function App() {
                     </button>
                   </div>
 
-                  <div className="notification-list">
-                    <button
-                      className="notification-item"
-                      type="button"
-                      onClick={() => {
-                        setPage(role === 'admin' ? 'forecast' : 'orders')
-                        setNotificationOpen(false)
-                      }}
-                    >
-                      <span className="alert-dot info"></span>
-                      <div>
-                        <strong>최신 운영 데이터를 확인하세요</strong>
-                        <p>저장된 {role === 'admin' ? '매장 위험 정보' : '발주 추천 정보'}로 이동합니다.</p>
-                        <small>실시간 데이터</small>
+                  {role === 'admin' && hygieneAlerts.length ? (
+                    <>
+                      <div className="notification-list">
+                        {hygieneAlerts.slice(0, NOTIFICATION_LIMIT).map((item) => (
+                          <button
+                            className="notification-item"
+                            type="button"
+                            key={`${item.store}-${item.action}`}
+                            data-backend-ready="true"
+                            onClick={() => {
+                              setPage('hygiene')
+                              setNotificationOpen(false)
+                            }}
+                          >
+                            <span className={`alert-dot ${item.priority === '긴급' ? 'danger' : 'warning'}`}></span>
+                            <div>
+                              <strong>{item.store} · {item.action}</strong>
+                              <p>{item.description}</p>
+                              <small>{item.priority}</small>
+                            </div>
+                          </button>
+                        ))}
                       </div>
-                    </button>
-                  </div>
+
+                      {hygieneAlerts.length > NOTIFICATION_LIMIT && (
+                        <button
+                          className="popover-wide-button"
+                          type="button"
+                          onClick={() => {
+                            setPage('hygiene')
+                            setNotificationOpen(false)
+                          }}
+                        >
+                          더보기 — 위생 점검 페이지에서 전체 보기
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="notification-list">
+                        <button
+                          className="notification-item"
+                          type="button"
+                          data-backend-ready="true"
+                          onClick={() => {
+                            setPage(role === 'admin' ? 'forecast' : 'orders')
+                            setNotificationOpen(false)
+                          }}
+                        >
+                          <span className="alert-dot info"></span>
+                          <div>
+                            <strong>최신 운영 데이터를 확인하세요</strong>
+                            <p>저장된 {role === 'admin' ? '매장 위험 정보' : '발주 추천 정보'}로 이동합니다.</p>
+                            <small>실시간 데이터</small>
+                          </div>
+                        </button>
+                      </div>
+                    </>
+                  )}
 
                   <button
                     className="popover-wide-button"
@@ -1216,6 +1269,8 @@ function App() {
                 goToStoreListBySales={goToStoreListBySales}
               />}
         </main>
+
+        <Footer />
       </div>
 
       {toastMessage && (

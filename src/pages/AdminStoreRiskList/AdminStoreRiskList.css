@@ -34,17 +34,56 @@
 
 .risk-list-table-wrap {
   padding: 0;
-  overflow: hidden;
+  overflow-x: auto;
+}
+
+.risk-list-table {
+  table-layout: fixed;
+  margin-top: 0;
 }
 
 .risk-list-table th {
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
+  text-align: center;
 }
 
-.risk-list-table th.th-num {
+.risk-list-table th:hover {
+  color: var(--navy);
+}
+
+.risk-list-table .sort-arrow {
+  display: inline-block;
+  width: 12px;
+  margin-left: 2px;
+  color: var(--purple);
+}
+
+.risk-list-table td {
+  box-sizing: border-box;
+  height: 52px;
+  vertical-align: middle;
+}
+
+/* 공용 .data-table td:first-child{display:flex}는 아바타+이름 조합용 — 이 표의 첫 열은
+   매장명 텍스트뿐이라 flex를 그대로 물려받으면 다른 열과 셀 높이 계산 방식이 달라져
+   행 구분선이 어긋나 보인다(2026-08-11). table-cell로 되돌리고 필요한 만큼만 다시 꾸민다. */
+.risk-list-table td.cell-store {
+  display: table-cell;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.risk-list-table td.cell-num {
   text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.risk-list-table td.cell-tier {
+  text-align: center;
 }
 
 .risk-list-empty {

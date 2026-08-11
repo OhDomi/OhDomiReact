@@ -94,6 +94,7 @@ function AdminDistrictProspect() {
   const [selectedCandidateIndex, setSelectedCandidateIndex] = useState<number | null>(null)
   const [tradePrice, setTradePrice] = useState<TradePriceResult | null>(null)
   const [doc, setDoc] = useState<{ md: string } | 'loading' | 'error' | null>(null)
+  const [salesDoc, setSalesDoc] = useState<{ md: string } | 'loading' | 'error' | null>(null)
 
   useEffect(() => {
     fetch('/risk-tool/hangang.json')
@@ -113,6 +114,7 @@ function AdminDistrictProspect() {
     setSelectedGu(name)
     setSelectedCandidateIndex(null)
     setDoc(null)
+    setSalesDoc(null)
     setCandidates(null)
     setCandidatesError('')
     setCandidatesLoading(true)
@@ -153,20 +155,30 @@ function AdminDistrictProspect() {
   async function selectCandidate(index: number, candidate: Candidate) {
     setSelectedCandidateIndex(index)
     setDoc('loading')
+    setSalesDoc('loading')
+    const body = JSON.stringify({
+      brand_nm: '김가네', lat: candidate.lat, lon: candidate.lon,
+      candidate_area_sqm: 45.0, sbiz_category: '김밥/만두/분식',
+    })
     try {
       const resp = await fetch('/risk-api/packets/new-franchisee', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          brand_nm: '김가네', lat: candidate.lat, lon: candidate.lon,
-          candidate_area_sqm: 45.0, sbiz_category: '김밥/만두/분식',
-        }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
       })
       if (!resp.ok) throw new Error('failed')
       const data = await resp.json()
       setDoc({ md: data.new_franchisee_md || '(내용 없음)' })
     } catch {
       setDoc('error')
+    }
+    try {
+      const resp = await fetch('/risk-api/packets/expected-sales-certificate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
+      })
+      if (!resp.ok) throw new Error('failed')
+      const data = await resp.json()
+      setSalesDoc({ md: data.expected_sales_md || '(내용 없음)' })
+    } catch {
+      setSalesDoc('error')
     }
   }
 
@@ -305,22 +317,79 @@ function AdminDistrictProspect() {
               {doc === 'error' && <div className="results-error">상담자료를 만들지 못했습니다.</div>}
               {doc && doc !== 'loading' && doc !== 'error' && (
                 <>
-                  <div className="doc-actions">
-                    <button
-                      type="button"
-                      className="check-btn"
-                      onClick={() => downloadMarkdown(`${(selectedGu || '').replace(/[\\/:*?"<>|]/g, '_')}_후보지_신규가맹상담자료.md`, doc.md)}
-                    >
-                      다운로드 (.md)
-                    </button>
-                  </div>
+                  <PdfMdDownloadButtons
+                    markdown={doc.md}
+                    filenameBase={`${(selectedGu || '').replace(/[\\/:*?"<>|]/g, '_')}_후보지_신규가맹상담자료`}
+                  />
                   <pre className="packet-md">{stripMarkdownSymbols(doc.md)}</pre>
+                </>
+              )}
+            </section>
+          )}
+
+          {selectedCandidateIndex !== null && (
+            <section className="panel district-doc-section">
+              <h2>예상매출액 산정서 (공정위 표준양식)</h2>
+              <p className="district-explain">공정거래위원회 「예상매출액 산정서의 표준양식에 관한 규정」 별지 서식 구조에 맞춘 법정 서면입니다 — 위 상담자료의 "3. 예상매출액 산정서"와 계산은 동일하고, 문서 구조만 표준양식에 맞춰 별도로 다운로드할 수 있게 한 것입니다.</p>
+              {salesDoc === 'loading' && <p className="district-empty-hint">산정서 생성 중… (실제 계산이라 몇 초~수십 초 걸릴 수 있습니다)</p>}
+              {salesDoc === 'error' && <div className="results-error">예상매출액 산정서를 만들지 못했습니다.</div>}
+              {salesDoc && salesDoc !== 'loading' && salesDoc !== 'error' && (
+                <>
+                  <PdfMdDownloadButtons
+                    markdown={salesDoc.md}
+                    filenameBase={`${(selectedGu || '').replace(/[\\/:*?"<>|]/g, '_')}_예상매출액산정서`}
+                  />
+                  <pre className="packet-md">{stripMarkdownSymbols(salesDoc.md)}</pre>
                 </>
               )}
             </section>
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+// PDF/.md 두 형식으로 다운로드(2026-08-11, "pdf와 .md파일 두개의 형식으로 다운받을수 있도록"
+// 요청). .md는 클라이언트에서 바로 Blob으로 내려주고, PDF는 서버가 그 자리에서 실제 변환해
+// 응답하는 /export/pdf(closure-risk-model, 헤드리스 Chrome 재사용)를 그대로 쓴다.
+function PdfMdDownloadButtons({ markdown, filenameBase }: { markdown: string; filenameBase: string }) {
+  const [pdfBusy, setPdfBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function downloadPdf() {
+    setPdfBusy(true)
+    setError('')
+    try {
+      const resp = await fetch('/risk-api/export/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markdown, filename: filenameBase }),
+      })
+      if (!resp.ok) throw new Error('export failed')
+      const blob = await resp.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${filenameBase}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      setError('PDF 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    } finally {
+      setPdfBusy(false)
+    }
+  }
+
+  return (
+    <div className="doc-actions">
+      <button type="button" className="check-btn" data-backend-ready="true" onClick={() => downloadMarkdown(`${filenameBase}.md`, markdown)}>
+        다운로드 (.md)
+      </button>
+      <button type="button" className="check-btn" data-backend-ready="true" disabled={pdfBusy} onClick={downloadPdf}>
+        {pdfBusy ? 'PDF 생성 중…' : '다운로드 (PDF)'}
+      </button>
+      {error && <p className="download-menu-error">{error}</p>}
     </div>
   )
 }

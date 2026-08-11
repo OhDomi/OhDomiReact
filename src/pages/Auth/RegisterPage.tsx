@@ -23,10 +23,6 @@ function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
 
   useEffect(refreshCaptcha, [])
 
-  if (showPrivacyPolicy) {
-    return <PrivacyPolicyPage onBack={() => setShowPrivacyPolicy(false)} />
-  }
-
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
@@ -72,6 +68,7 @@ function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
   }
 
   return (
+    <>
     <main className="login-page register-page">
       <section className="login-story">
         <a className="brand brand-light" href="#top">
@@ -191,6 +188,13 @@ function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
         </div>
       </section>
     </main>
+
+    {showPrivacyPolicy && (
+      <div className="policy-overlay">
+        <PrivacyPolicyPage onBack={() => setShowPrivacyPolicy(false)} />
+      </div>
+    )}
+    </>
   )
 }
 

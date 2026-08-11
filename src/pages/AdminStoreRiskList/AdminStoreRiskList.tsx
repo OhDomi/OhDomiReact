@@ -18,6 +18,12 @@ const TIER_FILTERS: { id: TierFilter; label: string }[] = [
   { id: 'safe', label: '안전한 편' },
 ]
 
+// 항상 같은 폭을 차지해야 정렬 컬럼이 바뀌어도 헤더 너비가 흔들리지 않는다(고정폭 colgroup과 별개로,
+// 가운데 정렬된 헤더 텍스트 자체가 화살표 유무에 따라 좌우로 밀리는 것까지 막기 위함).
+function SortArrow({ active, dir }: { active: boolean; dir: 'asc' | 'desc' }) {
+  return <span className="sort-arrow">{active ? (dir === 'asc' ? '↑' : '↓') : ''}</span>
+}
+
 function riskValue(row: RankingRow): number | null {
   return row.v2_percentile != null ? row.v2_percentile : row.v1_percentile
 }
@@ -174,12 +180,30 @@ function AdminStoreRiskList({
 
       <div className="panel risk-list-table-wrap">
         <table className="data-table selectable risk-list-table">
+          <colgroup>
+            <col style={{ width: '36%' }} />
+            <col style={{ width: '18%' }} />
+            <col style={{ width: '28%' }} />
+            <col style={{ width: '18%' }} />
+          </colgroup>
           <thead>
             <tr>
-              <th onClick={() => toggleSort('store_label')}>매장 {sortKey === 'store_label' && (sortDir === 'asc' ? '↑' : '↓')}</th>
-              <th className="th-num" onClick={() => toggleSort('v2_percentile')}>입지 위험(백분위) {sortKey === 'v2_percentile' && (sortDir === 'asc' ? '↑' : '↓')}</th>
-              <th onClick={() => toggleSort('classification')}>종합 판정 {sortKey === 'classification' && (sortDir === 'asc' ? '↑' : '↓')}</th>
-              <th className="th-num" onClick={() => toggleSort('sales')}>매출 {sortKey === 'sales' && (sortDir === 'asc' ? '↑' : '↓')}</th>
+              <th onClick={() => toggleSort('store_label')}>
+                매장
+                <SortArrow active={sortKey === 'store_label'} dir={sortDir} />
+              </th>
+              <th onClick={() => toggleSort('v2_percentile')}>
+                입지 위험(백분위)
+                <SortArrow active={sortKey === 'v2_percentile'} dir={sortDir} />
+              </th>
+              <th onClick={() => toggleSort('classification')}>
+                종합 판정
+                <SortArrow active={sortKey === 'classification'} dir={sortDir} />
+              </th>
+              <th onClick={() => toggleSort('sales')}>
+                매출
+                <SortArrow active={sortKey === 'sales'} dir={sortDir} />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -191,9 +215,9 @@ function AdminStoreRiskList({
                 // 주소가 중복돼(같은 건물에 다른 매장 등) key 충돌로 React가 클릭 대상을
                 // 잘못 연결하는 문제가 있었다(2026-08-10) — 인덱스를 더해 항상 유일하게.
                 <tr key={`${row.store_label}-${i}`} onClick={() => setSelected(row)}>
-                  <td><strong>{row.store_label}</strong></td>
+                  <td className="cell-store"><strong>{row.store_label}</strong></td>
                   <td className="cell-num">{row.v2_percentile != null ? row.v2_percentile.toFixed(1) : '-'}</td>
-                  <td><span className={`risk-tag ${riskTagClass(badgeTier(row.classification))}`}>{shortBadgeLabel(row.classification)}</span></td>
+                  <td className="cell-tier"><span className={`risk-tag ${riskTagClass(badgeTier(row.classification))}`}>{shortBadgeLabel(row.classification)}</span></td>
                   <td className="cell-num">{salesValue(row) >= 0 ? `${salesValue(row).toLocaleString('ko-KR')}원` : '-'}</td>
                 </tr>
               ))

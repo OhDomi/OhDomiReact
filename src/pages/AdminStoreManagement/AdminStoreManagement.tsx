@@ -21,12 +21,14 @@ type AdminStore = (typeof adminStores)[number]
 // 원래 데모 5곳을 찾기도 어려워졌다는 리포트 — 검색(이름/지역/점주)과 클라이언트 페이지네이션만
 // 추가(전체 데이터는 이미 useApiData로 다 받아와 있어 서버 쪽 변경 없이 처리 가능).
 const PAGE_SIZE = 20
+const ACTION_PAGE_SIZE = 5
 
 function AdminStoreManagement() {
   const api = useApiData<AdminStoreData>('/api/ui/admin/stores')
   const [selectedStore, setSelectedStore] = useState<AdminStore | null>(null)
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
+  const [actionPage, setActionPage] = useState(1)
 
   useEffect(() => {
     if (api.data?.adminStores.length) setSelectedStore(api.data.adminStores[0])
@@ -43,6 +45,12 @@ function AdminStoreManagement() {
     : adminStores
   const totalPages = Math.max(1, Math.ceil(filteredStores.length / PAGE_SIZE))
   const pageStores = filteredStores.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const totalActionPages = Math.max(1, Math.ceil(actionRequiredStores.length / ACTION_PAGE_SIZE))
+  const pageActionStores = actionRequiredStores.slice(
+    (actionPage - 1) * ACTION_PAGE_SIZE,
+    actionPage * ACTION_PAGE_SIZE,
+  )
 
   return (
     <div className="admin-store-page">
@@ -71,8 +79,8 @@ function AdminStoreManagement() {
         </div>
 
         <div className="action-store-list">
-          {actionRequiredStores.map((item) => (
-            <div className="action-store-card" key={item.title}>
+          {pageActionStores.map((item) => (
+            <div className="action-store-card" key={`${item.store}-${item.title}`}>
               <span className={`action-priority ${item.priority === '긴급' ? 'danger' : 'warning'}`}>
                 {item.priority}
               </span>
@@ -88,6 +96,21 @@ function AdminStoreManagement() {
             </div>
           ))}
         </div>
+
+        {totalActionPages > 1 && (
+          <div className="admin-store-pager">
+            {Array.from({ length: totalActionPages }, (_, i) => i + 1).map((n) => (
+              <button
+                key={n}
+                type="button"
+                className={`page-number-button ${actionPage === n ? 'active' : ''}`}
+                onClick={() => setActionPage(n)}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        )}
       </article>
 
       <section className="admin-store-layout">

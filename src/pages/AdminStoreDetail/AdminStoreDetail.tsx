@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  badgeTier, downloadMarkdown, dummyMonthlyRent, dummyMonthlySales, fmtWon, pctLabel,
+  badgeTier, dummyMonthlyRent, dummyMonthlySales, fmtWon, pctLabel,
   riskTagClass, stripMarkdownSymbols, topClauseFactor, type RankingRow, type TopFactor,
 } from '../riskTool/riskToolShared'
 import './AdminStoreDetail.css'
@@ -32,14 +32,14 @@ interface DistrictAnalysis {
 interface DocResult {
   internal_md: string
   franchisee_md?: string
-  prospect_md?: string
+  transfer_md?: string
 }
 
-type DocKind = 'renewal' | 'prospect'
+type DocKind = 'renewal' | 'transfer'
 
 const KIND_LABELS: Record<DocKind, { audience: string; internal: string }> = {
   renewal: { audience: '가맹점주용', internal: '내부용(상세)' },
-  prospect: { audience: '예비창업자용', internal: '내부용(상세)' },
+  transfer: { audience: '양수인용', internal: '내부용(상세)' },
 }
 
 const DISTRICT_STAT_ICONS: Record<string, string> = {
@@ -199,11 +199,11 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
 
       <section className="panel store-detail-section">
         <h2><span className="step">3</span> 상담자료</h2>
-        <p className="explain">이 매장 주소로 실제 계산해서 만든 자료입니다(미리 만들어둔 문서를 재활용하지 않습니다) — 재계약 검토 자료와 예비창업자 상담자료 중 골라 보고, 필요하면 그대로 다운로드할 수 있습니다.</p>
+        <p className="explain">이 매장 주소로 실제 계산해서 만든 자료입니다(미리 만들어둔 문서를 재활용하지 않습니다) — 재계약 검토 자료·가맹점 양도·양수 자료 중 골라 보고, 필요하면 그대로 다운로드할 수 있습니다.</p>
 
         <div className="doc-tabs" role="group" aria-label="자료 종류">
           <button type="button" className="doc-tab" aria-pressed={activeTab === 'renewal'} onClick={() => setActiveTab('renewal')}>재계약 검토 자료</button>
-          <button type="button" className="doc-tab" aria-pressed={activeTab === 'prospect'} onClick={() => setActiveTab('prospect')}>예비창업자 상담자료</button>
+          <button type="button" className="doc-tab" aria-pressed={activeTab === 'transfer'} onClick={() => setActiveTab('transfer')}>가맹점 양도·양수 자료</button>
         </div>
 
         {docLoading === activeTab && <p className="results-empty">자료 생성 중… (실제 계산이라 몇 초~수십 초 걸릴 수 있습니다)</p>}
@@ -344,23 +344,25 @@ function DistrictStats({ stats, competitors }: { stats: DistrictStat[]; competit
   )
 }
 
+const DOC_KIND_FILE_LABELS: Record<DocKind, string> = {
+  renewal: '재계약검토자료',
+  transfer: '가맹점양도양수자료',
+}
+
 function DocBody({ kind, body, address }: { kind: DocKind; body: DocResult; address: string }) {
   const labels = KIND_LABELS[kind]
-  const audienceMd = kind === 'renewal' ? body.franchisee_md : body.prospect_md
+  const audienceMd = kind === 'renewal' ? body.franchisee_md : body.transfer_md
 
-  function filename(variant: string) {
+  function filenameBase(docLabel: string) {
     const safeAddr = address.replace(/[\\/:*?"<>|]/g, '_').slice(0, 40)
-    return `${safeAddr}_${kind}_${variant}.md`
+    return `${safeAddr}_${DOC_KIND_FILE_LABELS[kind]}_${docLabel}`
   }
 
   return (
     <>
       <div className="doc-actions">
-        {/* data-backend-ready="true": App.tsx의 전역 "준비 중" 인터셉터가 버튼 텍스트에
-            "다운로드"가 들어가면 무조건 토스트로 막는데, 이 버튼은 실제로 동작하는
-            기능이라 예외 처리 필요(2026-08-10, HygieneCheck.tsx와 동일 패턴). */}
-        <button type="button" className="check-btn" data-backend-ready="true" onClick={() => downloadMarkdown(filename('audience'), audienceMd || '')}>다운로드 ({labels.audience})</button>
-        <button type="button" className="check-btn" data-backend-ready="true" onClick={() => downloadMarkdown(filename('internal'), body.internal_md || '')}>다운로드 ({labels.internal})</button>
+        <DownloadMenu label={labels.audience} filenameBase={filenameBase(labels.audience)} markdown={audienceMd || ''} />
+        <DownloadMenu label={labels.internal} filenameBase={filenameBase('내부용')} markdown={body.internal_md || ''} />
       </div>
       <div className="doc-columns">
         <div className="doc-col">
@@ -373,6 +375,70 @@ function DocBody({ kind, body, address }: { kind: DocKind; body: DocResult; addr
         </div>
       </div>
     </>
+  )
+}
+
+type ExportFormat = 'pdf' | 'rtf'
+
+// 다운로드 버튼 클릭 시 PDF/한글 중 고르는 작은 팝오버(2026-08-11, "PDF와 한글파일 중에서
+// 선택" 요청). 한글 쪽은 HWPX(개방형 XML)를 직접 구현했다가 네 차례 수정에도 한글 프로그램
+// 에서 문단이 겹치는 문제를 못 고쳐 RTF로 전환(사용자 동의) — 한글이 별도 변환 없이 그대로
+// 여는 표준 포맷이라 훨씬 안정적. 서버가 그 자리에서 실제 파일(바이트)을 만들어 응답하므로,
+// blob으로 받아 즉시 다운로드 트리거.
+function DownloadMenu({ label, filenameBase, markdown }: { label: string; filenameBase: string; markdown: string }) {
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState<ExportFormat | null>(null)
+  const [error, setError] = useState('')
+
+  async function handleDownload(format: ExportFormat) {
+    setOpen(false)
+    setBusy(format)
+    setError('')
+    try {
+      const resp = await fetch(`/risk-api/export/${format}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markdown, filename: filenameBase }),
+      })
+      if (!resp.ok) throw new Error('export failed')
+      const blob = await resp.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${filenameBase}.${format}`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      setError('다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <div className="download-menu-wrap">
+      {/* data-backend-ready="true": App.tsx의 전역 "준비 중" 인터셉터가 버튼 텍스트에
+          "다운로드"가 들어가면 무조건 토스트로 막는데, 이 버튼들은 실제로 동작하는
+          기능이라 예외 처리 필요(2026-08-10, HygieneCheck.tsx와 동일 패턴). */}
+      <button
+        type="button"
+        className="check-btn"
+        data-backend-ready="true"
+        disabled={busy !== null}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {busy ? '다운로드 중…' : `다운로드 (${label})`}
+      </button>
+
+      {open && (
+        <div className="download-menu">
+          <button type="button" data-backend-ready="true" onClick={() => handleDownload('pdf')}>PDF로 다운로드</button>
+          <button type="button" data-backend-ready="true" onClick={() => handleDownload('rtf')}>한글로 다운로드</button>
+        </div>
+      )}
+
+      {error && <p className="download-menu-error">{error}</p>}
+    </div>
   )
 }
 

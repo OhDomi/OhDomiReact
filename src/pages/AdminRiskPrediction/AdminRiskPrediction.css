@@ -619,6 +619,18 @@
   margin-top: 18px;
 }
 
+.admin-risk-table-panel .data-table th {
+  text-align: center;
+}
+
+.admin-risk-table-panel .data-table th:nth-child(3),
+.admin-risk-table-panel .data-table td:nth-child(3) {
+  min-width: 100px;
+  padding-left: 20px;
+  padding-right: 20px;
+  white-space: nowrap;
+}
+
 @media (max-width: 1100px) {
   .risk-model-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));

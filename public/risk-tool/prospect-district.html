@@ -1,0 +1,362 @@
+<!doctype html>
+<!-- 희망상권 탐색 — 왼쪽 고정 단계 레일(구 선택→후보지→상담자료)로 진행 상태를 항상
+     보여준다. "매물은 직접 확인하세요"라는 핵심 한계는 눈에 띄는 카드(listing-note)로
+     승격해 지나치지 않게 함. -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>희망상권 탐색 — 김가네 가맹점 위험 진단</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* 단계 레일: 지금 몇 단계인지, 어디까지 끝났는지 항상 왼쪽에 고정 표시 */
+  .step-layout { display: grid; grid-template-columns: 9rem 1fr; gap: var(--space-6); align-items: start; }
+  @media (max-width: 720px) { .step-layout { grid-template-columns: 1fr; } .step-rail { display: flex; flex-direction: row; position: static; } }
+  .step-rail { position: sticky; top: var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
+  .rail-item { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--text-secondary); }
+  .rail-num {
+    display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem;
+    border-radius: 50%; border: 1px solid var(--border-interactive); font-size: var(--text-xs); font-weight: 700; flex-shrink: 0;
+  }
+  .rail-item[data-state="done"] .rail-num { background: var(--success-9); border-color: var(--success-9); color: var(--accent-on-solid); }
+  .rail-item[data-state="active"] .rail-num { background: var(--accent-9); border-color: var(--accent-9); color: var(--accent-on-solid); }
+  .rail-item[data-state="active"] { color: var(--text); font-weight: 700; }
+
+  .gu-map-wrap { width: 100%; margin-bottom: var(--space-3); }
+  .gu-map { width: 100%; height: auto; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border-subtle); }
+  .gu-shape { fill: var(--surface-hover); stroke: var(--background); stroke-width: 1.5; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .gu-shape:hover { stroke: var(--accent-11); stroke-width: 2.5; }
+  .gu-shape:focus { outline: none; }
+  .gu-shape:focus-visible { outline: 2px solid var(--accent-11); outline-offset: 2px; }
+  .gu-shape[aria-pressed="true"] { stroke: var(--accent-11); stroke-width: 3; }
+  .gu-shape[aria-pressed="true"]:hover { stroke-width: 3.5; }
+  .gu-shape.preview-good    { fill: var(--success-9); }
+  .gu-shape.preview-caution { fill: var(--warning-9); }
+  .gu-shape.preview-poor    { fill: var(--error-9); }
+  .gu-shape.preview-unknown { fill: var(--surface-hover); }
+  .hangang-shape { fill: var(--info-9); stroke: none; cursor: default; }
+  .gu-label { font-size: 8.5px; fill: var(--text); pointer-events: none; text-anchor: middle; }
+  .map-caption { font-size: var(--text-xs); color: var(--text-secondary); margin: var(--space-2) 0; }
+  .map-legend { display: flex; gap: var(--space-4); flex-wrap: wrap; font-size: var(--text-xs); color: var(--text-secondary); margin-bottom: var(--space-5); }
+  .map-legend .swatch { display: inline-block; width: .7rem; height: .7rem; border-radius: 50%; margin-right: .3rem; vertical-align: middle; }
+
+  .gu-select-row { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-6); flex-wrap: wrap; }
+  .gu-select { font: inherit; font-size: var(--text-sm); padding: .4rem .6rem; border: 1px solid var(--border-interactive); border-radius: var(--radius); background: var(--background); color: var(--text); }
+
+  .candidate-card { border: 1px solid var(--border-subtle); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: var(--space-4); margin-top: var(--space-3); cursor: pointer; }
+  .candidate-card:hover { background: var(--surface-hover); }
+  .candidate-card.is-selected { border-color: var(--accent-11); }
+  .candidate-card.blocked { opacity: .75; }
+  .candidate-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
+  .candidate-title { font-weight: 700; font-size: var(--text-sm); }
+  .candidate-reason { font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-2); }
+  .indicator-row { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-2); font-size: var(--text-sm); }
+  .indicator { color: var(--text-secondary); }
+  .indicator .grade { font-weight: 700; color: var(--text); }
+
+  /* 매물은 직접 확인해야 한다는 핵심 한계를 지나치기 쉬운 문단이 아니라 카드로 승격 */
+  .listing-note {
+    border: 1px solid var(--accent-4); background: var(--accent-1); border-radius: var(--radius);
+    padding: var(--space-3); margin-top: var(--space-2);
+  }
+  .listing-note .label { font-size: var(--text-xs); font-weight: 700; color: var(--accent-text); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .2rem; }
+  .map-links { display: flex; gap: var(--space-3); margin-top: var(--space-2); }
+  .map-link { font-size: var(--text-xs); color: var(--accent-text); text-decoration: underline; text-decoration-color: var(--border-interactive); text-underline-offset: .15rem; font-weight: 700; }
+  .map-link:hover { color: var(--text); }
+  .map-link:focus-visible { outline: 2px solid var(--accent-11); outline-offset: 2px; }
+
+  .doc-tabs { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-4) 0 var(--space-3); }
+  .doc-tab { border: none; background: none; color: var(--text-secondary); font-family: inherit; padding: .35rem .1rem; font-size: var(--text-sm); cursor: pointer; text-decoration: underline; text-decoration-color: var(--border-interactive); text-underline-offset: .2rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="site-shell">
+<div>
+<h1>희망상권 탐색 — 예비창업자용</h1>
+<p class="lede">왼쪽 단계 표시를 따라 진행하세요.</p>
+
+<div class="step-layout">
+  <nav class="step-rail" id="step-rail" aria-label="진행 단계">
+    <div class="rail-item" data-step="1" data-state="active"><span class="rail-num">1</span>구 선택</div>
+    <div class="rail-item" data-step="2" data-state="todo"><span class="rail-num">2</span>후보지</div>
+    <div class="rail-item" data-step="3" data-state="todo"><span class="rail-num">3</span>상담자료</div>
+  </nav>
+
+  <div>
+    <section class="workflow" style="border-top:none;padding-top:0">
+      <h2>구 선택</h2>
+      <div class="gu-map-wrap">
+        <svg class="gu-map" id="gu-map" viewBox="0 0 640 560" role="group" aria-label="서울 25개 구 (클릭해서 선택)"></svg>
+      </div>
+      <p class="map-caption">※ 통계청 행정구역 경계 공개 데이터를 단순 투영한 실제 자치구 모양입니다(카카오맵 등 실시간 지도 연동은 아님). 색은 그 구 중심점 기준 사전 계산된 상권 적합도 미리보기입니다(아래 범례 참고), 실제 후보지 순위는 구를 선택한 뒤 격자로 다시 계산합니다.</p>
+      <div class="map-legend">
+        <span><span class="swatch" style="background:var(--success-9)"></span>양호</span>
+        <span><span class="swatch" style="background:var(--warning-9)"></span>조건부 적합</span>
+        <span><span class="swatch" style="background:var(--error-9)"></span>재검토 권고</span>
+        <span><span class="swatch" style="background:var(--surface-hover)"></span>미리보기 없음</span>
+      </div>
+      <div class="gu-select-row">
+        <label for="gu-select">또는 목록에서 선택:</label>
+        <select id="gu-select"><option value="">-- 구 선택 --</option></select>
+      </div>
+    </section>
+
+    <section class="workflow" id="candidates-section" style="display:none">
+      <h2 id="candidates-title">후보지</h2>
+      <p class="explain">격자 후보지를 영업지역 게이트(기존 가맹점 침해 여부) 통과 여부와 상권 적합도로 랭킹했습니다. 게이트 판정은 실제 김가네 매장 216곳 위치 기준입니다. <strong>참고:</strong> 팀 실 데이터베이스 연동 전까지 쓰는 스냅샷이라 그 이후 신규/폐점 매장은 반영 안 될 수 있습니다. 게이트를 통과한 후보지는 상권 적합도까지 실시간으로 계산하므로(정부 공개 데이터 조회) 매장 수에 따라 몇 초~몇 분 걸릴 수 있습니다.</p>
+      <div class="listing-note" id="trade-price-note" style="display:none">
+        <div class="label">매물 확인 참고</div>
+        <p id="trade-price-summary"></p>
+      </div>
+      <div id="candidates-body"><p class="results-empty">구를 선택하면 여기 표시됩니다.</p></div>
+    </section>
+
+    <section class="workflow" id="doc-section" style="display:none">
+      <h2>선택한 후보지 상담자료</h2>
+      <div class="doc-tabs" role="group" aria-label="자료 종류">
+        <button type="button" class="doc-tab" id="tab-document" aria-pressed="true">상담자료 문서</button>
+      </div>
+      <div id="doc-body"></div>
+    </section>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<footer class="pagefoot wrap">
+  개발자용: API 서버 주소 <input id="apiBase" value="http://127.0.0.1:8050" size="26"> ·
+  이 페이지는 <code>src/api.py</code>(로컬 전용 FastAPI, 팀 실서비스 연동 아님)를 호출하는 빌드 도구 없는 정적 참조 구현입니다.
+</footer>
+
+<script src="shared.js"></script>
+<script>
+const guMapSvg = document.getElementById('gu-map');
+const guSelect = document.getElementById('gu-select');
+let selectedGu = null;
+let currentCandidates = [];
+let selectedCandidateIndex = null;
+const guShapes = {};
+let districtPreview = {};
+
+function setRailState(step, state) {
+  const item = document.querySelector(`.rail-item[data-step="${step}"]`);
+  if (item) item.dataset.state = state;
+}
+
+function previewClass(gu) {
+  const p = districtPreview[gu];
+  if (!p || p.error || !p.fit_overall) return 'preview-unknown';
+  if (p.fit_overall === '양호') return 'preview-good';
+  if (p.fit_overall === '조건부 적합') return 'preview-caution';
+  return 'preview-poor';
+}
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function selectGu(name) {
+  selectedGu = name;
+  guSelect.value = name;
+  Object.entries(guShapes).forEach(([n, shape]) => shape.setAttribute('aria-pressed', String(n === name)));
+  document.getElementById('candidates-section').style.display = '';
+  document.getElementById('doc-section').style.display = 'none';
+  setRailState(1, 'done'); setRailState(2, 'active'); setRailState(3, 'todo');
+  loadCandidates(name);
+}
+
+guSelect.addEventListener('change', () => { if (guSelect.value) selectGu(guSelect.value); });
+
+fetch('hangang.json')
+  .then(resp => resp && resp.ok ? resp.json() : null)
+  .then(river => {
+    if (river) {
+      const shape = document.createElementNS(SVG_NS, 'path');
+      shape.setAttribute('d', river.path);
+      shape.setAttribute('class', 'hangang-shape');
+      shape.setAttribute('fill-rule', 'evenodd');
+      shape.setAttribute('role', 'button');
+      shape.setAttribute('aria-label', '한강 (선택할 수 없는 지역)');
+      shape.setAttribute('aria-disabled', 'true');
+      shape.addEventListener('click', e => e.stopPropagation());
+      guMapSvg.appendChild(shape);
+    }
+    return fetch('seoul_districts.json');
+  })
+  .then(resp => resp.json())
+  .then(geo => {
+    guMapSvg.setAttribute('viewBox', geo.viewBox);
+    geo.districts.forEach(d => {
+      const shape = document.createElementNS(SVG_NS, 'path');
+      shape.setAttribute('d', d.path);
+      shape.setAttribute('class', 'gu-shape preview-unknown');
+      shape.setAttribute('role', 'button');
+      shape.setAttribute('tabindex', '0');
+      shape.setAttribute('aria-pressed', 'false');
+      shape.setAttribute('aria-label', d.name);
+      shape.addEventListener('click', () => selectGu(d.name));
+      shape.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectGu(d.name); }
+      });
+      guMapSvg.appendChild(shape);
+      guShapes[d.name] = shape;
+
+      const LABEL_NUDGE = { '종로구': [-12, 0], '양천구': [0, 12] };
+      const [nudgeX, nudgeY] = LABEL_NUDGE[d.name] || [0, 0];
+      const label = document.createElementNS(SVG_NS, 'text');
+      label.setAttribute('x', d.cx + nudgeX); label.setAttribute('y', d.cy + nudgeY);
+      label.setAttribute('class', 'gu-label'); label.setAttribute('pointer-events', 'none');
+      label.textContent = d.name;
+      guMapSvg.appendChild(label);
+
+      const opt = document.createElement('option');
+      opt.value = d.name; opt.textContent = d.name;
+      guSelect.appendChild(opt);
+    });
+    return fetch(apiBase() + '/district-preview');
+  })
+  .then(resp => resp && resp.ok ? resp.json() : [])
+  .then(rows => {
+    districtPreview = Object.fromEntries((rows || []).map(r => [r.gu, r]));
+    Object.entries(guShapes).forEach(([name, el]) => {
+      el.classList.remove('preview-good', 'preview-caution', 'preview-poor', 'preview-unknown');
+      el.classList.add(previewClass(name));
+    });
+  })
+  .catch(() => {});
+
+function gradeText(indicators, key) {
+  const ind = indicators[key];
+  if (!ind || ind.value == null) return `<span class="indicator">${key}: 데이터 없음</span>`;
+  return `<span class="indicator">${key}: <span class="grade">${ind.grade}</span> (백분위 ${ind.percentile != null ? ind.percentile.toFixed(0) : '-'})</span>`;
+}
+
+async function loadTradePriceSummary(sggCd) {
+  const note = document.getElementById('trade-price-note');
+  const el = document.getElementById('trade-price-summary');
+  if (!sggCd) { note.style.display = 'none'; return; }
+  note.style.display = '';
+  el.textContent = '이 지역 최근 실거래가 참고 자료를 불러오는 중…';
+  try {
+    const resp = await fetch(apiBase() + '/district-trade-price', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sgg_cd: sggCd }),
+    });
+    const data = await resp.json();
+    if (!data.available) {
+      el.textContent = `이 지역은 최근 상업용 부동산 실거래 기록을 찾지 못했습니다(${data.reason || '데이터 없음'}) — 매물 확인은 아래 지도 링크로 이동해 직접 검색해 주세요.`;
+      return;
+    }
+    const ym = `${data.deal_ymd.slice(0, 4)}년 ${Number(data.deal_ymd.slice(4))}월`;
+    el.innerHTML = `이 지역 상업용 부동산 최근 실거래가(국토교통부 공공데이터, <strong>${ym} 기준 ${data.sample_count}건 평균 평당 ${data.avg_price_per_pyeong_manwon.toLocaleString('ko-KR')}만원</strong>) — 실제 매물 목록이 아니라 과거 거래 기록 참고치입니다. 지금 임대 가능한 매물은 아래 후보지 카드의 지도 링크로 이동해 직접 확인해 주세요.`;
+  } catch (e) {
+    el.textContent = `실거래가 참고 자료를 불러오지 못했습니다. (${e.message})`;
+  }
+}
+
+async function loadCandidates(gu) {
+  const body = document.getElementById('candidates-body');
+  document.getElementById('candidates-title').textContent = `${gu} 후보지`;
+  body.innerHTML = '<p class="results-empty">계산 중… (실제 계산이라 격자점마다 몇 초~수십 초 걸릴 수 있습니다)</p>';
+  document.getElementById('trade-price-note').style.display = 'none';
+  try {
+    const resp = await fetch(apiBase() + '/district-grid', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gu }),
+    });
+    if (!resp.ok) throw new Error((await resp.json()).detail || await resp.text());
+    const data = await resp.json();
+    currentCandidates = data.candidates;
+    renderCandidates();
+    loadTradePriceSummary(currentCandidates[0] && currentCandidates[0].sgg_cd);
+  } catch (e) {
+    body.innerHTML = `<div class="results-error">후보지를 불러오지 못했습니다. (${e.message})</div>`;
+  }
+}
+
+function mapLinks(title, lat, lon) {
+  const encTitle = encodeURIComponent(title);
+  const kakaoUrl = `https://map.kakao.com/link/map/${encTitle},${lat},${lon}`;
+  const naverUrl = `https://map.naver.com/p?title=${encTitle}&lat=${lat}&lng=${lon}`;
+  return `<div class="map-links">
+    <a class="map-link" href="${kakaoUrl}" target="_blank" rel="noopener noreferrer">카카오맵에서 보기</a>
+    <a class="map-link" href="${naverUrl}" target="_blank" rel="noopener noreferrer">네이버지도에서 보기</a>
+  </div>`;
+}
+
+function renderCandidates() {
+  const body = document.getElementById('candidates-body');
+  if (!currentCandidates.length) { body.innerHTML = '<p class="results-empty">후보지가 없습니다.</p>'; return; }
+
+  const passed = currentCandidates.filter(c => c.gate_passed);
+  const gradeLabel = { '양호': '가장 무난', '조건부 적합': '조건부', '재검토 권고': '재검토 필요' };
+
+  body.innerHTML = currentCandidates.map((c, i) => {
+    const placeLabel = c.trdar_name ? `${c.trdar_name}(${c.trdar_type})` : '이름 미상 상권';
+    const title = c.gate_passed
+      ? `${placeLabel} — ${gradeLabel[c.fit_overall] || c.fit_overall}`
+      : `${placeLabel} (영업지역 게이트 차단)`;
+    const reasonHtml = c.gate_passed
+      ? `<div class="indicator-row">
+          ${gradeText(c.fit_indicators, '유동인구')}
+          ${gradeText(c.fit_indicators, '배후인구')}
+          ${gradeText(c.fit_indicators, '경쟁밀도(반경 500m)')}
+        </div>`
+      : `<div class="candidate-reason"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:.25em" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>${c.reason}</div>`;
+    const selectedClass = i === selectedCandidateIndex ? ' is-selected' : '';
+    const blockedClass = c.gate_passed ? '' : ' blocked';
+    return `
+      <article class="candidate-card${selectedClass}${blockedClass}" data-idx="${i}">
+        <div class="candidate-head">
+          <span class="candidate-title">${title}</span>
+          <span class="store-sub">좌표 ${c.lat.toFixed(5)}, ${c.lon.toFixed(5)}</span>
+        </div>
+        ${reasonHtml}
+        ${mapLinks(`${selectedGu} ${title}`, c.lat, c.lon)}
+      </article>`;
+  }).join('');
+
+  body.querySelectorAll('.candidate-card').forEach(card => {
+    card.addEventListener('click', () => {
+      selectedCandidateIndex = Number(card.getAttribute('data-idx'));
+      body.querySelectorAll('.candidate-card').forEach(c =>
+        c.classList.toggle('is-selected', Number(c.getAttribute('data-idx')) === selectedCandidateIndex));
+      showDocSection(currentCandidates[selectedCandidateIndex]);
+    });
+  });
+  body.querySelectorAll('.map-link').forEach(a => a.addEventListener('click', e => e.stopPropagation()));
+}
+
+async function showDocSection(candidate) {
+  document.getElementById('doc-section').style.display = '';
+  setRailState(2, 'done'); setRailState(3, 'active');
+  const body = document.getElementById('doc-body');
+  body.innerHTML = '<p class="results-empty">상담자료 생성 중… (실제 계산이라 몇 초~수십 초 걸릴 수 있습니다)</p>';
+  try {
+    const resp = await fetch(apiBase() + '/packets/new-franchisee', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        brand_nm: '김가네', lat: candidate.lat, lon: candidate.lon,
+        candidate_area_sqm: 45.0, sbiz_category: '김밥/만두/분식',
+      }),
+    });
+    if (!resp.ok) throw new Error((await resp.json()).detail || await resp.text());
+    const doc = await resp.json();
+    const md = doc.new_franchisee_md || '(내용 없음)';
+    const displayText = stripMarkdownSymbols(md);
+    body.innerHTML = `
+      <div class="doc-actions" style="display:flex;gap:var(--space-3);margin-bottom:var(--space-3)">
+        <button type="button" class="check-btn" id="dl-doc">다운로드 (.md)</button>
+      </div>
+      <pre class="packet-md">${displayText.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</pre>`;
+    document.getElementById('dl-doc').addEventListener('click', () => {
+      const safeGu = (selectedGu || '').replace(/[\\/:*?"<>|]/g, '_');
+      downloadMarkdown(`${safeGu}_후보지_신규가맹상담자료.md`, md);
+    });
+  } catch (e) {
+    body.innerHTML = `<div class="results-error">상담자료를 만들지 못했습니다. (${e.message})</div>`;
+  }
+}
+</script>
+</body>
+</html>

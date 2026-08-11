@@ -13,7 +13,7 @@
   text-align: center;
 }
 
-.consent-checkbox {
+.auth-form label.consent-checkbox {
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -22,7 +22,15 @@
 }
 
 .consent-checkbox input {
+  width: auto;
   margin-top: 3px;
+}
+
+.policy-overlay {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  overflow-y: auto;
 }
 
 @media (max-width: 760px) {

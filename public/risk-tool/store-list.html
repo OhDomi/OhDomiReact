@@ -1,0 +1,210 @@
+<!doctype html>
+<!-- 전체 매장 목록 — 정렬 가능한 표(구/업종위험/입지위험/종합판정 열별 정렬)로 216개
+     매장을 훑어본다. 매장을 클릭하면 오른쪽 슬라이드오버 패널로 미리보기, 더 깊이 보고
+     싶으면 패널 안 링크로 store-detail.html(SHAP 근거·상담자료)로 이동.
+     검색창 + 등급 필터 칩을 표 위에 고정. 같은 토큰(tokens.css)·같은 API(/rankings)·
+     같은 공용 함수(shared.js)를 재사용. -->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>전체 매장 목록 — 김가네 가맹점 위험 진단</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .toolbar { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-4); }
+  .search-input {
+    flex: 1; min-width: 12rem; font: inherit; font-size: var(--text-sm); padding: .5rem .8rem;
+    border: 1px solid var(--border-interactive); border-radius: var(--radius); background: var(--surface); color: var(--text);
+  }
+  .tier-filter { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+  .filter-chip {
+    font: inherit; font-size: var(--text-sm); cursor: pointer; padding: .4rem .8rem;
+    border-radius: var(--radius-pill); border: 1px solid var(--border-interactive);
+    background: var(--surface); color: var(--text-secondary);
+  }
+  .filter-chip[aria-pressed="true"] { background: var(--accent-9); border-color: var(--accent-9); color: var(--accent-on-solid); font-weight: 700; }
+
+  .table-wrap { border: 1px solid var(--border-subtle); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+  table.store-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+  table.store-table th {
+    text-align: left; padding: var(--space-3) var(--space-3); background: var(--surface-hover);
+    color: var(--text-secondary); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .04em;
+    border-bottom: 1px solid var(--border-subtle); cursor: pointer; user-select: none; white-space: nowrap;
+  }
+  table.store-table th:hover { color: var(--text); }
+  /* 숫자 열(입지 위험) 헤더를 값 정렬(.cell-num, text-align:right)에 맞춰 오른쪽 정렬 —
+     헤더가 왼쪽 정렬이면 값과 세로선이 안 맞아 보임(2026-08-07 리포트). */
+  table.store-table th.th-num { text-align: right; }
+  table.store-table th .arrow { margin-left: .25rem; opacity: .5; }
+  table.store-table th[aria-sort="ascending"] .arrow, table.store-table th[aria-sort="descending"] .arrow { opacity: 1; color: var(--accent-text); }
+  table.store-table td { padding: var(--space-3); border-bottom: 1px solid var(--border-subtle); }
+  table.store-table tbody tr { cursor: pointer; }
+  table.store-table tbody tr:hover { background: var(--surface-hover); }
+  table.store-table tbody tr:last-child td { border-bottom: none; }
+  .cell-store { font-weight: 700; }
+  .cell-num { font-variant-numeric: tabular-nums; text-align: right; }
+  .row-count { font-size: var(--text-xs); color: var(--text-secondary); margin: var(--space-2) 0 var(--space-4); }
+
+  /* 슬라이드오버 패널 */
+  .panel-backdrop {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, .35); z-index: 40; display: none;
+  }
+  .panel-backdrop.open { display: block; }
+  .detail-panel {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(100%, 30rem); background: var(--background);
+    box-shadow: -18px 0 55px rgba(15, 23, 42, .14); z-index: 41; padding: var(--space-5);
+    overflow-y: auto; transform: translateX(100%); transition: transform 220ms ease;
+  }
+  .detail-panel.open { transform: translateX(0); }
+  .panel-close { float: right; font-size: 1.4rem; line-height: 1; color: var(--text-secondary); background: none; border: none; cursor: pointer; }
+  .panel-close:hover { color: var(--text); }
+  .panel-link { display: inline-block; margin-top: var(--space-4); font-size: var(--text-sm); }
+  /* 슬라이드오버 패널은 폭이 30rem으로 고정이라(브라우저 창 폭과 무관) tokens.css의
+     640px 미디어쿼리로는 안 잡힘 — 이 패널 안에서는 항상 해석/원자료를 위아래로 쌓는다. */
+  .detail-panel .result-card { grid-template-columns: 1fr; }
+  .detail-panel .interp-region { border-right: none; border-bottom: 1px dashed var(--border);
+    padding-right: 0; padding-bottom: var(--space-4); margin-bottom: var(--space-4); }
+  .detail-panel .raw-region { padding-left: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="site-shell">
+<div>
+<h1>전체 매장 목록</h1>
+<p class="lede">열 제목을 클릭하면 정렬됩니다. 매장을 클릭하면 오른쪽에 요약 패널이 열립니다.</p>
+
+<section class="workflow">
+  <div class="toolbar">
+    <input type="search" class="search-input" id="search" placeholder="매장명 또는 구 이름으로 검색">
+    <div class="tier-filter" id="tier-filter"></div>
+  </div>
+  <p class="row-count" id="row-count">불러오는 중…</p>
+  <div class="table-wrap">
+    <table class="store-table">
+      <thead>
+        <tr>
+          <th data-sort="store_label">매장 <span class="arrow">↕</span></th>
+          <th data-sort="v2_percentile" class="th-num">입지 위험(백분위) <span class="arrow">↕</span></th>
+          <th data-sort="classification">종합 판정 <span class="arrow">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</section>
+</div>
+</div>
+</div>
+
+<div class="panel-backdrop" id="panel-backdrop"></div>
+<aside class="detail-panel" id="detail-panel" aria-label="매장 요약">
+  <button type="button" class="panel-close" id="panel-close" aria-label="닫기">×</button>
+  <div id="panel-body"></div>
+</aside>
+
+<footer class="pagefoot wrap">
+  개발자용: API 서버 주소 <input id="apiBase" value="http://127.0.0.1:8050" size="26"> ·
+  이 페이지는 <code>/rankings</code>(로컬 전용 FastAPI, 팀 실서비스 연동 아님)를 호출하는 빌드 도구 없는 정적 참조 구현입니다.
+</footer>
+
+<script src="shared.js"></script>
+<script>
+let rankingData = [];
+let filteredData = [];
+let sortKey = 'riskValue';
+let sortDir = 'desc';
+let tierFilterValue = 'all';
+
+function riskValue(row) { return row.v2_percentile != null ? row.v2_percentile : row.v1_percentile; }
+
+const TIER_FILTERS = [
+  { id: 'all', label: '전체' },
+  { id: 'danger', label: '위험한 편' },
+  { id: 'caution', label: '주의가 필요한 편' },
+  { id: 'safe', label: '안전한 편' },
+];
+
+function renderTierFilter() {
+  const el = document.getElementById('tier-filter');
+  el.innerHTML = TIER_FILTERS.map(f =>
+    `<button type="button" class="filter-chip" data-tier="${f.id}" aria-pressed="${f.id === tierFilterValue}">${f.label}</button>`
+  ).join('');
+  el.querySelectorAll('.filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => { tierFilterValue = btn.dataset.tier; renderTierFilter(); applyFilters(); });
+  });
+}
+
+function applyFilters() {
+  const q = document.getElementById('search').value.trim();
+  filteredData = rankingData.filter(r => !r.error).filter(r => {
+    if (q && !r.store_label.includes(q) && !(r.sigungu || '').includes(q)) return false;
+    if (tierFilterValue !== 'all' && riskTierFromPercentile(riskValue(r)).tier !== tierFilterValue) return false;
+    return true;
+  });
+  sortAndRender();
+}
+
+function sortAndRender() {
+  const dir = sortDir === 'asc' ? 1 : -1;
+  const rows = [...filteredData].sort((a, b) => {
+    let av, bv;
+    if (sortKey === 'riskValue') { av = riskValue(a) ?? -1; bv = riskValue(b) ?? -1; }
+    else { av = a[sortKey]; bv = b[sortKey]; }
+    if (av == null) av = -Infinity;
+    if (bv == null) bv = -Infinity;
+    if (typeof av === 'string') return av.localeCompare(bv) * dir;
+    return (av - bv) * dir;
+  });
+  document.getElementById('row-count').textContent = `${rows.length}건`;
+  const tbody = document.getElementById('table-body');
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="3" class="results-empty">표시할 매장이 없습니다.</td></tr>'; return; }
+  tbody.innerHTML = rows.map(r => {
+    const tier = badgeTier(r.classification);
+    return `
+      <tr data-store="${r.store_label.replace(/"/g, '&quot;')}">
+        <td class="cell-store">${r.store_label}</td>
+        <td class="cell-num">${r.v2_percentile != null ? r.v2_percentile.toFixed(1) : '-'}</td>
+        <td><span class="badge small tier-${tier}">${shortBadgeLabel(r.classification)}</span></td>
+      </tr>`;
+  }).join('');
+  tbody.querySelectorAll('tr[data-store]').forEach(tr => {
+    tr.addEventListener('click', () => openPanel(rows.find(r => r.store_label === tr.dataset.store)));
+  });
+}
+
+function openPanel(row) {
+  document.getElementById('panel-body').innerHTML = renderCard(row, false) +
+    `<a class="panel-link" href="store-detail.html?address=${encodeURIComponent(row.store_label)}">전체 상세·상담자료 보기 →</a>`;
+  document.getElementById('panel-backdrop').classList.add('open');
+  document.getElementById('detail-panel').classList.add('open');
+}
+function closePanel() {
+  document.getElementById('panel-backdrop').classList.remove('open');
+  document.getElementById('detail-panel').classList.remove('open');
+}
+document.getElementById('panel-close').addEventListener('click', closePanel);
+document.getElementById('panel-backdrop').addEventListener('click', closePanel);
+
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sort;
+    if (sortKey === key) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+    else { sortKey = key; sortDir = key === 'store_label' || key === 'classification' ? 'asc' : 'desc'; }
+    document.querySelectorAll('th[data-sort]').forEach(h => h.removeAttribute('aria-sort'));
+    th.setAttribute('aria-sort', sortDir === 'asc' ? 'ascending' : 'descending');
+    sortAndRender();
+  });
+});
+
+document.getElementById('search').addEventListener('input', applyFilters);
+
+renderTierFilter();
+document.getElementById('row-count').textContent = '불러오는 중…';
+fetch(apiBase() + '/rankings')
+  .then(resp => { if (!resp.ok) throw new Error('load failed'); return resp.json(); })
+  .then(data => { rankingData = Array.isArray(data) ? data : []; applyFilters(); })
+  .catch(() => { document.getElementById('row-count').textContent = '불러오지 못했습니다.'; });
+</script>
+</body>
+</html>

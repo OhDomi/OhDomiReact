@@ -106,9 +106,14 @@ function AdminRiskPrediction() {
 
             {selectedRisk.riskFactors.length ? (
               <div className="shap-factor-grid">
-                {selectedRisk.riskFactors.map((factor) => (
-                  <ShapFactorCard factor={factor} key={factor.riskFactorId} />
-                ))}
+                {(() => {
+                  const maxAbsContribution = Math.max(
+                    ...selectedRisk.riskFactors.map((factor) => Math.abs(Number(factor.shapContribution))),
+                  )
+                  return selectedRisk.riskFactors.map((factor) => (
+                    <ShapFactorCard factor={factor} maxAbsContribution={maxAbsContribution} key={factor.riskFactorId} />
+                  ))
+                })()}
               </div>
             ) : (
               <p className="risk-no-factors">저장된 SHAP 위험요인이 없습니다.</p>

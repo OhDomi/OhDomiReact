@@ -331,3 +331,44 @@
     grid-template-columns: 1fr;
   }
 }
+
+.download-menu-wrap {
+  position: relative;
+}
+
+.download-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(23, 33, 52, 0.14);
+}
+
+.download-menu button {
+  padding: 9px 10px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  color: var(--navy);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.download-menu button:hover {
+  background: #f6f4ff;
+}
+
+.download-menu-error {
+  margin: 6px 0 0;
+  color: #dc4c5a;
+  font-size: 12px;
+}

@@ -12,7 +12,7 @@ type ApiDataState<T> = {
   retry: () => void
 }
 
-export function useApiData<T>(path: string): ApiDataState<T> {
+export function useApiData<T>(path: string | null): ApiDataState<T> {
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -21,6 +21,13 @@ export function useApiData<T>(path: string): ApiDataState<T> {
   const retry = useCallback(() => setRequestVersion((version) => version + 1), [])
 
   useEffect(() => {
+    if (!path) {
+      setData(null)
+      setLoading(false)
+      setError('')
+      return
+    }
+
     const controller = new AbortController()
     setLoading(true)
     setError('')
