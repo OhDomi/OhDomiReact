@@ -1,7 +1,28 @@
+import './ApiDataState.css'
+
 type ApiDataStateProps = {
   loading: boolean
   error: string
   retry: () => void
+}
+
+function AlertIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M10.3 3.9 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+      <path d="M12 9v4" />
+      <path d="M12 16.5v.01" />
+    </svg>
+  )
+}
+
+function LockIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4.5" y="10.5" width="15" height="10" rx="2.2" />
+      <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+    </svg>
+  )
 }
 
 function MetricSkeleton() {
@@ -69,11 +90,26 @@ function ApiDataState({ loading, error, retry }: ApiDataStateProps) {
     )
   }
 
+  // 세션이 끊긴 상태(401)면 "다시 시도"를 눌러도 같은 요청이 같은 이유로 또 실패할 뿐이라
+  // 별도로 안내한다 — 새로고침해야 세션 복구 로직(App.tsx의 /api/auth/me 확인)이 다시 돎.
+  const isAuthError = /로그인이 필요|권한이 필요/.test(error)
+
   return (
-    <section className="panel" style={{ margin: '40px', textAlign: 'center' }}>
-      <h2>데이터를 불러오지 못했습니다</h2>
-      {error && <p className="form-error">{error}</p>}
-      <button className="primary-action" type="button" onClick={retry}>다시 시도</button>
+    <section className="panel api-error-state">
+      <div className={`api-error-icon ${isAuthError ? 'auth' : ''}`}>
+        {isAuthError ? <LockIcon /> : <AlertIcon />}
+      </div>
+      <h2>{isAuthError ? '로그인이 필요합니다' : '데이터를 불러오지 못했습니다'}</h2>
+      <p>{isAuthError ? '세션이 만료되었거나 로그아웃된 상태입니다. 새로고침하면 로그인 화면으로 이동합니다.' : (error || '잠시 후 다시 시도해 주세요.')}</p>
+      <div className="api-error-actions">
+        {isAuthError ? (
+          <button className="primary-action" type="button" onClick={() => window.location.reload()}>
+            새로고침
+          </button>
+        ) : (
+          <button className="primary-action" type="button" onClick={retry}>다시 시도</button>
+        )}
+      </div>
     </section>
   )
 }

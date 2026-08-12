@@ -28,9 +28,16 @@ const TREND_RANGES = [
   { months: 6, label: '6개월' },
   { months: 12, label: '1년' },
 ] as const
+const REGION_RANGES = [
+  { months: 1, label: '1개월' },
+  { months: 3, label: '3개월' },
+  { months: 6, label: '6개월' },
+  { months: 12, label: '1년' },
+] as const
 
 function AdminSalesAnalysis({ onViewAllBySales }: { onViewAllBySales: () => void }) {
-  const api = useApiData<AdminSalesData>('/api/ui/admin/sales')
+  const [regionMonths, setRegionMonths] = useState<number>(1)
+  const api = useApiData<AdminSalesData>(`/api/ui/admin/sales?regionMonths=${regionMonths}`)
   const [selectedStore, setSelectedStore] = useState<RankedStore | null>(null)
   const [showAllRanking, setShowAllRanking] = useState(false)
   const [trendMonths, setTrendMonths] = useState<number>(6)
@@ -237,6 +244,19 @@ function AdminSalesAnalysis({ onViewAllBySales }: { onViewAllBySales: () => void
             <div>
               <span className="panel-label">REGION SALES</span>
               <h2>지역별 매출 비교</h2>
+            </div>
+
+            <div className="tab-set">
+              {REGION_RANGES.map((range) => (
+                <button
+                  key={range.months}
+                  type="button"
+                  className={regionMonths === range.months ? 'active' : ''}
+                  onClick={() => setRegionMonths(range.months)}
+                >
+                  {range.label}
+                </button>
+              ))}
             </div>
           </div>
 

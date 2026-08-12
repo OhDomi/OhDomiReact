@@ -1,0 +1,59 @@
+.api-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: 380px;
+  margin: 60px auto;
+  padding: 40px 32px;
+  text-align: center;
+  animation: api-error-in 480ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes api-error-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.api-error-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  color: var(--red);
+  background: #fff0f1;
+  box-shadow: 0 10px 24px -10px rgba(233, 86, 100, 0.35);
+}
+
+.api-error-icon.auth {
+  color: var(--purple);
+  background: var(--purple-soft);
+  box-shadow: 0 10px 24px -10px rgba(98, 70, 229, 0.3);
+}
+
+.api-error-state h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 18px;
+}
+
+.api-error-state p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.api-error-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.api-error-actions .primary-action,
+.api-error-actions .outline-button {
+  margin: 0;
+  width: auto;
+}

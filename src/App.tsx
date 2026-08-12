@@ -61,6 +61,7 @@ function addressFromPathname(pathname: string): string | null {
 }
 
 const NOTIFICATION_LIMIT = 5
+const LAST_ROLE_KEY = 'oh-domi-last-role'
 
 const PAGE_TITLE: Partial<Record<Page, string>> = {
   overview: '대시보드',
@@ -121,8 +122,15 @@ type AdminOverviewData = {
 }
 
 function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
-  const [role, setRole] = useState<Role>('owner')
-  const [loginId, setLoginId] = useState('demo')
+  // 2026-08-12: 매번 "가맹점주"로 초기화돼서, 관리자로 주로 쓰는 사람은 로그인할 때마다
+  // 다시 눌러야 했음 — 마지막으로 성공 로그인한 유형을 기억해뒀다가 기본 선택으로.
+  const [role, setRole] = useState<Role>(() => {
+    const saved = localStorage.getItem(LAST_ROLE_KEY)
+    return saved === 'admin' || saved === 'owner' ? saved : 'owner'
+  })
+  // 2026-08-12(임시, 정식 배포 전 제거 필요): 데모 편의용 아이디 자동 입력 —
+  // [[OhDomi 프로젝트 - 정식 배포 전 제거 체크리스트]] 참고.
+  const [loginId, setLoginId] = useState(() => (role === 'admin' ? 'admin' : 'qwer'))
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showRegister, setShowRegister] = useState(false)
@@ -144,6 +152,7 @@ function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
         password: String(form.get('password')),
         role: role === 'admin' ? 'ADMIN' : 'OWNER',
       })
+      localStorage.setItem(LAST_ROLE_KEY, role)
       onLogin(account)
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : '로그인에 실패했습니다.')
@@ -220,10 +229,18 @@ function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
           <p className="muted">계정 정보를 입력해 대시보드로 이동하세요.</p>
 
           <div className="role-switch" role="group" aria-label="로그인 유형">
-            <button type="button" className={role === 'owner' ? 'active' : ''} onClick={() => setRole('owner')}>
+            <button
+              type="button"
+              className={role === 'owner' ? 'active' : ''}
+              onClick={() => { setRole('owner'); setLoginId('qwer') }}
+            >
               가맹점주
             </button>
-            <button type="button" className={role === 'admin' ? 'active' : ''} onClick={() => setRole('admin')}>
+            <button
+              type="button"
+              className={role === 'admin' ? 'active' : ''}
+              onClick={() => { setRole('admin'); setLoginId('admin') }}
+            >
               관리자
             </button>
           </div>
@@ -291,11 +308,13 @@ function Sidebar({
   page,
   setPage,
   logout,
+  hygieneBadgeCount,
 }: {
   role: Role
   page: Page
   setPage: (p: Page) => void
   logout: () => void
+  hygieneBadgeCount: number
 }) {
   const ownerNav: { id: Page; label: string; icon: string }[] = [
     { id: 'overview', label: '대시보드', icon: 'overview' },
@@ -339,7 +358,7 @@ function Sidebar({
           >
             <Icon name={item.icon} />
             <span>{item.label}</span>
-            {item.id === 'hygiene' && <i>2</i>}
+            {item.id === 'hygiene' && hygieneBadgeCount > 0 && <i>{hygieneBadgeCount}</i>}
           </button>
         ))}
       </nav>
@@ -1023,6 +1042,20 @@ function LoadingPreviewPage() {
       <section className="panel" style={{ marginBottom: 18 }}>
         <div className="panel-head">
           <div>
+            <span className="panel-label">ERROR STATE</span>
+            <h2>데이터 못 불러왔을 때 (ApiDataState)</h2>
+          </div>
+        </div>
+        <p className="muted" style={{ margin: '4px 0 0' }}>일반 에러는 "다시 시도", 세션 만료(401)는 "새로고침"으로 다르게 안내</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+          <ApiDataState loading={false} error="데이터 요청에 실패했습니다. (500)" retry={() => {}} />
+          <ApiDataState loading={false} error="로그인이 필요합니다." retry={() => {}} />
+        </div>
+      </section>
+
+      <section className="panel" style={{ marginBottom: 18 }}>
+        <div className="panel-head">
+          <div>
             <span className="panel-label">LONG-RUNNING TASK</span>
             <h2>생성/계산 중 배너 (GeneratingBanner)</h2>
           </div>
@@ -1069,6 +1102,14 @@ function App() {
     role === 'admin' ? '/api/ui/admin/hygiene' : null,
   )
   const hygieneAlerts = role === 'admin' ? adminHygieneAlerts.data?.hygieneActions ?? [] : []
+  // 2026-08-12: 사이드바 "위생 점검" 옆 알림 숫자가 <i>2</i>로 고정돼 있었음 — 관리자는
+  // 실제 조치 필요 항목 수, 점주는 자기 매장의 미해결 개선과제 수로 실시간 반영.
+  const ownerHygiene = useApiData<{ improvementTasks: unknown[] }>(
+    role === 'owner' && account?.storeId ? `/api/ui/stores/${account.storeId}/hygiene` : null,
+  )
+  const hygieneBadgeCount = role === 'admin'
+    ? hygieneAlerts.length
+    : ownerHygiene.data?.improvementTasks.length ?? 0
   const [notificationOpen, setNotificationOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
@@ -1233,6 +1274,7 @@ function App() {
           setProfileMenuOpen(false)
         }}
         logout={handleLogout}
+        hygieneBadgeCount={hygieneBadgeCount}
       />
 
       <div className="app-main">
