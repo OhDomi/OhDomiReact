@@ -257,52 +257,6 @@
   margin-top: 14px;
 }
 
-.hygiene-action-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.hygiene-action-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 14px;
-  align-items: center;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #f8f9fb;
-}
-
-.action-priority {
-  padding: 6px 9px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 900;
-}
-
-.action-priority.danger {
-  color: #dc4c5a;
-  background: #fff0f1;
-}
-
-.action-priority.warning {
-  color: var(--orange);
-  background: #fff4e7;
-}
-
-.hygiene-action-card strong {
-  color: var(--navy);
-  font-size: 14px;
-}
-
-.hygiene-action-card p {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
 @media (max-width: 1100px) {
   .admin-hygiene-summary,
   .admin-hygiene-layout,
@@ -324,10 +278,6 @@
 
   .hygiene-detail-list,
   .hygiene-detail-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .hygiene-action-card {
     grid-template-columns: 1fr;
   }
 }
@@ -356,23 +306,3 @@
   font-weight: 700;
 }
 
-.admin-store-pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin-top: 14px;
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.admin-store-pager .outline-button {
-  width: auto;
-  margin: 0;
-  padding: 7px 14px;
-}
-
-.admin-store-pager .outline-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}

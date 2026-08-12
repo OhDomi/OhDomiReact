@@ -446,3 +446,25 @@ button{border:0;background:none;cursor:pointer}.brand{display:flex;align-items:c
 @keyframes generating-spin {
   to { transform: rotate(360deg); }
 }
+
+.app-boot-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.app-boot-loading .brand-mark {
+  color: var(--navy);
+}
+
+.app-boot-loading i {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--purple-soft);
+  border-top-color: var(--purple);
+  border-radius: 50%;
+  animation: generating-spin 0.8s linear infinite;
+}

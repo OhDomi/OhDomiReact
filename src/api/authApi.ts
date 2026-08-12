@@ -93,6 +93,23 @@ export async function loginAccount(request: LoginRequest): Promise<LoginResponse
   return response.json() as Promise<LoginResponse>
 }
 
+// 2026-08-12: 새로고침하면 SESSION 쿠키는 여전히 유효한데 React 상태(useState)는
+// 초기화돼 로그인 화면으로 돌아가던 문제 — 앱 첫 로드 시 이걸로 세션을 복구한다.
+// 로그인 안 돼 있으면(401) null만 반환, 에러를 던지지 않음.
+export async function getCurrentAccount(): Promise<LoginResponse | null> {
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'include',
+    })
+  } catch {
+    return null
+  }
+  if (!response.ok) return null
+  return response.json() as Promise<LoginResponse>
+}
+
 export async function logoutAccount(): Promise<void> {
   await fetch(`${API_BASE_URL}/api/auth/logout`, {
     method: 'POST',

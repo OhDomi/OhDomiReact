@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { getCaptcha, registerAccount } from '../../api/authApi'
 import type { CaptchaChallenge } from '../../api/authApi'
 import PrivacyPolicyPage from './PrivacyPolicyPage'
+import PasswordInput from '../../components/PasswordInput'
 import './RegisterPage.css'
 
 type RegisterPageProps = {
@@ -131,14 +132,13 @@ function RegisterPage({ onBack, onRegistered }: RegisterPageProps) {
 
             <label>
               비밀번호
-              <input name="password" type="password" placeholder="8자 이상 입력하세요" minLength={8} maxLength={72} required />
+              <PasswordInput name="password" placeholder="8자 이상 입력하세요" minLength={8} maxLength={72} required />
             </label>
 
             <label>
               비밀번호 확인
-              <input
+              <PasswordInput
                 name="passwordConfirm"
-                type="password"
                 placeholder="비밀번호를 다시 입력하세요"
                 minLength={8}
                 maxLength={72}

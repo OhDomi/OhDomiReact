@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent, ReactNode, MouseEvent as ReactMouseEvent } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
 import StoreSalesOrder from './pages/StoreSalesOrder/StoreSalesOrder'
 import BoardPage from './pages/board/BoardPage'
@@ -16,7 +17,8 @@ import AdminDistrictProspect from './pages/AdminDistrictProspect/AdminDistrictPr
 import AdminStoreDetail from './pages/AdminStoreDetail/AdminStoreDetail'
 import RegisterPage from './pages/Auth/RegisterPage'
 import type { hygieneActions } from './pages/AdminHygieneCheck/adminHygieneDummy'
-import { loginAccount, logoutAccount } from './api/authApi'
+import { getCurrentAccount, loginAccount, logoutAccount } from './api/authApi'
+import PasswordInput from './components/PasswordInput'
 import type { LoginResponse } from './api/authApi'
 import { useApiData } from './api/useApiData'
 import ApiDataState from './api/ApiDataState'
@@ -26,7 +28,54 @@ import Footer from './components/Footer'
 type Role = 'owner' | 'admin'
 type Page = 'overview' | 'stores' | 'hygiene' | 'sales' | 'forecast' | 'renewalCheck' | 'storeRiskList' | 'districtProspect' | 'storeDetail' | 'orders' | 'board' | 'loadingPreview'
 
+// 2026-08-12: 페이지 전환이 전부 React 상태에만 있어서 새로고침하면 항상 대시보드로
+// 돌아가고, 뒤로가기/앞으로가기·북마크·링크 공유가 안 됐음 — URL과 동기화한다.
+// 나머지 코드는 여전히 Page 값으로만 다루도록(go('sales') 등 기존 호출부 그대로 두고)
+// 이 매핑 두 개로만 URL ↔ Page를 변환.
+const PAGE_PATHS: Record<Page, string> = {
+  overview: '/overview',
+  stores: '/stores',
+  hygiene: '/hygiene',
+  sales: '/sales',
+  forecast: '/forecast',
+  renewalCheck: '/renewal-check',
+  storeRiskList: '/store-risk-list',
+  districtProspect: '/district-prospect',
+  storeDetail: '/store-detail',
+  orders: '/orders',
+  board: '/board',
+  loadingPreview: '/loading-preview',
+}
+const PATH_PAGES: Partial<Record<string, Page>> = Object.fromEntries(
+  Object.entries(PAGE_PATHS).map(([page, path]) => [path, page as Page]),
+)
+
+function pageFromPathname(pathname: string): Page {
+  const firstSegment = `/${pathname.split('/')[1] ?? ''}`
+  return PATH_PAGES[firstSegment] ?? 'overview'
+}
+
+function addressFromPathname(pathname: string): string | null {
+  const rest = pathname.split('/').slice(2).join('/')
+  return rest ? decodeURIComponent(rest) : null
+}
+
 const NOTIFICATION_LIMIT = 5
+
+const PAGE_TITLE: Partial<Record<Page, string>> = {
+  overview: '대시보드',
+  stores: '가맹점 관리',
+  hygiene: '위생 점검',
+  sales: '매출 분석',
+  forecast: '리스크 예측',
+  renewalCheck: '재계약 대상 점검',
+  storeRiskList: '전체 매장 목록',
+  districtProspect: '희망상권 탐색',
+  storeDetail: '매장 상세',
+  orders: '발주 관리',
+  board: '공지/문의게시판',
+  loadingPreview: '로딩 화면 테스트',
+}
 
 const icons: Record<string, ReactNode> = {
   overview: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
@@ -66,8 +115,8 @@ type OwnerOverviewData = {
 
 type AdminOverviewData = {
   stores: { adminStoreSummary: { totalStores: number }; adminStores: StoreRow[]; actionRequiredStores: Array<{ store: string; title: string; description: string; priority: string }> }
-  hygiene: { adminHygieneSummary: { checkedStores: number; pendingStores: number } }
-  sales: { adminSalesSummary: { todayTotalSales: string } }
+  hygiene: { adminHygieneSummary: { checkedStores: number; pendingStores: number }; hygieneActions: Array<{ store: string; priority: string }> }
+  sales: { adminSalesSummary: { todayTotalSales: string }; weakStores: Array<{ store: string }> }
   risks: { riskSummary: { highRiskStores: number; warningStores: number; stableStores: number } }
 }
 
@@ -196,9 +245,8 @@ function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
 
             <label>
               비밀번호
-              <input
+              <PasswordInput
                 name="password"
-                type="password"
                 placeholder="비밀번호를 입력하세요"
                 defaultValue="1234"
                 maxLength={72}
@@ -493,6 +541,10 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
     title: `${item.store} ${item.title}`, detail: item.description, time: '확인 필요',
   }))
   const totalStores = storeData.adminStoreSummary.totalStores
+  const weakStoreNames = sales.weakStores.slice(0, 2).map((s) => s.store)
+  const urgentHygieneStores = new Set(
+    hygiene.hygieneActions.filter((item) => item.priority === '긴급').map((item) => item.store),
+  ).size
   return (
     <>
       <header className="page-heading">
@@ -528,7 +580,7 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
             <span className="ai-action-icon purple">₩</span>
             <div>
               <strong>매출 부진 매장 분석</strong>
-              <p>부산서면점, 잠실점 매출 흐름 확인</p>
+              <p>{weakStoreNames.length ? `${weakStoreNames.join(', ')} 매출 흐름 확인` : '매출 부진 매장이 없습니다'}</p>
             </div>
           </button>
 
@@ -536,7 +588,7 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
             <span className="ai-action-icon green">✓</span>
             <div>
               <strong>위생 점검 결과 검토</strong>
-              <p>긴급 매장 2곳 재점검 요청</p>
+              <p>{urgentHygieneStores > 0 ? `긴급 매장 ${urgentHygieneStores}곳 재점검 요청` : '긴급 재점검 대상이 없습니다'}</p>
             </div>
           </button>
 
@@ -544,7 +596,7 @@ function AdminOverview({ go }: { go: (p: Page) => void }) {
             <span className="ai-action-icon orange">!</span>
             <div>
               <strong>운영 리스크 예측 확인</strong>
-              <p>고위험 매장 우선 조치 추천</p>
+              <p>{risks.riskSummary.highRiskStores > 0 ? `고위험 매장 ${risks.riskSummary.highRiskStores}곳 우선 조치 추천` : '고위험 매장이 없습니다'}</p>
             </div>
           </button>
         </div>
@@ -1001,8 +1053,14 @@ function LoadingPreviewPage() {
 
 function App() {
   const [account, setAccount] = useState<LoginResponse | null>(null)
-  const [page, setPage] = useState<Page>('overview')
-  const [detailAddress, setDetailAddress] = useState<string | null>(null)
+  const [sessionChecked, setSessionChecked] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const page = pageFromPathname(location.pathname)
+  const detailAddress = page === 'storeDetail' ? addressFromPathname(location.pathname) : null
+  function setPage(next: Page) {
+    navigate(PAGE_PATHS[next])
+  }
   const [storeListInitialSort, setStoreListInitialSort] = useState<'sales' | undefined>(undefined)
   const role: Role | null = account
     ? account.role === 'ADMIN' ? 'admin' : 'owner'
@@ -1031,11 +1089,42 @@ function App() {
     setProfileMenuOpen(false)
   }
 
+  // 2026-08-12: 로그인 상태가 이 useState에만 있어서 새로고침하면 SESSION 쿠키는 그대로
+  // 유효한데도 로그인 화면으로 튕기던 문제 — 첫 마운트 시 쿠키로 세션을 복구해본다.
+  useEffect(() => {
+    let cancelled = false
+    getCurrentAccount().then((restored) => {
+      if (cancelled) return
+      if (restored) setAccount(restored)
+      setSessionChecked(true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // 2026-08-12: 어느 페이지에 있든 탭 제목이 항상 "oh-domi"로 고정돼 있어서 탭을 여러 개
+  // 열어두면 구분이 안 됐음.
+  useEffect(() => {
+    const label = role ? PAGE_TITLE[page] : null
+    document.title = label ? `${label} · oh!domi` : 'oh!domi'
+  }, [page, role])
+
+  // 로그인 상태에서 "/"로 오거나 인식 못 하는 경로로 오면 대시보드로 정리 — pageFromPathname은
+  // 항상 유효한 Page를 돌려주지만(모르는 경로는 overview로 취급) 주소창 자체는 그대로라
+  // 실제로 그 경로로 옮겨준다.
+  useEffect(() => {
+    if (!role) return
+    const firstSegment = `/${location.pathname.split('/')[1] ?? ''}`
+    if (!(firstSegment in PATH_PAGES)) {
+      navigate(PAGE_PATHS[pageFromPathname(location.pathname)], { replace: true })
+    }
+  }, [role, location.pathname, navigate])
+
   // 매장 상세를 iframe/새 탭 대신 앱 안(사이드바 유지)에서 보여주기 위한 내비게이션
   // (2026-08-10, "모든 페이지에 사이드바가 빠짐없이 보였으면 좋겠다" 요청).
   function openStoreDetail(address: string) {
-    setDetailAddress(address)
-    setPage('storeDetail')
+    navigate(`${PAGE_PATHS.storeDetail}/${encodeURIComponent(address)}`)
   }
 
   // 매출 분석의 "가맹점 매출 순위 전체보기" → 전체 매장 목록으로 이동하면서 매출순 정렬로
@@ -1109,6 +1198,15 @@ function App() {
     showToast(`${matchedLabel.replace('+ ', '')} 기능은 추후 백엔드 연동 예정입니다.`)
     setNotificationOpen(false)
     setProfileMenuOpen(false)
+  }
+
+  if (!sessionChecked) {
+    return (
+      <div className="app-boot-loading">
+        <span className="brand-mark">O</span>
+        <i aria-hidden="true" />
+      </div>
+    )
   }
 
   if (!role) {

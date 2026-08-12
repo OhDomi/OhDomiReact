@@ -10,6 +10,7 @@ import type {
 import { useApiData } from '../../api/useApiData'
 import ApiDataState from '../../api/ApiDataState'
 import TrendLineChart from '../../components/TrendLineChart'
+import ActionItemList from '../../components/ActionItemList'
 
 type AdminHygieneData = {
   adminHygieneSummary: typeof adminHygieneSummary
@@ -59,33 +60,17 @@ function AdminHygieneCheck() {
         </button>
       </header>
 
-      <article className="panel admin-hygiene-wide" style={{ marginBottom: '18px' }}>
-        <div className="panel-head">
-          <div>
-            <span className="panel-label">ACTION REQUIRED</span>
-            <h2>본사 조치 필요 항목</h2>
-          </div>
-        </div>
-
-        <div className="hygiene-action-list">
-          {hygieneActions.map((item) => (
-            <div className="hygiene-action-card" key={item.action + item.store}>
-              <span className={`action-priority ${item.priority === '긴급' ? 'danger' : 'warning'}`}>
-                {item.priority}
-              </span>
-
-              <div>
-                <strong>{item.store} · {item.action}</strong>
-                <p>{item.description}</p>
-              </div>
-
-              <button className="detail-button" type="button">
-                처리
-              </button>
-            </div>
-          ))}
-        </div>
-      </article>
+      <ActionItemList
+        kicker="ACTION REQUIRED"
+        title="본사 조치 필요 항목"
+        items={hygieneActions.map((item) => ({
+          key: `${item.store}-${item.action}`,
+          store: item.store,
+          title: item.action,
+          description: item.description,
+          priority: item.priority,
+        }))}
+      />
 
       <section className="admin-hygiene-layout">
         <article className="panel admin-hygiene-table-panel">

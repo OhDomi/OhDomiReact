@@ -159,105 +159,6 @@
   grid-column: 1 / -1;
 }
 
-.action-store-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.action-store-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 14px;
-  align-items: center;
-  padding: 16px 16px 16px 14px;
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--line);
-  border-radius: 12px;
-  background: #f8f9fb;
-}
-
-.action-store-card.danger {
-  border-left-color: #dc4c5a;
-  background: #fff8f8;
-}
-
-.action-store-card.warning {
-  border-left-color: var(--orange);
-  background: #fffaf3;
-}
-
-.action-store-card.resolved {
-  border-left-color: var(--line);
-  background: #f8f9fb;
-  opacity: 0.6;
-}
-
-.action-priority {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.action-priority.danger {
-  color: #fff;
-  background: #dc4c5a;
-}
-
-.action-priority.warning {
-  color: #7a4a0a;
-  background: #ffe1b3;
-}
-
-.action-priority.resolved {
-  color: var(--muted);
-  background: var(--line);
-}
-
-.action-store-card strong {
-  color: var(--navy);
-  font-size: 14px;
-}
-
-.action-store-card.resolved strong {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-.action-store-card p {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.action-resolve-button {
-  padding: 8px 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--navy);
-  background: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.action-resolve-button:hover {
-  border-color: var(--purple);
-  color: var(--purple);
-}
-
-.action-resolve-button.is-resolved {
-  border-color: transparent;
-  color: var(--green);
-  background: transparent;
-}
-
 .region-status-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -338,10 +239,6 @@
   .admin-store-filter {
     flex-direction: column;
   }
-
-  .action-store-card {
-    grid-template-columns: 1fr;
-  }
 }
 /* 2026-08-08: 216개 실매장 임포트 지원 — 검색/페이지네이션/임포트 배지 (적용 전 준비 작업) */
 .admin-store-search {
@@ -368,41 +265,3 @@
   font-weight: 700;
 }
 
-.admin-store-pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin-top: 14px;
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.admin-store-pager .outline-button {
-  width: auto;
-  margin: 0;
-  padding: 7px 14px;
-}
-
-.admin-store-pager .outline-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.page-number-button {
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  color: var(--muted);
-  background: #fff;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.page-number-button.active {
-  border-color: var(--purple);
-  color: #fff;
-  background: var(--purple);
-}
