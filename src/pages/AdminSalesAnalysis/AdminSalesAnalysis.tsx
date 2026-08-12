@@ -10,6 +10,7 @@ import type {
 } from './adminSalesDummy'
 import { useApiData } from '../../api/useApiData'
 import ApiDataState from '../../api/ApiDataState'
+import TrendLineChart from '../../components/TrendLineChart'
 
 type AdminSalesData = {
   adminSalesInsights: typeof adminSalesInsights
@@ -22,11 +23,17 @@ type AdminSalesData = {
 type RankedStore = (typeof storeSalesRanking)[number]
 
 const RANKING_PAGE_SIZE = 5
+const TREND_RANGES = [
+  { months: 3, label: '3개월' },
+  { months: 6, label: '6개월' },
+  { months: 12, label: '1년' },
+] as const
 
 function AdminSalesAnalysis({ onViewAllBySales }: { onViewAllBySales: () => void }) {
   const api = useApiData<AdminSalesData>('/api/ui/admin/sales')
   const [selectedStore, setSelectedStore] = useState<RankedStore | null>(null)
   const [showAllRanking, setShowAllRanking] = useState(false)
+  const [trendMonths, setTrendMonths] = useState<number>(6)
 
   useEffect(() => {
     if (api.data?.storeSalesRanking.length) setSelectedStore(api.data.storeSalesRanking[0])
@@ -80,29 +87,25 @@ function AdminSalesAnalysis({ onViewAllBySales }: { onViewAllBySales: () => void
               <h2>월별 통합 매출 추이</h2>
             </div>
 
-            <button className="select-button" type="button">
-              최근 7개월
-            </button>
+            <div className="tab-set">
+              {TREND_RANGES.map((range) => (
+                <button
+                  key={range.months}
+                  type="button"
+                  className={trendMonths === range.months ? 'active' : ''}
+                  onClick={() => setTrendMonths(range.months)}
+                >
+                  {range.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="admin-sales-chart">
-            {(() => {
-              const maxSales = Math.max(...monthlySalesTrend.map((s) => s.sales), 1)
-              return monthlySalesTrend.map((item) => (
-                <div className="admin-sales-column" key={item.month}>
-                  <div className="admin-sales-bar-wrap">
-                    <div
-                      className="admin-sales-bar"
-                      style={{ height: `${(item.sales / maxSales) * 100}%` }}
-                    >
-                      <span>{item.sales}</span>
-                    </div>
-                  </div>
-                  <small>{item.month}</small>
-                </div>
-              ))
-            })()}
-          </div>
+          <TrendLineChart
+            data={monthlySalesTrend.slice(-trendMonths).map((item) => ({ label: item.month, value: item.sales }))}
+            showBars
+            formatValue={(value) => `${(value / 100).toFixed(1)}억원`}
+          />
         </article>
 
         <article className="panel admin-sales-ranking-panel">

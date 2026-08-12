@@ -118,7 +118,8 @@ function AdminRenewalCheck({ onOpenDetail }: { onOpenDetail: (address: string) =
   // requestId 불일치로 조용히 중단.
   const requestIdRef = useRef(0)
   useEffect(() => {
-    const requestId = ++requestIdRef.current
+    requestIdRef.current += 1
+    const requestId = requestIdRef.current
     let cancelled = false
 
     async function run() {

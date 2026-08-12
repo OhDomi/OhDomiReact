@@ -159,6 +159,19 @@ function HygieneCheck({ storeId }: { storeId: number }) {
     return response.json() as Promise<AnalysisResponse>
   }
 
+  async function analyzeOneItem(item: ChecklistItem, file: File, group: ChecklistGroup, failures: string[]) {
+    try {
+      const response = await requestAnalysis(item.itemId, file, analysisByItem[item.itemId] ? 1 : 0)
+      setAnalysisByItem((results) => ({ ...results, [item.itemId]: response }))
+      setAnalysis(response)
+      return true
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'AI 분석 요청에 실패했습니다.'
+      failures.push(`${group.shootingItem} · ${file.name}: ${message}`)
+      return false
+    }
+  }
+
   async function analyzeImages() {
     const entries = Object.entries(selectedFiles) as Array<[string, File]>
     if (entries.length === 0) {
@@ -175,15 +188,7 @@ function HygieneCheck({ storeId }: { storeId: number }) {
       if (!group) continue
       setUploadProgress(`${index + 1} / ${entries.length}`)
       for (const item of group.items) {
-        try {
-          const response = await requestAnalysis(item.itemId, file, analysisByItem[item.itemId] ? 1 : 0)
-          setAnalysisByItem((results) => ({ ...results, [item.itemId]: response }))
-          setAnalysis(response)
-          completed += 1
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'AI 분석 요청에 실패했습니다.'
-          failures.push(`${group.shootingItem} · ${file.name}: ${message}`)
-        }
+        if (await analyzeOneItem(item, file, group, failures)) completed += 1
       }
     }
     if (completed > 0) api.retry()

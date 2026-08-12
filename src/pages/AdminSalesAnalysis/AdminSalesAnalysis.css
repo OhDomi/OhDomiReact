@@ -47,61 +47,6 @@
   min-height: 410px;
 }
 
-.admin-sales-chart {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  align-items: end;
-  gap: 14px;
-  height: 285px;
-  margin-top: 28px;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
-}
-
-.admin-sales-column {
-  display: grid;
-  align-items: end;
-  gap: 10px;
-  height: 100%;
-  text-align: center;
-}
-
-.admin-sales-bar-wrap {
-  display: flex;
-  align-items: end;
-  justify-content: center;
-  height: 230px;
-  border-radius: 999px;
-  background: #f0f2f7;
-}
-
-.admin-sales-bar {
-  position: relative;
-  width: 100%;
-  min-height: 14px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--purple), #8a78ef);
-}
-
-.admin-sales-bar span {
-  position: absolute;
-  top: -24px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 4px 6px;
-  border-radius: 999px;
-  color: white;
-  background: var(--navy);
-  font-size: 9px;
-  font-weight: 800;
-}
-
-.admin-sales-column small {
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 800;
-}
-
 .admin-sales-ranking-panel {
   min-width: 0;
 }
@@ -421,10 +366,5 @@
 
   .weak-store-card {
     grid-template-columns: 1fr;
-  }
-
-  .admin-sales-chart {
-    overflow-x: auto;
-    grid-template-columns: repeat(7, 44px);
   }
 }

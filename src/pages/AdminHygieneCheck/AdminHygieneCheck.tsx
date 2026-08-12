@@ -9,6 +9,7 @@ import type {
 } from './adminHygieneDummy'
 import { useApiData } from '../../api/useApiData'
 import ApiDataState from '../../api/ApiDataState'
+import TrendLineChart from '../../components/TrendLineChart'
 
 type AdminHygieneData = {
   adminHygieneSummary: typeof adminHygieneSummary
@@ -279,21 +280,10 @@ function AdminHygieneCheck() {
             </div>
           </div>
 
-          <div className="hygiene-trend-chart">
-            {hygieneTrend.map((item) => (
-              <div className="trend-column" key={item.label}>
-                <div className="trend-bar-wrap">
-                  <div
-                    className="trend-bar"
-                    style={{ height: `${Math.min(item.score, 100)}%` }}
-                  >
-                    <span>{item.score}</span>
-                  </div>
-                </div>
-                <small>{item.label}</small>
-              </div>
-            ))}
-          </div>
+          <TrendLineChart
+            data={hygieneTrend.map((item) => ({ label: item.label, value: item.score }))}
+            formatValue={(value) => `${Math.round(value)}점`}
+          />
         </article>
       </section>
     </div>

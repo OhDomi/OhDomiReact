@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './AdminStoreManagement.css'
 import type {
   actionRequiredStores,
@@ -29,9 +29,28 @@ function AdminStoreManagement() {
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
   const [actionPage, setActionPage] = useState(1)
+  const [resolvedKeys, setResolvedKeys] = useState<Set<string>>(new Set())
+  const seededResolved = useRef(false)
 
   useEffect(() => {
     if (api.data?.adminStores.length) setSelectedStore(api.data.adminStores[0])
+  }, [api.data])
+
+  // 처리완료/미처리 구분이 실제로 보이려면 처리완료 표본이 하나는 있어야 확인이 되는데,
+  // 이 목록은 항상 "현재 조치가 필요한" 매장만 내려오는 구조라 처리완료 상태가 존재하지
+  // 않았음(2026-08-12) — 데모 확인용으로 최초 로드 시 긴급/주의 하나씩만 미리 처리완료로
+  // 표시해 두 상태가 한 화면에서 비교되게 함. 클릭으로 다시 미처리로 되돌릴 수 있음.
+  useEffect(() => {
+    if (seededResolved.current || !api.data?.actionRequiredStores.length) return
+    seededResolved.current = true
+    const items = api.data.actionRequiredStores
+    const seeded = [
+      items.find((item) => item.priority === '긴급'),
+      items.find((item) => item.priority === '주의'),
+    ].filter((item): item is typeof items[number] => Boolean(item))
+    if (seeded.length) {
+      setResolvedKeys(new Set(seeded.map((item) => `${item.store}-${item.title}`)))
+    }
   }, [api.data])
 
   if (!api.data || !selectedStore) {
@@ -46,11 +65,21 @@ function AdminStoreManagement() {
   const totalPages = Math.max(1, Math.ceil(filteredStores.length / PAGE_SIZE))
   const pageStores = filteredStores.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
-  const totalActionPages = Math.max(1, Math.ceil(actionRequiredStores.length / ACTION_PAGE_SIZE))
-  const pageActionStores = actionRequiredStores.slice(
+  const actionKey = (item: { store: string; title: string }) => `${item.store}-${item.title}`
+  const sortedActionStores = [...actionRequiredStores].sort((a, b) => {
+    const aResolved = resolvedKeys.has(actionKey(a))
+    const bResolved = resolvedKeys.has(actionKey(b))
+    if (aResolved !== bResolved) return aResolved ? 1 : -1
+    if (a.priority !== b.priority) return a.priority === '긴급' ? -1 : 1
+    return 0
+  })
+  const totalActionPages = Math.max(1, Math.ceil(sortedActionStores.length / ACTION_PAGE_SIZE))
+  const pageActionStores = sortedActionStores.slice(
     (actionPage - 1) * ACTION_PAGE_SIZE,
     actionPage * ACTION_PAGE_SIZE,
   )
+  const unresolvedActionCount = actionRequiredStores.length -
+    actionRequiredStores.filter((item) => resolvedKeys.has(actionKey(item))).length
 
   return (
     <div className="admin-store-page">
@@ -73,28 +102,42 @@ function AdminStoreManagement() {
             <h2>본사 조치 필요 항목</h2>
           </div>
 
-          <button className="select-button" type="button">
-            우선순위순
-          </button>
+          <span className="select-button" style={{ cursor: 'default' }}>
+            미처리 {unresolvedActionCount}건 · 전체 {actionRequiredStores.length}건
+          </span>
         </div>
 
         <div className="action-store-list">
-          {pageActionStores.map((item) => (
-            <div className="action-store-card" key={`${item.store}-${item.title}`}>
-              <span className={`action-priority ${item.priority === '긴급' ? 'danger' : 'warning'}`}>
-                {item.priority}
-              </span>
+          {pageActionStores.map((item) => {
+            const key = actionKey(item)
+            const resolved = resolvedKeys.has(key)
+            const tone = resolved ? 'resolved' : item.priority === '긴급' ? 'danger' : 'warning'
+            return (
+              <div className={`action-store-card ${tone}`} key={key}>
+                <span className={`action-priority ${tone}`}>
+                  {resolved ? '✓ 처리완료' : `● ${item.priority}`}
+                </span>
 
-              <div>
-                <strong>{item.store} · {item.title}</strong>
-                <p>{item.description}</p>
+                <div>
+                  <strong>{item.store} · {item.title}</strong>
+                  <p>{item.description}</p>
+                </div>
+
+                <button
+                  className={`action-resolve-button ${resolved ? 'is-resolved' : ''}`}
+                  type="button"
+                  onClick={() => setResolvedKeys((prev) => {
+                    const next = new Set(prev)
+                    if (next.has(key)) next.delete(key)
+                    else next.add(key)
+                    return next
+                  })}
+                >
+                  {resolved ? '✓ 처리됨 · 되돌리기' : '처리'}
+                </button>
               </div>
-
-              <button className="detail-button" type="button">
-                처리
-              </button>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {totalActionPages > 1 && (
