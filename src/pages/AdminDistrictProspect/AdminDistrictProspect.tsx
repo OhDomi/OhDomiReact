@@ -94,8 +94,27 @@ function AdminDistrictProspect() {
   const [candidatesError, setCandidatesError] = useState('')
   const [selectedCandidateIndex, setSelectedCandidateIndex] = useState<number | null>(null)
   const [tradePrice, setTradePrice] = useState<TradePriceResult | null>(null)
-  const [doc, setDoc] = useState<{ md: string } | 'loading' | 'error' | null>(null)
-  const [salesDoc, setSalesDoc] = useState<{ md: string } | 'loading' | 'error' | null>(null)
+  type DocState = { md: string } | { error: string } | 'loading' | null
+  const [doc, setDoc] = useState<DocState>(null)
+  const [salesDoc, setSalesDoc] = useState<DocState>(null)
+
+  /** 실패 원인을 사람이 읽을 수 있는 에러코드 문자열로 뽑아낸다 — 백엔드가
+   * {detail:{error_code,message}} 형태로 내려주면 그걸, 아니면 HTTP 상태/네트워크 에러로 대체.
+   * "~을 만들지 못했습니다"만 뜨고 원인을 알 수 없다는 리포트(2026-08-20)로 추가함. */
+  async function describeFetchError(resp: Response | null, err: unknown): Promise<string> {
+    if (resp) {
+      try {
+        const body = await resp.json()
+        const detail = body?.detail
+        if (detail?.error_code) return `${detail.error_code}: ${detail.message ?? ''}`
+        if (typeof detail === 'string') return detail
+      } catch {
+        // 응답 본문이 JSON이 아님 — 상태코드만 표시
+      }
+      return `HTTP_${resp.status}`
+    }
+    return err instanceof Error ? `NETWORK_ERROR: ${err.message}` : 'NETWORK_ERROR'
+  }
 
   useEffect(() => {
     fetch('/risk-tool/hangang.json')
@@ -165,21 +184,25 @@ function AdminDistrictProspect() {
       const resp = await fetch('/risk-api/packets/new-franchisee', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
       })
-      if (!resp.ok) throw new Error('failed')
-      const data = await resp.json()
-      setDoc({ md: data.new_franchisee_md || '(내용 없음)' })
-    } catch {
-      setDoc('error')
+      if (!resp.ok) { setDoc({ error: await describeFetchError(resp, null) }); }
+      else {
+        const data = await resp.json()
+        setDoc({ md: data.new_franchisee_md || '(내용 없음)' })
+      }
+    } catch (e) {
+      setDoc({ error: await describeFetchError(null, e) })
     }
     try {
       const resp = await fetch('/risk-api/packets/expected-sales-certificate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
       })
-      if (!resp.ok) throw new Error('failed')
-      const data = await resp.json()
-      setSalesDoc({ md: data.expected_sales_md || '(내용 없음)' })
-    } catch {
-      setSalesDoc('error')
+      if (!resp.ok) { setSalesDoc({ error: await describeFetchError(resp, null) }); }
+      else {
+        const data = await resp.json()
+        setSalesDoc({ md: data.expected_sales_md || '(내용 없음)' })
+      }
+    } catch (e) {
+      setSalesDoc({ error: await describeFetchError(null, e) })
     }
   }
 
@@ -315,8 +338,10 @@ function AdminDistrictProspect() {
             <section className="panel district-doc-section">
               <h2>선택한 후보지 상담자료</h2>
               {doc === 'loading' && <GeneratingBanner title="상담자료 생성 중…" detail="실제 계산이라 몇 초~수십 초 걸릴 수 있습니다" />}
-              {doc === 'error' && <div className="results-error">상담자료를 만들지 못했습니다.</div>}
-              {doc && doc !== 'loading' && doc !== 'error' && (
+              {doc && typeof doc === 'object' && 'error' in doc && (
+                <div className="results-error">상담자료를 만들지 못했습니다. ({doc.error})</div>
+              )}
+              {doc && typeof doc === 'object' && 'md' in doc && (
                 <>
                   <PdfMdDownloadButtons
                     markdown={doc.md}
@@ -333,8 +358,10 @@ function AdminDistrictProspect() {
               <h2>예상매출액 산정서 (공정위 표준양식)</h2>
               <p className="district-explain">공정거래위원회 「예상매출액 산정서의 표준양식에 관한 규정」 별지 서식 구조에 맞춘 법정 서면입니다 — 위 상담자료의 "3. 예상매출액 산정서"와 계산은 동일하고, 문서 구조만 표준양식에 맞춰 별도로 다운로드할 수 있게 한 것입니다.</p>
               {salesDoc === 'loading' && <GeneratingBanner title="산정서 생성 중…" detail="실제 계산이라 몇 초~수십 초 걸릴 수 있습니다" />}
-              {salesDoc === 'error' && <div className="results-error">예상매출액 산정서를 만들지 못했습니다.</div>}
-              {salesDoc && salesDoc !== 'loading' && salesDoc !== 'error' && (
+              {salesDoc && typeof salesDoc === 'object' && 'error' in salesDoc && (
+                <div className="results-error">예상매출액 산정서를 만들지 못했습니다. ({salesDoc.error})</div>
+              )}
+              {salesDoc && typeof salesDoc === 'object' && 'md' in salesDoc && (
                 <>
                   <PdfMdDownloadButtons
                     markdown={salesDoc.md}
