@@ -4,6 +4,7 @@ import {
   riskTagClass, stripMarkdownSymbols, topClauseFactor, type RankingRow, type TopFactor,
 } from '../riskTool/riskToolShared'
 import GeneratingBanner from '../../api/GeneratingBanner'
+import { describeApiError } from '../../api/useApiData'
 import './AdminStoreDetail.css'
 
 // closure-risk-model의 store-detail.html을 React로 재구현(2026-08-10, "모든 페이지에
@@ -98,8 +99,8 @@ function rentBurdenNarrative(storeLabel: string): string {
 }
 
 function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => void }) {
-  const [summary, setSummary] = useState<RankingRow | null | 'loading' | 'error'>('loading')
-  const [district, setDistrict] = useState<DistrictAnalysis | null | 'loading' | 'error'>(null)
+  const [summary, setSummary] = useState<RankingRow | null | 'loading' | { error: string }>('loading')
+  const [district, setDistrict] = useState<DistrictAnalysis | null | 'loading' | { error: string }>(null)
   const [docs, setDocs] = useState<Partial<Record<DocKind, DocResult>>>({})
   const [docLoading, setDocLoading] = useState<DocKind | null>(null)
   const [docError, setDocError] = useState<Partial<Record<DocKind, string>>>({})
@@ -113,13 +114,16 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
     setActiveTab('renewal')
 
     fetch('/risk-api/rankings')
-      .then((r) => r.json() as Promise<(RankingRow & { error?: string })[]>)
+      .then(async (r) => {
+        if (!r.ok) throw new Error(await describeApiError(r, `요청에 실패했습니다. (${r.status})`))
+        return r.json() as Promise<(RankingRow & { error?: string })[]>
+      })
       .then((rows) => {
         const row = rows.find((r) => r.store_label === address && !r.error) ?? null
         setSummary(row)
         if (row && row.v2_percentile != null) loadDistrict()
       })
-      .catch(() => setSummary('error'))
+      .catch((e: unknown) => setSummary({ error: e instanceof Error ? e.message : '요청에 실패했습니다.' }))
 
     async function loadDistrict() {
       setDistrict('loading')
@@ -128,10 +132,10 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ brand_nm: '김가네', address, sbiz_category: '김밥/만두/분식' }),
         })
-        if (!resp.ok) throw new Error('failed')
+        if (!resp.ok) throw new Error(await describeApiError(resp, `HTTP_${resp.status}`))
         setDistrict(await resp.json())
-      } catch {
-        setDistrict('error')
+      } catch (e) {
+        setDistrict({ error: e instanceof Error ? e.message : '요청에 실패했습니다.' })
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,18 +149,21 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
       body: JSON.stringify({ address, kind: activeTab }),
     })
       .then(async (resp) => {
-        if (!resp.ok) throw new Error('failed')
+        if (!resp.ok) throw new Error(await describeApiError(resp, `HTTP_${resp.status}`))
         const body: DocResult = await resp.json()
         setDocs((prev) => ({ ...prev, [activeTab]: body }))
       })
-      .catch(() => setDocError((prev) => ({ ...prev, [activeTab]: '자료를 만들지 못했습니다.' })))
+      .catch((e: unknown) => setDocError((prev) => ({
+        ...prev,
+        [activeTab]: `자료를 만들지 못했습니다. (${e instanceof Error ? e.message : '알 수 없는 오류'})`,
+      })))
       .finally(() => setDocLoading(null))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, activeTab])
 
   const renewalDoc = docs.renewal
   const topFactor = useMemo<TopFactor | null>(() => {
-    if (!renewalDoc || summary === 'loading' || summary === 'error' || !summary) return null
+    if (!renewalDoc || summary === 'loading' || !summary || (typeof summary === 'object' && 'error' in summary)) return null
     const axisLabel = summary.v2_percentile != null ? '입지 기준, 서울 매장' : '업종 기준, 전국'
     return topClauseFactor(renewalDoc.internal_md || '', axisLabel)
   }, [renewalDoc, summary])
@@ -179,20 +186,24 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
       <section className="panel store-detail-section">
         <h2><span className="step">1</span> 위험도 요약</h2>
         {summary === 'loading' && <span className="skeleton-block" style={{ display: 'block', height: 90 }} />}
-        {summary === 'error' && <div className="results-error">위험도 요약을 불러오지 못했습니다.</div>}
+        {summary && typeof summary === 'object' && 'error' in summary && (
+          <div className="results-error">위험도 요약을 불러오지 못했습니다. ({summary.error})</div>
+        )}
         {summary === null && <p className="results-empty">이 매장의 사전 계산된 순위 데이터를 찾지 못했습니다 — 아래 상담자료 탭은 그대로 이용할 수 있습니다.</p>}
-        {summary && summary !== 'loading' && summary !== 'error' && (
+        {summary && summary !== 'loading' && !('error' in summary) && (
           <SummaryCard row={summary} topFactor={topFactor} />
         )}
       </section>
 
-      {summary && summary !== 'loading' && summary !== 'error' && summary.v2_percentile != null && (
+      {summary && summary !== 'loading' && !('error' in summary) && summary.v2_percentile != null && (
         <section className="panel store-detail-section">
           <h2><span className="step">2</span> 상권 원자료</h2>
           <p className="explain">이 매장 상권의 유동인구·경쟁점포·배후인구 등 공공데이터 원자료입니다 — 위험도 판단(1번)과는 별개로, 판단 근거가 된 숫자를 그대로 보여줍니다.</p>
           {district === 'loading' && <span className="skeleton-block" style={{ display: 'block', height: 120 }} />}
-          {district === 'error' && <div className="results-error">상권 원자료를 불러오지 못했습니다.</div>}
-          {district && district !== 'loading' && district !== 'error' && (
+          {district && typeof district === 'object' && 'error' in district && (
+            <div className="results-error">상권 원자료를 불러오지 못했습니다. ({district.error})</div>
+          )}
+          {district && district !== 'loading' && !('error' in district) && (
             <DistrictStats stats={district.district_stats} competitors={district.nearby_competitors} />
           )}
         </section>
@@ -401,7 +412,7 @@ function DownloadMenu({ label, filenameBase, markdown }: { label: string; filena
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ markdown, filename: filenameBase }),
       })
-      if (!resp.ok) throw new Error('export failed')
+      if (!resp.ok) throw new Error(await describeApiError(resp, `HTTP_${resp.status}`))
       const blob = await resp.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -409,8 +420,8 @@ function DownloadMenu({ label, filenameBase, markdown }: { label: string; filena
       a.download = `${filenameBase}.${format}`
       a.click()
       URL.revokeObjectURL(url)
-    } catch {
-      setError('다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    } catch (e) {
+      setError(`다운로드에 실패했습니다. (${e instanceof Error ? e.message : '알 수 없는 오류'})`)
     } finally {
       setBusy(null)
     }

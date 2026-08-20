@@ -1,3 +1,5 @@
+import { describeApiError } from './useApiData'
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "")
 export type BoardType = 'NOTICE' | 'INQUIRY'
 
@@ -39,8 +41,7 @@ async function api<T>(path: string, init?: ApiRequest): Promise<T> {
     credentials: 'include',
   })
   if (!response.ok) {
-    const body = await response.json().catch(() => ({})) as { message?: string }
-    throw new Error(body.message ?? '게시판 요청에 실패했습니다.')
+    throw new Error(await describeApiError(response, '게시판 요청에 실패했습니다.'))
   }
   return response.json() as Promise<T>
 }

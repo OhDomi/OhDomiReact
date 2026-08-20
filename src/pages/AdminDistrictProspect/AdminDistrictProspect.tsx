@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { downloadMarkdown, stripMarkdownSymbols } from '../riskTool/riskToolShared'
 import GeneratingBanner from '../../api/GeneratingBanner'
+import { describeApiError } from '../../api/useApiData'
 import './AdminDistrictProspect.css'
 
 // closure-risk-model의 prospect-district.html을 React로 재구현(2026-08-10, iframe 제거
@@ -98,22 +99,11 @@ function AdminDistrictProspect() {
   const [doc, setDoc] = useState<DocState>(null)
   const [salesDoc, setSalesDoc] = useState<DocState>(null)
 
-  /** 실패 원인을 사람이 읽을 수 있는 에러코드 문자열로 뽑아낸다 — 백엔드가
-   * {detail:{error_code,message}} 형태로 내려주면 그걸, 아니면 HTTP 상태/네트워크 에러로 대체.
-   * "~을 만들지 못했습니다"만 뜨고 원인을 알 수 없다는 리포트(2026-08-20)로 추가함. */
+  /** 실패 원인을 사람이 읽을 수 있는 문자열로 뽑아낸다(관리자 세션에서만 error_code 노출 —
+   * `describeApiError` 참고). 네트워크 자체가 끊긴 경우만 이 함수에서 별도 처리. */
   async function describeFetchError(resp: Response | null, err: unknown): Promise<string> {
-    if (resp) {
-      try {
-        const body = await resp.json()
-        const detail = body?.detail
-        if (detail?.error_code) return `${detail.error_code}: ${detail.message ?? ''}`
-        if (typeof detail === 'string') return detail
-      } catch {
-        // 응답 본문이 JSON이 아님 — 상태코드만 표시
-      }
-      return `HTTP_${resp.status}`
-    }
-    return err instanceof Error ? `NETWORK_ERROR: ${err.message}` : 'NETWORK_ERROR'
+    if (resp) return describeApiError(resp, `HTTP_${resp.status}`)
+    return err instanceof Error ? `네트워크 오류: ${err.message}` : '네트워크 오류'
   }
 
   useEffect(() => {
@@ -394,7 +384,7 @@ function PdfMdDownloadButtons({ markdown, filenameBase }: { markdown: string; fi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ markdown, filename: filenameBase }),
       })
-      if (!resp.ok) throw new Error('export failed')
+      if (!resp.ok) throw new Error(await describeApiError(resp, `HTTP_${resp.status}`))
       const blob = await resp.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -402,8 +392,8 @@ function PdfMdDownloadButtons({ markdown, filenameBase }: { markdown: string; fi
       a.download = `${filenameBase}.pdf`
       a.click()
       URL.revokeObjectURL(url)
-    } catch {
-      setError('PDF 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    } catch (e) {
+      setError(`PDF 다운로드에 실패했습니다. (${e instanceof Error ? e.message : '알 수 없는 오류'})`)
     } finally {
       setPdfBusy(false)
     }

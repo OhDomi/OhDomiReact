@@ -21,6 +21,7 @@ import { getCurrentAccount, loginAccount, logoutAccount } from './api/authApi'
 import PasswordInput from './components/PasswordInput'
 import type { LoginResponse } from './api/authApi'
 import { useApiData } from './api/useApiData'
+import { LAST_ROLE_KEY } from './api/session'
 import ApiDataState from './api/ApiDataState'
 import GeneratingBanner from './api/GeneratingBanner'
 import Footer from './components/Footer'
@@ -61,7 +62,6 @@ function addressFromPathname(pathname: string): string | null {
 }
 
 const NOTIFICATION_LIMIT = 5
-const LAST_ROLE_KEY = 'oh-domi-last-role'
 
 const PAGE_TITLE: Partial<Record<Page, string>> = {
   overview: '대시보드',

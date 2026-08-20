@@ -1,9 +1,5 @@
 import type { RiskAssessment, RiskLevel } from '../types/risk'
-import { apiUrl } from './useApiData'
-
-type ApiErrorResponse = {
-  message?: string
-}
+import { apiUrl, describeApiError } from './useApiData'
 
 export async function getLatestRiskAssessments(
   level?: RiskLevel,
@@ -22,8 +18,7 @@ export async function getLatestRiskAssessments(
   }
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => ({}))) as ApiErrorResponse
-    throw new Error(body.message ?? `위험 예측 조회에 실패했습니다. (${response.status})`)
+    throw new Error(await describeApiError(response, `위험 예측 조회에 실패했습니다. (${response.status})`))
   }
   return response.json() as Promise<RiskAssessment[]>
 }

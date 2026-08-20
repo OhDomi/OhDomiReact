@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import ApiDataState from '../../api/ApiDataState'
 import { badgeTier, pctLabel, riskTagClass, riskTierFromPercentile, shortBadgeLabel, type RankingRow } from '../riskTool/riskToolShared'
-import { apiUrl } from '../../api/useApiData'
+import { apiUrl, describeApiError } from '../../api/useApiData'
 import './AdminStoreRiskList.css'
 
 // closure-risk-model의 store-list.html을 React로 재구현(2026-08-10, iframe 제거 요청) —
@@ -63,7 +63,7 @@ function AdminStoreRiskList({
 
     fetch('/risk-api/rankings', { signal: controller.signal })
       .then(async (resp) => {
-        if (!resp.ok) throw new Error('load failed')
+        if (!resp.ok) throw new Error(await describeApiError(resp, `요청에 실패했습니다. (${resp.status})`))
         return resp.json() as Promise<RankingRow[]>
       })
       .then((data) => setRows(Array.isArray(data) ? data : []))

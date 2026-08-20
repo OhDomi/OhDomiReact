@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import ApiDataState from '../../api/ApiDataState'
+import { describeApiError } from '../../api/useApiData'
 import { badgeTier, dummyContractExpiryDays, riskTagClass, topClauseFactor, type BadgeTier, type RankingRow, type TopFactor } from '../riskTool/riskToolShared'
 import './AdminRenewalCheck.css'
 
@@ -68,7 +69,7 @@ function AdminRenewalCheck({ onOpenDetail }: { onOpenDetail: (address: string) =
 
     fetch('/risk-api/rankings', { signal: controller.signal })
       .then(async (resp) => {
-        if (!resp.ok) throw new Error(await resp.text())
+        if (!resp.ok) throw new Error(await describeApiError(resp, `요청에 실패했습니다. (${resp.status})`))
         return resp.json() as Promise<RankingRow[]>
       })
       .then((rankings) => {

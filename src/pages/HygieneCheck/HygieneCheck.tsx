@@ -6,7 +6,7 @@ import type {
   improvementTasks,
   recentInspections,
 } from './hygieneCheckDummy'
-import { apiUrl, useApiData } from '../../api/useApiData'
+import { apiUrl, describeApiError, useApiData } from '../../api/useApiData'
 import ApiDataState from '../../api/ApiDataState'
 import GeneratingBanner from '../../api/GeneratingBanner'
 
@@ -153,8 +153,7 @@ function HygieneCheck({ storeId }: { storeId: number }) {
       credentials: 'include',
     })
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({})) as { message?: string }
-      throw new Error(errorBody.message ?? `AI 분석 요청에 실패했습니다. (${response.status})`)
+      throw new Error(await describeApiError(response, `AI 분석 요청에 실패했습니다. (${response.status})`))
     }
     return response.json() as Promise<AnalysisResponse>
   }
