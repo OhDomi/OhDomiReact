@@ -323,7 +323,6 @@ function Sidebar({
     { id: 'sales', label: '매출 현황', icon: 'sales' },
     { id: 'orders', label: '발주 관리', icon: 'orders' },
     { id: 'board', label: '공지/문의게시판', icon: 'bell' },
-    { id: 'loadingPreview', label: '로딩 화면 (테스트)', icon: 'loadingTest' },
   ]
 
   const adminNav: { id: Page; label: string; icon: string }[] = [
@@ -336,7 +335,6 @@ function Sidebar({
     { id: 'storeRiskList', label: '전체 매장 목록', icon: 'storeRiskList' },
     { id: 'districtProspect', label: '희망상권 탐색', icon: 'districtProspect' },
     { id: 'board', label: '공지/문의게시판', icon: 'bell' },
-    { id: 'loadingPreview', label: '로딩 화면 (테스트)', icon: 'loadingTest' },
   ]
 
   return (
