@@ -61,15 +61,6 @@ npm run dev
 
 브라우저에서 `http://localhost:5173`을 엽니다. 로컬 프록시를 사용할 때 `.env`의 `VITE_API_BASE_URL`은 비워 둡니다.
 
-네 저장소가 같은 상위 작업 폴더에 준비되어 있다면, 작업 폴더의 통합 실행 스크립트로 네 서비스를 함께 시작할 수 있습니다.
-
-```powershell
-..\start-all-servers.bat --check
-..\start-all-servers.bat
-```
-
-첫 명령은 서버를 시작하지 않고 필수 파일과 실행 환경만 확인합니다.
-
 ## 환경 변수
 
 | 변수 | 기본값 | 설명 |
