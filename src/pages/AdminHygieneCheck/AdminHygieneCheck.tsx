@@ -12,14 +12,17 @@ import ApiDataState from '../../api/ApiDataState'
 import TrendLineChart from '../../components/TrendLineChart'
 import ActionItemList from '../../components/ActionItemList'
 
+type HygieneStore = Omit<(typeof hygieneStoreList)[number], 'source'> & {
+  source: 'DEMO' | 'IMPORTED'
+}
+
 type AdminHygieneData = {
   adminHygieneSummary: typeof adminHygieneSummary
   hygieneActions: typeof hygieneActions
-  hygieneStoreList: typeof hygieneStoreList
+  hygieneStoreList: HygieneStore[]
   hygieneTrend: typeof hygieneTrend
   reviewQueue: typeof reviewQueue
 }
-type HygieneStore = (typeof hygieneStoreList)[number]
 
 // 2026-08-08: AdminStoreManagement.tsx와 같은 이유(216개 임포트 후 5줄→221줄) — 검색/페이지네이션.
 const PAGE_SIZE = 20

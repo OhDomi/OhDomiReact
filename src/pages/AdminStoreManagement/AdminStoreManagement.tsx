@@ -10,13 +10,16 @@ import { useApiData } from '../../api/useApiData'
 import ApiDataState from '../../api/ApiDataState'
 import ActionItemList from '../../components/ActionItemList'
 
+type AdminStore = Omit<(typeof adminStores)[number], 'source'> & {
+  source: 'DEMO' | 'IMPORTED'
+}
+
 type AdminStoreData = {
   actionRequiredStores: typeof actionRequiredStores
   adminStoreSummary: typeof adminStoreSummary
-  adminStores: typeof adminStores
+  adminStores: AdminStore[]
   regionStats: typeof regionStats
 }
-type AdminStore = (typeof adminStores)[number]
 
 // 2026-08-08: 216개 실매장 임포트 후 목록이 5줄→221줄로 늘어나면서 검색/페이지 없이는
 // 원래 데모 5곳을 찾기도 어려워졌다는 리포트 — 검색(이름/지역/점주)과 클라이언트 페이지네이션만

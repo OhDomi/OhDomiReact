@@ -179,6 +179,16 @@
   font-size: 16px;
 }
 
+.check-description .check-zone {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 6px;
+  color: var(--purple);
+  background: var(--purple-soft);
+  font-size: 10px;
+  font-weight: 800;
+}
+
 .check-description em {
   padding: 3px 6px;
   border-radius: 999px;

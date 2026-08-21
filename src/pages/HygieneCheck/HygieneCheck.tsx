@@ -37,6 +37,7 @@ type ChecklistApiItem = Partial<ChecklistItem> & {
 
 type ChecklistGroup = {
   key: string
+  zone: string
   shootingItem: string
   aiCheckPoint: string
   optional: boolean
@@ -235,7 +236,9 @@ function HygieneCheck({ storeId }: { storeId: number }) {
               <h2>점검 사진 입력</h2>
               <p>각 점검 항목에 맞는 사진을 첨부하세요. 선택 항목은 필요한 경우에만 촬영하면 됩니다.</p>
             </div>
-            <div className="upload-count"><strong>{selectedCount}</strong><span>개 첨부</span></div>
+            <div className="upload-count">
+              <strong>{selectedCount} / {checklistGroups.length}</strong><span>개 첨부</span>
+            </div>
           </div>
 
           {uploading && (
@@ -272,6 +275,7 @@ function HygieneCheck({ storeId }: { storeId: number }) {
                   <span className="check-number">{index + 1}</span>
                   <div className="check-description">
                     <div>
+                      <span className="check-zone">{group.zone}</span>
                       <strong>{group.shootingItem}</strong>
                       {group.optional && <em>선택</em>}
                     </div>
@@ -312,7 +316,7 @@ function HygieneCheck({ storeId }: { storeId: number }) {
           {uploadError && <p className="upload-error checklist-error" role="alert">{uploadError}</p>}
           <div className="checklist-submit-bar">
             <div>
-              <strong>{selectedCount}개 종목 사진 선택됨</strong>
+              <strong>{selectedCount} / {checklistGroups.length}개 항목 사진 선택됨</strong>
               <span>JPG, PNG, WebP · 파일당 최대 10MB</span>
             </div>
             <button
@@ -394,14 +398,13 @@ function HygieneCheck({ storeId }: { storeId: number }) {
 }
 
 function groupChecklist(items: ChecklistItem[]): ChecklistGroup[] {
-  const groups = new Map<string, ChecklistItem[]>()
-  items.forEach((item) => groups.set(item.shootingItem, [...(groups.get(item.shootingItem) ?? []), item]))
-  return Array.from(groups, ([shootingItem, groupedItems]) => ({
-    key: shootingItem,
-    shootingItem,
-    optional: groupedItems.every((item) => item.optional),
-    items: groupedItems,
-    aiCheckPoint: Array.from(new Set(groupedItems.map((item) => item.aiCheckPoint))).join(' / '),
+  return items.map((item) => ({
+    key: item.itemId,
+    zone: item.zone,
+    shootingItem: item.shootingItem,
+    optional: item.optional,
+    items: [item],
+    aiCheckPoint: item.aiCheckPoint,
   }))
 }
 
