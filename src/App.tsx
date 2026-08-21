@@ -850,6 +850,11 @@ function ModulePage({
       title: '공지/문의게시판',
       copy: '본사 공지사항과 가맹점 문의를 확인하세요.',
     },
+    renewalCheck: { kicker: '', title: '', copy: '' },
+    storeRiskList: { kicker: '', title: '', copy: '' },
+    districtProspect: { kicker: '', title: '', copy: '' },
+    storeDetail: { kicker: '', title: '', copy: '' },
+    loadingPreview: { kicker: '', title: '', copy: '' },
     overview: {
       kicker: '',
       title: '',

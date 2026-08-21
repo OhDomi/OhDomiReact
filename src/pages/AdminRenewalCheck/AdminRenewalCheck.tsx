@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import ApiDataState from '../../api/ApiDataState'
-import { describeApiError } from '../../api/useApiData'
+import { apiUrl, describeApiError } from '../../api/useApiData'
 import { badgeTier, dummyContractExpiryDays, riskTagClass, topClauseFactor, type BadgeTier, type RankingRow, type TopFactor } from '../riskTool/riskToolShared'
 import './AdminRenewalCheck.css'
 
@@ -67,7 +67,7 @@ function AdminRenewalCheck({ onOpenDetail }: { onOpenDetail: (address: string) =
     setError('')
     setRows(null)
 
-    fetch('/risk-api/rankings', { signal: controller.signal })
+    fetch(apiUrl('/risk-api/rankings'), { signal: controller.signal })
       .then(async (resp) => {
         if (!resp.ok) throw new Error(await describeApiError(resp, `요청에 실패했습니다. (${resp.status})`))
         return resp.json() as Promise<RankingRow[]>
@@ -124,29 +124,29 @@ function AdminRenewalCheck({ onOpenDetail }: { onOpenDetail: (address: string) =
     let cancelled = false
 
     async function run() {
-      for (const row of filteredRows) {
-        if (cancelled || requestId !== requestIdRef.current) return
-        if (!row.address || topFactors[row.store_label]) continue
-        setTopFactors((prev) => ({ ...prev, [row.store_label]: 'loading' }))
-        try {
-          const resp = await fetch('/risk-api/store-packet', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ address: row.address, kind: 'renewal' }),
-          })
-          if (cancelled || requestId !== requestIdRef.current) return
-          if (!resp.ok) throw new Error('failed')
-          const body = await resp.json()
-          const axisLabel = row.v2_percentile != null ? '입지 기준, 서울 매장' : '업종 기준, 전국'
-          const factor = topClauseFactor(body.internal_md || '', axisLabel)
-          setTopFactors((prev) => ({ ...prev, [row.store_label]: factor ?? 'error' }))
-        } catch {
-          if (!cancelled && requestId === requestIdRef.current) {
-            setTopFactors((prev) => ({ ...prev, [row.store_label]: 'error' }))
-          }
-        }
+  for (const row of filteredRows) {
+    if (cancelled || requestId !== requestIdRef.current) return
+    if (!row.address || topFactors[row.store_label]) continue
+    setTopFactors((prev) => ({ ...prev, [row.store_label]: 'loading' }))
+    try {
+      const resp = await fetch(apiUrl('/risk-api/store-packet'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: row.address, kind: 'renewal' }),
+      })
+      if (cancelled || requestId !== requestIdRef.current) return
+      if (!resp.ok) throw new Error('failed')
+      const body = await resp.json()
+      const axisLabel = row.v2_percentile != null ? '입지 기준, 서울 매장' : '업종 기준, 전국'
+      const factor = topClauseFactor(body.internal_md || '', axisLabel)
+      setTopFactors((prev) => ({ ...prev, [row.store_label]: factor ?? 'error' }))
+    } catch {
+      if (!cancelled && requestId === requestIdRef.current) {
+        setTopFactors((prev) => ({ ...prev, [row.store_label]: 'error' }))
       }
     }
+  }
+}
     void run()
     return () => {
       cancelled = true

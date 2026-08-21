@@ -61,7 +61,7 @@ function AdminStoreRiskList({
     setError('')
     setRows(null)
 
-    fetch('/risk-api/rankings', { signal: controller.signal })
+    fetch(apiUrl('/risk-api/rankings'), { signal: controller.signal })
       .then(async (resp) => {
         if (!resp.ok) throw new Error(await describeApiError(resp, `요청에 실패했습니다. (${resp.status})`))
         return resp.json() as Promise<RankingRow[]>

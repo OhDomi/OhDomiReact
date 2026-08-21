@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { apiUrl } from '../../api/useApiData'
 import {
   badgeTier, dummyMonthlyRent, dummyMonthlySales, fmtWon, pctLabel,
   riskTagClass, stripMarkdownSymbols, topClauseFactor, type RankingRow, type TopFactor,
@@ -113,7 +114,7 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
     setDocError({})
     setActiveTab('renewal')
 
-    fetch('/risk-api/rankings')
+    fetch(apiUrl('/risk-api/rankings'))
       .then(async (r) => {
         if (!r.ok) throw new Error(await describeApiError(r, `요청에 실패했습니다. (${r.status})`))
         return r.json() as Promise<(RankingRow & { error?: string })[]>
@@ -128,7 +129,7 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
     async function loadDistrict() {
       setDistrict('loading')
       try {
-        const resp = await fetch('/risk-api/district-analysis', {
+        const resp = await fetch(apiUrl('/risk-api/district-analysis'), {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ brand_nm: '김가네', address, sbiz_category: '김밥/만두/분식' }),
         })
@@ -144,7 +145,7 @@ function AdminStoreDetail({ address, onBack }: { address: string; onBack: () => 
   useEffect(() => {
     if (!address || docs[activeTab] || docLoading === activeTab) return
     setDocLoading(activeTab)
-    fetch('/risk-api/store-packet', {
+    fetch(apiUrl('/risk-api/store-packet'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ address, kind: activeTab }),
     })
@@ -407,7 +408,7 @@ function DownloadMenu({ label, filenameBase, markdown }: { label: string; filena
     setBusy(format)
     setError('')
     try {
-      const resp = await fetch(`/risk-api/export/${format}`, {
+      const resp = await fetch(apiUrl(`/risk-api/export/${format}`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ markdown, filename: filenameBase }),

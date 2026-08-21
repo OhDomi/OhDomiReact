@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import { apiUrl } from '../../api/useApiData'
 import { downloadMarkdown, stripMarkdownSymbols } from '../riskTool/riskToolShared'
 import GeneratingBanner from '../../api/GeneratingBanner'
 import { describeApiError } from '../../api/useApiData'
 import './AdminDistrictProspect.css'
+
 
 // closure-risk-model의 prospect-district.html을 React로 재구현(2026-08-10, iframe 제거
 // 요청) — 서울 25개 구 SVG 지도로 구 선택 → 격자 후보지(영업지역 게이트+상권 적합도) →
@@ -112,7 +114,7 @@ function AdminDistrictProspect() {
       .then((v: { path?: string } | null) => setRiverPath(v?.path ?? null))
       .catch(() => {})
     fetch('/risk-tool/seoul_districts.json').then((r) => r.json()).then(setGeo).catch(() => {})
-    fetch('/risk-api/district-preview')
+    fetch(apiUrl('/risk-api/district-preview'))
       .then((r) => (r.ok ? r.json() : []))
       .then((rows: DistrictPreview[]) => setPreview(Object.fromEntries((rows || []).map((r) => [r.gu, r]))))
       .catch(() => {})
@@ -130,7 +132,7 @@ function AdminDistrictProspect() {
     setCandidatesLoading(true)
     setTradePrice(null)
     try {
-      const resp = await fetch('/risk-api/district-grid', {
+      const resp = await fetch(apiUrl('/risk-api/district-grid'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gu: name }),
@@ -151,7 +153,7 @@ function AdminDistrictProspect() {
   async function loadTradePrice(sggCd: string) {
     setTradePrice(null)
     try {
-      const resp = await fetch('/risk-api/district-trade-price', {
+      const resp = await fetch(apiUrl('/risk-api/district-trade-price'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sgg_cd: sggCd }),
@@ -171,7 +173,7 @@ function AdminDistrictProspect() {
       candidate_area_sqm: 45.0, sbiz_category: '김밥/만두/분식',
     })
     try {
-      const resp = await fetch('/risk-api/packets/new-franchisee', {
+      const resp = await fetch(apiUrl('/risk-api/packets/new-franchisee'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
       })
       if (!resp.ok) { setDoc({ error: await describeFetchError(resp, null) }); }
@@ -183,7 +185,7 @@ function AdminDistrictProspect() {
       setDoc({ error: await describeFetchError(null, e) })
     }
     try {
-      const resp = await fetch('/risk-api/packets/expected-sales-certificate', {
+      const resp = await fetch(apiUrl('/risk-api/packets/expected-sales-certificate'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
       })
       if (!resp.ok) { setSalesDoc({ error: await describeFetchError(resp, null) }); }
@@ -379,7 +381,7 @@ function PdfMdDownloadButtons({ markdown, filenameBase }: { markdown: string; fi
     setPdfBusy(true)
     setError('')
     try {
-      const resp = await fetch('/risk-api/export/pdf', {
+      const resp = await fetch(apiUrl('/risk-api/export/pdf'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ markdown, filename: filenameBase }),

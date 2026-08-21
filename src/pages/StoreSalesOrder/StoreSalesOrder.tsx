@@ -13,10 +13,36 @@ const reasonTypeMap: Record<string, string> = {
   안전: 'positive',
 }
 
+function parseQuantity(value: string): number {
+  const match = value.match(/[\d.]+/)
+  return match ? parseFloat(match[0]) : 0
+}
+
+function parseWon(value: string): number {
+  return parseInt(value.replace(/[^\d]/g, ''), 10) || 0
+}
+
+function formatWon(value: number): string {
+  return '₩' + Math.round(value).toLocaleString('ko-KR')
+}
+
 function StoreSalesOrder({ storeId: _storeId }: { storeId: number }) {
   const [quantities, setQuantities] = useState<Record<number, string>>(() =>
     recommendedOrders.reduce((acc, item) => ({ ...acc, [item.id]: item.recommendedQty }), {}),
   )
+
+  // 품목별 단가(원 단위 가격 ÷ 추천 수량)를 미리 계산 — 입력값이 바뀔 때마다 이 단가로 금액을 다시 계산한다.
+  const unitPrices = recommendedOrders.reduce<Record<number, number>>((acc, item) => {
+    const qty = parseQuantity(item.recommendedQty)
+    const amount = parseWon(item.amount)
+    acc[item.id] = qty > 0 ? amount / qty : 0
+    return acc
+  }, {})
+
+  function calculatedAmount(itemId: number): string {
+    const qty = parseQuantity(quantities[itemId] ?? '0')
+    return formatWon(qty * (unitPrices[itemId] ?? 0))
+  }
 
   const selectedOrders = recommendedOrders.filter(
     (item) => quantities[item.id] !== '0kg' && quantities[item.id] !== '0개',
@@ -129,7 +155,7 @@ function StoreSalesOrder({ storeId: _storeId }: { storeId: number }) {
                         }
                       />
                     </td>
-                    <td>{item.amount}</td>
+                    <td>{calculatedAmount(item.id)}</td>
                     <td>
                       <span className={`order-status ${getStatusClass(item.risk)}`}>
                         {item.risk}
@@ -170,14 +196,16 @@ function StoreSalesOrder({ storeId: _storeId }: { storeId: number }) {
                   <strong>{item.item}</strong>
                   <small>{quantities[item.id]}</small>
                 </div>
-                <b>{item.amount}</b>
+                <b>{calculatedAmount(item.id)}</b>
               </div>
             ))}
           </div>
 
           <div className="order-total-box">
             <span>예상 발주 금액</span>
-            <strong>{orderSummary.estimatedAmount}</strong>
+            <strong>
+              {formatWon(selectedOrders.reduce((sum, item) => sum + parseWon(calculatedAmount(item.id)), 0))}
+            </strong>
           </div>
 
           <button className="primary-action full-width" type="button">
