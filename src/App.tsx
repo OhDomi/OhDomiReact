@@ -20,7 +20,7 @@ import type { hygieneActions } from './pages/AdminHygieneCheck/adminHygieneDummy
 import { getCurrentAccount, loginAccount, logoutAccount } from './api/authApi'
 import PasswordInput from './components/PasswordInput'
 import type { LoginResponse } from './api/authApi'
-import { useApiData } from './api/useApiData'
+import { apiUrl, useApiData } from './api/useApiData'
 import { LAST_ROLE_KEY } from './api/session'
 import ApiDataState from './api/ApiDataState'
 import GeneratingBanner from './api/GeneratingBanner'
@@ -114,7 +114,7 @@ type OwnerOverviewData = {
   sales: {
     salesSummary: { todaySales: string; todayOrders: number }
     hourlySales: Array<{ time: string; sales: number }>
-    weeklySalesTrend: Array<{ time: string; sales: number }>
+    salesTrend: Array<{ time: string; sales: number }>
   }
 }
 
@@ -433,12 +433,40 @@ function SalesChart({ data }: { data: Array<{ time: string; sales: number }> }) 
   )
 }
 
+const PERIOD_OPTIONS: { id: 'week' | 'month' | 'year'; label: string; title: string }[] = [
+  { id: 'week', label: '최근 7일', title: '이번 주 매출' },
+  { id: 'month', label: '최근 1개월', title: '이번 달 매출' },
+  { id: 'year', label: '최근 1년', title: '올해 매출' },
+]
+
 function OwnerOverview({ go, storeId, name }: { go: (p: Page) => void; storeId: number; name: string }) {
   const api = useApiData<OwnerOverviewData>(`/api/ui/stores/${storeId}/overview`)
+  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('week')
+  const [periodMenuOpen, setPeriodMenuOpen] = useState(false)
+  const [trend, setTrend] = useState<Array<{ time: string; sales: number }> | null>(null)
+  const [trendLoading, setTrendLoading] = useState(false)
+
+  useEffect(() => {
+    if (period === 'week') {
+      setTrend(null) // overview 응답의 기본값(week) 그대로 사용
+      return
+    }
+    setTrendLoading(true)
+    fetch(apiUrl(`/api/ui/stores/${storeId}/sales?period=${period}`), { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { salesTrend?: Array<{ time: string; sales: number }> } | null) => {
+        setTrend(data?.salesTrend ?? [])
+      })
+      .catch(() => setTrend([]))
+      .finally(() => setTrendLoading(false))
+  }, [period, storeId])
+
   if (!api.data) return <ApiDataState loading={api.loading} error={api.error} retry={api.retry} />
   const { management, hygiene, orders, sales } = api.data
   const recommendations = orders.recommendedOrders.slice(0, 3)
   const ownerAlerts = recommendations.map((item) => ({ title: `${item.item} 발주 ${item.risk}`, time: item.recommendedQty }))
+  const activePeriod = PERIOD_OPTIONS.find((p) => p.id === period) ?? PERIOD_OPTIONS[0]
+  const chartData = period === 'week' ? sales.salesTrend : trend ?? []
   return (
     <>
       <header className="page-heading">
@@ -465,17 +493,43 @@ function OwnerOverview({ go, storeId, name }: { go: (p: Page) => void; storeId: 
           <div className="panel-head">
             <div>
               <span className="panel-label">SALES OVERVIEW</span>
-              <h2>이번 주 매출</h2>
+              <h2>{activePeriod.title}</h2>
             </div>
-            <button className="select-button" type="button">최근 7일⌄</button>
+            <div className="period-select-wrap">
+              <button className="select-button" type="button" onClick={() => setPeriodMenuOpen((v) => !v)}>
+                {activePeriod.label}⌄
+              </button>
+              {periodMenuOpen && (
+                <div className="period-select-menu">
+                  {PERIOD_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      className={opt.id === period ? 'active' : ''}
+                      onClick={() => {
+                        setPeriod(opt.id)
+                        setPeriodMenuOpen(false)
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <SalesChart data={sales.weeklySalesTrend} />
+          {trendLoading ? (
+            <div className="chart-wrap" style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <span className="skeleton-block" style={{ width: '100%', height: 180 }} />
+            </div>
+          ) : (
+            <SalesChart data={chartData} />
+          )}
 
           <div className="chart-summary">
-            <span>주간 누적 매출</span>
-            <strong>{sales.salesSummary.todaySales}</strong>
-            <em>{sales.salesSummary.todayOrders}건</em>
+            <span>{activePeriod.label} 누적 매출</span>
+            <strong>₩{chartData.reduce((sum, item) => sum + Number(item.sales), 0).toLocaleString()}</strong>
           </div>
         </article>
 
