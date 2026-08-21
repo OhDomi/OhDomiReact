@@ -267,16 +267,12 @@ function AdminDistrictProspect() {
               <h2>{selectedGu} 후보지</h2>
               <p className="district-explain">격자 후보지를 영업지역 게이트(기존 가맹점 침해 여부) 통과 여부와 상권 적합도로 랭킹했습니다. 게이트 판정은 실제 김가네 매장 216곳 위치 기준입니다. <strong>참고:</strong> 팀 실 데이터베이스 연동 전까지 쓰는 스냅샷이라 그 이후 신규/폐점 매장은 반영 안 될 수 있습니다. 게이트를 통과한 후보지는 상권 적합도까지 실시간으로 계산하므로(정부 공개 데이터 조회) 매장 수에 따라 몇 초~몇 분 걸릴 수 있습니다.</p>
 
-              {tradePrice && (
+              {tradePrice?.available && (
                 <div className="district-listing-note">
                   <div className="district-listing-label">매물 확인 참고</div>
-                  {tradePrice.available ? (
-                    <p>
-                      이 지역 상업용 부동산 최근 실거래가(국토교통부 공공데이터, <strong>{tradePrice.deal_ymd?.slice(0, 4)}년 {Number(tradePrice.deal_ymd?.slice(4))}월 기준 {tradePrice.sample_count}건 평균 평당 {tradePrice.avg_price_per_pyeong_manwon?.toLocaleString('ko-KR')}만원</strong>) — 실제 매물 목록이 아니라 과거 거래 기록 참고치입니다. 지금 임대 가능한 매물은 아래 후보지 카드의 지도 링크로 이동해 직접 확인해 주세요.
-                    </p>
-                  ) : (
-                    <p>이 지역은 최근 상업용 부동산 실거래 기록을 찾지 못했습니다({tradePrice.reason || '데이터 없음'}) — 매물 확인은 아래 지도 링크로 이동해 직접 검색해 주세요.</p>
-                  )}
+                  <p>
+                    이 지역 상업용 부동산 최근 실거래가(국토교통부 공공데이터, <strong>{tradePrice.deal_ymd?.slice(0, 4)}년 {Number(tradePrice.deal_ymd?.slice(4))}월 기준 {tradePrice.sample_count}건 평균 평당 {tradePrice.avg_price_per_pyeong_manwon?.toLocaleString('ko-KR')}만원</strong>) — 실제 매물 목록이 아니라 과거 거래 기록 참고치입니다. 지금 임대 가능한 매물은 아래 후보지 카드의 지도 링크로 이동해 직접 확인해 주세요.
+                  </p>
                 </div>
               )}
 
