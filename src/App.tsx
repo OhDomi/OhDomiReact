@@ -422,8 +422,10 @@ function SalesChart({ data }: { data: Array<{ time: string; sales: number }> }) 
       <div className="bar-chart">
         {data.map((item, index) => (
           <div className="bar-column" key={`${item.time}-${index}`}>
+            {/* 2026-08-21: 막대마다 항상 숫자가 떠있으면 촘촘할 때 지저분해 보여서,
+                마지막 막대만 상시 표시하던 걸 전체 막대 호버 시에만 뜨도록 변경(CSS :hover) */}
             <div className="bar-value" style={{ height: `${Math.max(4, Number(item.sales) / max * 100)}%` }}>
-              {index === data.length - 1 && <span>₩{Number(item.sales).toLocaleString()}</span>}
+              <span>₩{Number(item.sales).toLocaleString()}</span>
             </div>
             <small>{item.time}</small>
           </div>
