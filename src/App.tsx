@@ -205,10 +205,6 @@ function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
 
           <div className="story-stats">
             <div>
-              <strong>98.7%</strong>
-              <span>예측 정확도</span>
-            </div>
-            <div>
               <strong>24h</strong>
               <span>실시간 모니터링</span>
             </div>
