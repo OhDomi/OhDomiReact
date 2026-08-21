@@ -21,6 +21,7 @@ import { getCurrentAccount, loginAccount, logoutAccount } from './api/authApi'
 import PasswordInput from './components/PasswordInput'
 import type { LoginResponse } from './api/authApi'
 import { apiUrl, useApiData } from './api/useApiData'
+import TrendLineChart from './components/TrendLineChart'
 import { LAST_ROLE_KEY } from './api/session'
 import ApiDataState from './api/ApiDataState'
 import GeneratingBanner from './api/GeneratingBanner'
@@ -406,33 +407,12 @@ function Metric({
   )
 }
 
-function SalesChart({ data }: { data: Array<{ time: string; sales: number }> }) {
-  const max = Math.max(...data.map((item) => Number(item.sales)), 1)
-  // 2026-08-21: "이번 주 매출" 위젯의 막대 라벨이 만원 단위로 반올림돼("4만") 카드의
-  // 정확한 숫자(₩38,000)와 안 맞아 보이던 문제 — 원 단위 그대로 표시.
-  const scaleSteps = [1, 0.75, 0.5, 0.25, 0]
-  return (
-    <div className="chart-wrap">
-      <div className="chart-scale">
-        {scaleSteps.map((ratio) => (
-          <span key={ratio}>{Math.round((max * ratio) / 10_000)}만</span>
-        ))}
-      </div>
-
-      <div className="bar-chart">
-        {data.map((item, index) => (
-          <div className="bar-column" key={`${item.time}-${index}`}>
-            {/* 2026-08-21: 막대마다 항상 숫자가 떠있으면 촘촘할 때 지저분해 보여서,
-                마지막 막대만 상시 표시하던 걸 전체 막대 호버 시에만 뜨도록 변경(CSS :hover) */}
-            <div className="bar-value" style={{ height: `${Math.max(4, Number(item.sales) / max * 100)}%` }}>
-              <span>₩{Number(item.sales).toLocaleString()}</span>
-            </div>
-            <small>{item.time}</small>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+// 2026-08-21: 점주 대시보드 매출 그래프를 관리자 "매출 분석" 페이지와 동일한
+// 스타일(TrendLineChart, 곡선+막대+호버 툴팁)로 통일해달라는 요청 — 커스텀 막대
+// 그래프(SalesChart) 대신 공용 컴포넌트 재사용.
+function formatWonCompact(value: number): string {
+  if (value >= 10_000) return `${Math.round(value / 10_000).toLocaleString()}만원`
+  return `${Math.round(value).toLocaleString()}원`
 }
 
 const PERIOD_OPTIONS: { id: 'week' | 'month' | 'year'; label: string; title: string }[] = [
@@ -526,7 +506,11 @@ function OwnerOverview({ go, storeId, name }: { go: (p: Page) => void; storeId: 
               <span className="skeleton-block" style={{ width: '100%', height: 180 }} />
             </div>
           ) : (
-            <SalesChart data={chartData} />
+            <TrendLineChart
+              data={chartData.map((item) => ({ label: item.time, value: Number(item.sales) }))}
+              showBars
+              formatValue={formatWonCompact}
+            />
           )}
 
           <div className="chart-summary">
