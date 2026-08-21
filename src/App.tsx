@@ -111,7 +111,11 @@ type OwnerOverviewData = {
   management: { storeInfo: { storeName: string } }
   hygiene: { hygieneSummary: { score: number; status: string; lastCheckedAt: string } }
   orders: { orderSummary: { expectedSales: string; expectedOrders: number; requiredItems: number }; recommendedOrders: Array<{ id: number; item: string; currentStock: string; expectedUsage: string; recommendedQty: string; risk: string }> }
-  sales: { salesSummary: { todaySales: string; todayOrders: number }; hourlySales: Array<{ time: string; sales: number }> }
+  sales: {
+    salesSummary: { todaySales: string; todayOrders: number }
+    hourlySales: Array<{ time: string; sales: number }>
+    weeklySalesTrend: Array<{ time: string; sales: number }>
+  }
 }
 
 type AdminOverviewData = {
@@ -404,21 +408,22 @@ function Metric({
 
 function SalesChart({ data }: { data: Array<{ time: string; sales: number }> }) {
   const max = Math.max(...data.map((item) => Number(item.sales)), 1)
+  // 2026-08-21: "이번 주 매출" 위젯의 막대 라벨이 만원 단위로 반올림돼("4만") 카드의
+  // 정확한 숫자(₩38,000)와 안 맞아 보이던 문제 — 원 단위 그대로 표시.
+  const scaleSteps = [1, 0.75, 0.5, 0.25, 0]
   return (
     <div className="chart-wrap">
       <div className="chart-scale">
-        <span>200만</span>
-        <span>150만</span>
-        <span>100만</span>
-        <span>50만</span>
-        <span>0</span>
+        {scaleSteps.map((ratio) => (
+          <span key={ratio}>{Math.round((max * ratio) / 10_000)}만</span>
+        ))}
       </div>
 
       <div className="bar-chart">
         {data.map((item, index) => (
           <div className="bar-column" key={`${item.time}-${index}`}>
             <div className="bar-value" style={{ height: `${Math.max(4, Number(item.sales) / max * 100)}%` }}>
-              {index === data.length - 1 && <span>{item.sales}만</span>}
+              {index === data.length - 1 && <span>₩{Number(item.sales).toLocaleString()}</span>}
             </div>
             <small>{item.time}</small>
           </div>
@@ -465,7 +470,7 @@ function OwnerOverview({ go, storeId, name }: { go: (p: Page) => void; storeId: 
             <button className="select-button" type="button">최근 7일⌄</button>
           </div>
 
-          <SalesChart data={sales.hourlySales} />
+          <SalesChart data={sales.weeklySalesTrend} />
 
           <div className="chart-summary">
             <span>주간 누적 매출</span>
