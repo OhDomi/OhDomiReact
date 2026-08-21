@@ -134,7 +134,7 @@ function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
   })
   // 2026-08-12(임시, 정식 배포 전 제거 필요): 데모 편의용 아이디 자동 입력 —
   // [[OhDomi 프로젝트 - 정식 배포 전 제거 체크리스트]] 참고.
-  const [loginId, setLoginId] = useState(() => (role === 'admin' ? 'admin' : 'qwer'))
+  const [loginId, setLoginId] = useState(() => (role === 'admin' ? 'admin' : 'demo'))
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showRegister, setShowRegister] = useState(false)
@@ -236,7 +236,7 @@ function Login({ onLogin }: { onLogin: (account: LoginResponse) => void }) {
             <button
               type="button"
               className={role === 'owner' ? 'active' : ''}
-              onClick={() => { setRole('owner'); setLoginId('qwer') }}
+              onClick={() => { setRole('owner'); setLoginId('demo') }}
             >
               가맹점주
             </button>
@@ -497,7 +497,7 @@ function OwnerOverview({ go, storeId, name }: { go: (p: Page) => void; storeId: 
             </div>
             <div className="period-select-wrap">
               <button className="select-button" type="button" onClick={() => setPeriodMenuOpen((v) => !v)}>
-                {activePeriod.label}⌄
+                {activePeriod.label}
               </button>
               {periodMenuOpen && (
                 <div className="period-select-menu">
